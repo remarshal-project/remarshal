@@ -84,8 +84,53 @@ func filenameToFormat(s string) (inputf format, outputf format, err error) {
 	return prefix, suffix, nil
 }
 
-func main() {
+// remarshal converts input data of format inputFormat to outputFormat and
+// returns the result.
+func remarshal(input []byte, inputFormat format, outputFormat format,
+	indentJSON bool) (result []byte, err error) {
 	var data interface{}
+
+	// Decode the serialized data.
+	switch inputFormat {
+	case fTOML:
+		_, err = toml.Decode(string(input), &data)
+	case fYAML:
+		err = yaml.Unmarshal(input, &data)
+		if err == nil {
+			data, err = convertToStringMap(
+				data.(map[interface{}]interface{}))
+		}
+	case fJSON:
+		err = json.Unmarshal(input, &data)
+	}
+	if err != nil {
+		return nil, err
+	}
+
+	// Reencode the data in the output format.
+	switch outputFormat {
+	case fTOML:
+		buf := new(bytes.Buffer)
+		err = toml.NewEncoder(buf).Encode(data)
+		result = buf.Bytes()
+	case fYAML:
+		result, err = yaml.Marshal(&data)
+	case fJSON:
+		result, err = json.Marshal(&data)
+		if err == nil && indentJSON {
+			buf := new(bytes.Buffer)
+			err = json.Indent(buf, result, "", "  ")
+			result = buf.Bytes()
+		}
+	}
+	if err != nil {
+		return nil, err
+	}
+
+	return
+}
+
+func main() {
 	var inputFile, outputFile, inputFormatStr, outputFormatStr string
 	var inputFormat, outputFormat format
 	indentJSON := true
@@ -94,10 +139,10 @@ func main() {
 	// format.
 	flag.StringVar(&inputFile, "i", "-", "input file")
 	flag.StringVar(&outputFile, "o", "-", "output file")
-	var ferr error
+
 	// See if our executable is named, e.g., "json2yaml".
-	inputFormat, outputFormat, ferr = filenameToFormat(os.Args[0])
-	formatFromArgsZero := ferr == nil
+	inputFormat, outputFormat, err := filenameToFormat(os.Args[0])
+	formatFromArgsZero := err == nil
 	if !formatFromArgsZero {
 		// Only give the user an option to specify the input and the output
 		// format with flags when it is mandatory, i.e., when we are *not* being
@@ -115,7 +160,7 @@ func main() {
 	if !formatFromArgsZero {
 		// Try to parse the format options we were given through the command
 		// line flags.
-		if inputFormat, ferr = stringToFormat(inputFormatStr); ferr != nil {
+		if inputFormat, err = stringToFormat(inputFormatStr); err != nil {
 			if inputFormat == fPlaceholder {
 				fmt.Println("please specify the input format")
 			} else {
@@ -124,7 +169,7 @@ func main() {
 			}
 			os.Exit(1)
 		}
-		if outputFormat, ferr = stringToFormat(outputFormatStr); ferr != nil {
+		if outputFormat, err = stringToFormat(outputFormatStr); err != nil {
 			if outputFormat == fPlaceholder {
 				fmt.Println("please specify the output format")
 			} else {
@@ -153,70 +198,32 @@ func main() {
 
 	// Read the input data from either standard input or a file.
 	var input []byte
-	var ierr error
 	if inputFile == "" || inputFile == "-" {
-		input, ierr = ioutil.ReadAll(os.Stdin)
+		input, err = ioutil.ReadAll(os.Stdin)
 	} else {
-		if _, ierr := os.Stat(inputFile); os.IsNotExist(ierr) {
+		if _, err := os.Stat(inputFile); os.IsNotExist(err) {
 			fmt.Printf("no such file or directory: '%s'\n", inputFile)
 			os.Exit(1)
 		}
-		input, ierr = ioutil.ReadFile(inputFile)
+		input, err = ioutil.ReadFile(inputFile)
 	}
-	if ierr != nil {
-		fmt.Println(ierr)
+	if err != nil {
+		fmt.Println(err)
 		os.Exit(1)
 
 	}
 
-	// Decode the serialized data.
-	var decerr error
-	switch inputFormat {
-	case fTOML:
-		_, decerr = toml.Decode(string(input), &data)
-	case fYAML:
-		decerr = yaml.Unmarshal(input, &data)
-		if decerr == nil {
-			data, decerr = convertToStringMap(
-				data.(map[interface{}]interface{}))
-		}
-	case fJSON:
-		decerr = json.Unmarshal(input, &data)
-	}
-	if decerr != nil {
-		fmt.Println(decerr)
+	output, err := remarshal(input, inputFormat, outputFormat, indentJSON)
+	if err != nil {
+		fmt.Println(err)
 		os.Exit(1)
-	}
-
-	// Reencode the data in the output format.
-	var result []byte
-	var encerr error
-	switch outputFormat {
-	case fTOML:
-		buf := new(bytes.Buffer)
-		encerr = toml.NewEncoder(buf).Encode(data)
-		result = buf.Bytes()
-	case fYAML:
-		result, encerr = yaml.Marshal(&data)
-	case fJSON:
-		result, encerr = json.Marshal(&data)
-		if encerr == nil && indentJSON {
-			buf := new(bytes.Buffer)
-			encerr = json.Indent(buf, result, "", "  ")
-			result = buf.Bytes()
-		}
-	}
-	if encerr != nil {
-		fmt.Println(encerr)
-		os.Exit(1)
-
 	}
 
 	// Print the result to either standard output or a file.
 	if outputFile == "" || outputFile == "-" {
-		fmt.Printf("%s\n", string(result))
+		fmt.Printf("%s\n", string(output))
 	} else {
-		err := ioutil.WriteFile(outputFile, result, 0644)
+		err := ioutil.WriteFile(outputFile, output, 0644)
 		if err != nil {
 			fmt.Printf("cannot write to file %s\n", outputFile)
 			os.Exit(1)
