@@ -2,13 +2,13 @@
 set -e
 
 cp example.toml /tmp/toml
-./toml2yaml -i example.toml -if toml -of json -o /tmp/json
-./toml2yaml -i example.toml -if toml -of yaml -o /tmp/yaml
+./remarshal -i example.toml -if toml -of json -o /tmp/json
+./remarshal -i example.toml -if toml -of yaml -o /tmp/yaml
 
 for if in toml yaml json; do
 	for of in toml yaml json; do
 		echo "--- $if -> $of"
-		./toml2yaml -i "/tmp/$if" -o "/tmp/$of.2" -if $if -of $of
+		./remarshal -i "/tmp/$if" -o "/tmp/$of.2" -if $if -of $of
 		if test "$1" = "-v"; then
 			cat "/tmp/$of.2"
 		fi

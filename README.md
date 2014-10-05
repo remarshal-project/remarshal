@@ -1,17 +1,18 @@
 Convert between TOML, YAML and JSON. Provides the command line utilities
-`toml2yaml`, `toml2json`, `yaml2toml`, `yaml2json`. `json2toml` and `json2yaml`
-for conversion as well as `toml2toml`, `yaml2yaml` and `json2json` that can be
-used for reformatting and error detection.
+`toml2yaml`, `toml2json`, `yaml2toml`, `yaml2json`. `json2toml` and
+`json2yaml` for conversion as well as `toml2toml`, `yaml2yaml` and `json2json`
+that can be used for reformatting and error detection.
 
 # Usage
 
 ```
-toml2yaml [-i inputfile] [-o outputfile] [-if inputformat] [-of outputformat]
+remarshal [-i inputfile] [-o outputfile] [-if inputformat] [-of outputformat]
 ```
 
-where `inputformat` and `outputformat` can be one of `toml`, `yaml` and `json`.
+where `inputformat` and `outputformat` can each be one of `toml`, `yaml` and
+`json`
 
-or
+* or
 
 ```
 toml2yaml [-i inputfile] [-o outputfile]
@@ -25,9 +26,9 @@ yaml2yaml [-i inputfile] [-o outputfile]
 json2json [-i inputfile] [-o outputfile]
 ```
 
-The above commands exit with status 0 on success and 1 on failure.
+The all of the above commands exit with status 0 on success and 1 on failure.
 
-If `inputfile` is not given or is `-` or a blank string the input data is read
+If `inputfile` is not given or is `-` or a blank string data to convert is read
 from standard input. If `outputfile` is not given or is `-` or a blank string
 the result of the conversion is written to standard output.
 
@@ -38,9 +39,9 @@ Tested with `go version go1.2.2 linux/amd64`. Do the following:
 ```sh
 go get github.com/BurntSushi/toml
 go get gopkg.in/yaml.v2
-git clone https://github.com/dbohdan/toml2yaml.git
-cd toml2yaml
-go build toml2yaml.go
+git clone https://github.com/dbohdan/remarshal.git
+cd remarshal
+go build remarshal.go
 sh tests.sh
 sudo sh install.sh # install into /usr/local/bin
 ```
@@ -48,7 +49,7 @@ sudo sh install.sh # install into /usr/local/bin
 # Example
 
 ```
-$ ./toml2yaml -i example.toml
+$ ./remarshal -i example.toml
 clients:
   data:
   - - gamma

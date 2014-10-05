@@ -1,4 +1,4 @@
-// toml2yaml
+// remarshal, a utility to convert between serialization formats.
 // Copyright (C) 2014, Danyil Bohdan
 // License: MIT
 package main
@@ -83,18 +83,21 @@ func main() {
 	var inputFile, outputFile, inputFormatStr, outputFormatStr string
 	var inputFormat, outputFormat Format
 
+
 	flag.StringVar(&inputFile, "i", "-", "input file")
 	flag.StringVar(&outputFile, "o", "-", "output file")
-	flag.StringVar(&inputFormatStr, "if", "toml",
-		"input format ('toml', 'yaml' or 'json')")
-	flag.StringVar(&outputFormatStr, "of", "yaml",
-		"input format ('toml', 'yaml' or 'json')")
-	flag.Parse()
-
 	var ferr error
 	// See if our executable is named, e.g., "json2yaml".
 	inputFormat, outputFormat, ferr = filenameToFormat(os.Args[0])
-	if ferr != nil {
+	formatFromArgsZero := ferr == nil
+	if !formatFromArgsZero {
+		flag.StringVar(&inputFormatStr, "if", "toml",
+			"input format ('toml', 'yaml' or 'json')")
+		flag.StringVar(&outputFormatStr, "of", "yaml",
+			"input format ('toml', 'yaml' or 'json')")
+	}
+	flag.Parse()
+	if !formatFromArgsZero {
 		if inputFormat, ferr = stringToFormat(inputFormatStr); ferr != nil {
 			fmt.Println(ferr)
 			os.Exit(1)
