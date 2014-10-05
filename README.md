@@ -7,23 +7,22 @@ commands `toml2yaml`, `toml2json`, `yaml2toml`, `yaml2json`. `json2toml` and
 
 ```
 remarshal [-i inputfile] [-o outputfile] -if inputformat -of outputformat
+          [-indent-json=(true|false)]
 ```
 
 where `inputformat` and `outputformat` can each be one of `toml`, `yaml` and
-`json`
-
-* or
+`json` or
 
 ```
 toml2yaml [-i inputfile] [-o outputfile]
-toml2json [-i inputfile] [-o outputfile]
+toml2json [-i inputfile] [-o outputfile] [-indent-json=(true|false)]
 yaml2toml [-i inputfile] [-o outputfile]
-yaml2json [-i inputfile] [-o outputfile]
+yaml2json [-i inputfile] [-o outputfile] [-indent-json=(true|false)]
 json2toml [-i inputfile] [-o outputfile]
 json2yaml [-i inputfile] [-o outputfile]
 toml2toml [-i inputfile] [-o outputfile]
 yaml2yaml [-i inputfile] [-o outputfile]
-json2json [-i inputfile] [-o outputfile]
+json2json [-i inputfile] [-o outputfile] [-indent-json=(true|false)]
 ```
 
 The all of the above commands exit with status 0 on success and 1 on failure.
@@ -34,7 +33,8 @@ string the result of the conversion is written to standard output.
 
 # Building and installation
 
-Tested with `go version go1.2.2 linux/amd64`. Do the following:
+Tested with `go version go1.2.2 linux/amd64`. Do the following to install
+`remarshal`:
 
 ```sh
 go get github.com/BurntSushi/toml

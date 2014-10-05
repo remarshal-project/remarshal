@@ -28,7 +28,7 @@ const (
 )
 
 // convertToStringMap recursively converts map[interface{}]interface{} to
-// map[string]interface{}. This is needed for the TOML and JSON encoders to
+// map[string]interface{}. This is needed before the TOML and JSON encoders can
 // accept the data returned by the YAML decoder.
 func convertToStringMap(m map[interface{}]interface{}) (
 	res map[string]interface{}, err error) {
@@ -50,7 +50,7 @@ func convertToStringMap(m map[interface{}]interface{}) (
 }
 
 func stringToFormat(s string) (f format, err error) {
-	switch s {
+	switch strings.ToLower(s) {
 	case "toml":
 		return fTOML, nil
 	case "yaml":
@@ -66,7 +66,7 @@ func stringToFormat(s string) (f format, err error) {
 }
 
 // filenameToFormat tries to parse string s as "<formatName>2<formatName>".
-// Return both formats as type format if successful.
+// It returns both formats as type format if successful.
 func filenameToFormat(s string) (inputf format, outputf format, err error) {
 	filenameParts := strings.Split(filepath.Base(s), "2")
 	if len(filenameParts) != 2 {
@@ -88,8 +88,10 @@ func main() {
 	var data interface{}
 	var inputFile, outputFile, inputFormatStr, outputFormatStr string
 	var inputFormat, outputFormat format
+	indentJSON := true
 
-	// Parse command line arguments and choose the input and output formats.
+	// Parse the command line arguments and choose the input and the output
+	// format.
 	flag.StringVar(&inputFile, "i", "-", "input file")
 	flag.StringVar(&outputFile, "o", "-", "output file")
 	var ferr error
@@ -97,19 +99,27 @@ func main() {
 	inputFormat, outputFormat, ferr = filenameToFormat(os.Args[0])
 	formatFromArgsZero := ferr == nil
 	if !formatFromArgsZero {
+		// Only give the user an option to specify the input and the output
+		// format with flags when it is mandatory, i.e., when we are *not* being
+		// run as "json2yaml" or similar. This makes the usage messages for the
+		// "x2y" commands more accurate as well.
 		flag.StringVar(&inputFormatStr, "if", "unknown",
 			"input format ('toml', 'yaml' or 'json')")
 		flag.StringVar(&outputFormatStr, "of", "unknown",
 			"input format ('toml', 'yaml' or 'json')")
 	}
+	if !formatFromArgsZero || outputFormat == fJSON {
+		flag.BoolVar(&indentJSON, "indent-json", true, "indent JSON output")
+	}
 	flag.Parse()
 	if !formatFromArgsZero {
+		// Try to parse the format options we were given through the command
+		// line flags.
 		if inputFormat, ferr = stringToFormat(inputFormatStr); ferr != nil {
-			fmt.Printf("")
 			if inputFormat == fPlaceholder {
 				fmt.Println("please specify the input format")
 			} else {
-				fmt.Printf("please specify a valid input format (given '%s')\n",
+				fmt.Printf("please specify a valid input format ('%s' given)\n",
 					inputFormatStr)
 			}
 			os.Exit(1)
@@ -119,14 +129,14 @@ func main() {
 				fmt.Println("please specify the output format")
 			} else {
 				fmt.Printf(
-					"please specify a valid output format (given '%s')\n",
+					"please specify a valid output format ('%s' given)\n",
 					outputFormatStr)
 			}
 			os.Exit(1)
 		}
 	}
 
-	// Check for extraneous arguments.
+	// Check for extraneous command line arguments.
 	tail := flag.Args()
 	if len(tail) > 0 {
 		if len(tail) == 1 {
@@ -141,7 +151,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	// Read the input data from either stdin or a file.
+	// Read the input data from either standard input or a file.
 	var input []byte
 	var ierr error
 	if inputFile == "" || inputFile == "-" {
@@ -183,15 +193,18 @@ func main() {
 	var encerr error
 	switch outputFormat {
 	case fTOML:
-		{
-			buf := new(bytes.Buffer)
-			encerr = toml.NewEncoder(buf).Encode(data)
-			result = buf.Bytes()
-		}
+		buf := new(bytes.Buffer)
+		encerr = toml.NewEncoder(buf).Encode(data)
+		result = buf.Bytes()
 	case fYAML:
 		result, encerr = yaml.Marshal(&data)
 	case fJSON:
 		result, encerr = json.Marshal(&data)
+		if encerr == nil && indentJSON {
+			buf := new(bytes.Buffer)
+			encerr = json.Indent(buf, result, "", "  ")
+			result = buf.Bytes()
+		}
 	}
 	if encerr != nil {
 		fmt.Println(encerr)
@@ -199,7 +212,7 @@ func main() {
 
 	}
 
-	// Print the result to stdout or file.
+	// Print the result to either standard output or a file.
 	if outputFile == "" || outputFile == "-" {
 		fmt.Printf("%s\n", string(result))
 	} else {
