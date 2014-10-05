@@ -17,18 +17,19 @@ import (
 	"strings"
 )
 
-type Format int
+type format int
 
 const (
-	ftoml Format = iota
-	fyaml
-	fjson
-	funknown
+	fTOML format = iota
+	fYAML
+	fJSON
+	fPlaceholder
+	fUnknown
 )
 
-// Recursively convert map[interface{}]interface{} to map[string]interface{}.
-// This is needed for the TOML encoder to accept our data, which is returned as
-// an interface{} map by the YAML decoder.
+// convertToStringMap recursively converts map[interface{}]interface{} to
+// map[string]interface{}. This is needed for the TOML and JSON encoders to
+// accept the data returned by the YAML decoder.
 func convertToStringMap(m map[interface{}]interface{}) (
 	res map[string]interface{}, err error) {
 	res = make(map[string]interface{})
@@ -48,32 +49,37 @@ func convertToStringMap(m map[interface{}]interface{}) (
 	return
 }
 
-func stringToFormat(s string) (f Format, err error) {
+func stringToFormat(s string) (f format, err error) {
 	switch s {
 	case "toml":
-		return ftoml, nil
+		return fTOML, nil
 	case "yaml":
-		return fyaml, nil
+		return fYAML, nil
 	case "json":
-		return fjson, nil
+		return fJSON, nil
+	case "unknown":
+		return fPlaceholder, errors.New("placeholder format")
 	default:
-		return funknown, errors.New("cannot convert string to Format: '" +
+		return fUnknown, errors.New("cannot convert string to format: '" +
 			s + "'")
 	}
 }
 
-func filenameToFormat(s string) (inputf Format, outputf Format, err error) {
+// filenameToFormat tries to parse string s as "<formatName>2<formatName>".
+// Return both formats as type format if successful.
+func filenameToFormat(s string) (inputf format, outputf format, err error) {
 	filenameParts := strings.Split(filepath.Base(s), "2")
 	if len(filenameParts) != 2 {
-		return funknown, funknown, errors.New("cannot determine Format from filename")
+		return fUnknown, fUnknown, errors.New(
+			"cannot determine format from filename")
 	}
 	prefix, err := stringToFormat(filenameParts[0])
 	if err != nil {
-		return funknown, funknown, err
+		return fUnknown, fUnknown, err
 	}
 	suffix, err := stringToFormat(filenameParts[1])
 	if err != nil {
-		return funknown, funknown, err
+		return fUnknown, fUnknown, err
 	}
 	return prefix, suffix, nil
 }
@@ -81,9 +87,9 @@ func filenameToFormat(s string) (inputf Format, outputf Format, err error) {
 func main() {
 	var data interface{}
 	var inputFile, outputFile, inputFormatStr, outputFormatStr string
-	var inputFormat, outputFormat Format
+	var inputFormat, outputFormat format
 
-
+	// Parse command line arguments and choose the input and output formats.
 	flag.StringVar(&inputFile, "i", "-", "input file")
 	flag.StringVar(&outputFile, "o", "-", "output file")
 	var ferr error
@@ -91,21 +97,48 @@ func main() {
 	inputFormat, outputFormat, ferr = filenameToFormat(os.Args[0])
 	formatFromArgsZero := ferr == nil
 	if !formatFromArgsZero {
-		flag.StringVar(&inputFormatStr, "if", "toml",
+		flag.StringVar(&inputFormatStr, "if", "unknown",
 			"input format ('toml', 'yaml' or 'json')")
-		flag.StringVar(&outputFormatStr, "of", "yaml",
+		flag.StringVar(&outputFormatStr, "of", "unknown",
 			"input format ('toml', 'yaml' or 'json')")
 	}
 	flag.Parse()
 	if !formatFromArgsZero {
 		if inputFormat, ferr = stringToFormat(inputFormatStr); ferr != nil {
-			fmt.Println(ferr)
+			fmt.Printf("")
+			if inputFormat == fPlaceholder {
+				fmt.Println("please specify the input format")
+			} else {
+				fmt.Printf("please specify a valid input format (given '%s')\n",
+					inputFormatStr)
+			}
 			os.Exit(1)
 		}
 		if outputFormat, ferr = stringToFormat(outputFormatStr); ferr != nil {
-			fmt.Println(ferr)
+			if outputFormat == fPlaceholder {
+				fmt.Println("please specify the output format")
+			} else {
+				fmt.Printf(
+					"please specify a valid output format (given '%s')\n",
+					outputFormatStr)
+			}
 			os.Exit(1)
 		}
+	}
+
+	// Check for extraneous arguments.
+	tail := flag.Args()
+	if len(tail) > 0 {
+		if len(tail) == 1 {
+			fmt.Print("unknown command line argument: ")
+		} else {
+			fmt.Print("unknown command line arguments: ")
+		}
+		for _, a := range tail {
+			fmt.Printf("%s ", a)
+		}
+		fmt.Printf("\n")
+		os.Exit(1)
 	}
 
 	// Read the input data from either stdin or a file.
@@ -129,14 +162,15 @@ func main() {
 	// Decode the serialized data.
 	var decerr error
 	switch inputFormat {
-	case ftoml:
+	case fTOML:
 		_, decerr = toml.Decode(string(input), &data)
-	case fyaml:
+	case fYAML:
 		decerr = yaml.Unmarshal(input, &data)
 		if decerr == nil {
-			data, decerr = convertToStringMap(data.(map[interface{}]interface{}))
+			data, decerr = convertToStringMap(
+				data.(map[interface{}]interface{}))
 		}
-	case fjson:
+	case fJSON:
 		decerr = json.Unmarshal(input, &data)
 	}
 	if decerr != nil {
@@ -148,15 +182,15 @@ func main() {
 	var result []byte
 	var encerr error
 	switch outputFormat {
-	case ftoml:
+	case fTOML:
 		{
 			buf := new(bytes.Buffer)
 			encerr = toml.NewEncoder(buf).Encode(data)
 			result = buf.Bytes()
 		}
-	case fyaml:
+	case fYAML:
 		result, encerr = yaml.Marshal(&data)
-	case fjson:
+	case fJSON:
 		result, encerr = json.Marshal(&data)
 	}
 	if encerr != nil {
@@ -171,7 +205,7 @@ func main() {
 	} else {
 		err := ioutil.WriteFile(outputFile, result, 0644)
 		if err != nil {
-			fmt.Printf("can't write to file '%s'\n", outputFile)
+			fmt.Printf("cannot write to file %s\n", outputFile)
 			os.Exit(1)
 		}
 	}

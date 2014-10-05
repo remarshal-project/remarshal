@@ -1,12 +1,12 @@
-Convert between TOML, YAML and JSON. Provides the command line utilities
-`toml2yaml`, `toml2json`, `yaml2toml`, `yaml2json`. `json2toml` and
-`json2yaml` for conversion as well as `toml2toml`, `yaml2yaml` and `json2json`
-that can be used for reformatting and error detection.
+Convert between TOML, YAML and JSON. When installed provides the command line
+commands `toml2yaml`, `toml2json`, `yaml2toml`, `yaml2json`. `json2toml` and
+`json2yaml` for format conversion as well as `toml2toml`, `yaml2yaml` and
+`json2json` for reformatting and error detection.
 
 # Usage
 
 ```
-remarshal [-i inputfile] [-o outputfile] [-if inputformat] [-of outputformat]
+remarshal [-i inputfile] [-o outputfile] -if inputformat -of outputformat
 ```
 
 where `inputformat` and `outputformat` can each be one of `toml`, `yaml` and
@@ -28,9 +28,9 @@ json2json [-i inputfile] [-o outputfile]
 
 The all of the above commands exit with status 0 on success and 1 on failure.
 
-If `inputfile` is not given or is `-` or a blank string data to convert is read
-from standard input. If `outputfile` is not given or is `-` or a blank string
-the result of the conversion is written to standard output.
+If `inputfile` is not given or is `-` or a blank string the data to convert is
+read from standard input. If `outputfile` is not given or is `-` or a blank
+string the result of the conversion is written to standard output.
 
 # Building and installation
 
@@ -49,7 +49,7 @@ sudo sh install.sh # install into /usr/local/bin
 # Example
 
 ```
-$ ./remarshal -i example.toml
+$ ./remarshal -i example.toml -if toml -of yaml
 clients:
   data:
   - - gamma
