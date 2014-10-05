@@ -1,5 +1,5 @@
 // remarshal, a utility to convert between serialization formats.
-// Copyright (C) 2014, Danyil Bohdan
+// Copyright (C) 2014 Danyil Bohdan
 // License: MIT
 package main
 
@@ -142,8 +142,8 @@ func main() {
 
 	// See if our executable is named, e.g., "json2yaml".
 	inputFormat, outputFormat, err := filenameToFormat(os.Args[0])
-	formatFromArgsZero := err == nil
-	if !formatFromArgsZero {
+	formatFromProgramName := err == nil
+	if !formatFromProgramName {
 		// Only give the user an option to specify the input and the output
 		// format with flags when it is mandatory, i.e., when we are *not* being
 		// run as "json2yaml" or similar. This makes the usage messages for the
@@ -153,11 +153,11 @@ func main() {
 		flag.StringVar(&outputFormatStr, "of", "unknown",
 			"input format ('toml', 'yaml' or 'json')")
 	}
-	if !formatFromArgsZero || outputFormat == fJSON {
+	if !formatFromProgramName || outputFormat == fJSON {
 		flag.BoolVar(&indentJSON, "indent-json", true, "indent JSON output")
 	}
 	flag.Parse()
-	if !formatFromArgsZero {
+	if !formatFromProgramName {
 		// Try to parse the format options we were given through the command
 		// line flags.
 		if inputFormat, err = stringToFormat(inputFormatStr); err != nil {
@@ -181,19 +181,25 @@ func main() {
 		}
 	}
 
-	// Check for extraneous command line arguments.
+	// Check for extraneous command line arguments. If we are running as "x2y"
+	// set inputFile if given on the command line without the -i flag.
 	tail := flag.Args()
 	if len(tail) > 0 {
-		if len(tail) == 1 {
-			fmt.Print("unknown command line argument: ")
+		if formatFromProgramName && len(tail) == 1 &&
+			(inputFile == "" || inputFile == "-") {
+			inputFile = flag.Arg(0)
 		} else {
-			fmt.Print("unknown command line arguments: ")
+			if len(tail) == 1 {
+				fmt.Print("extraneous command line argument:")
+			} else {
+				fmt.Print("extraneous command line arguments:")
+			}
+			for _, a := range tail {
+				fmt.Printf(" '%s'", a)
+			}
+			fmt.Printf("\n")
+			os.Exit(1)
 		}
-		for _, a := range tail {
-			fmt.Printf("%s ", a)
-		}
-		fmt.Printf("\n")
-		os.Exit(1)
 	}
 
 	// Read the input data from either standard input or a file.
@@ -223,7 +229,7 @@ func main() {
 	if outputFile == "" || outputFile == "-" {
 		fmt.Printf("%s\n", string(output))
 	} else {
-		err := ioutil.WriteFile(outputFile, output, 0644)
+		err = ioutil.WriteFile(outputFile, output, 0644)
 		if err != nil {
 			fmt.Printf("cannot write to file %s\n", outputFile)
 			os.Exit(1)

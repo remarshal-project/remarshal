@@ -6,23 +6,24 @@ commands `toml2yaml`, `toml2json`, `yaml2toml`, `yaml2json`. `json2toml` and
 # Usage
 
 ```
-remarshal [-i inputfile] [-o outputfile] -if inputformat -of outputformat
-          [-indent-json=(true|false)]
+remarshal -if inputformat -of outputformat [-indent-json=(true|false)]
+          [-i inputfile] [-o outputfile]
+
 ```
 
 where `inputformat` and `outputformat` can each be one of `toml`, `yaml` and
-`json` or
+`json`.
 
 ```
-toml2yaml [-i inputfile] [-o outputfile]
-toml2json [-i inputfile] [-o outputfile] [-indent-json=(true|false)]
-yaml2toml [-i inputfile] [-o outputfile]
-yaml2json [-i inputfile] [-o outputfile] [-indent-json=(true|false)]
-json2toml [-i inputfile] [-o outputfile]
-json2yaml [-i inputfile] [-o outputfile]
-toml2toml [-i inputfile] [-o outputfile]
-yaml2yaml [-i inputfile] [-o outputfile]
-json2json [-i inputfile] [-o outputfile] [-indent-json=(true|false)]
+toml2yaml [-o outputfile] [[-i] inputfile]
+toml2json [-indent-json=(true|false)] [-o outputfile] [[-i] inputfile]
+yaml2toml [-o outputfile] [[-i] inputfile]
+yaml2json [-indent-json=(true|false)] [-o outputfile] [[-i] inputfile]
+json2toml [-o outputfile] [[-i] inputfile]
+json2yaml [-o outputfile] [[-i] inputfile]
+toml2toml [-o outputfile] [[-i] inputfile]
+yaml2yaml [-o outputfile] [[-i] inputfile]
+json2json [-indent-json=(true|false)] [-o outputfile] [[-i] inputfile]
 ```
 
 The all of the above commands exit with status 0 on success and 1 on failure.
@@ -30,6 +31,9 @@ The all of the above commands exit with status 0 on success and 1 on failure.
 If `inputfile` is not given or is `-` or a blank string the data to convert is
 read from standard input. If `outputfile` is not given or is `-` or a blank
 string the result of the conversion is written to standard output.
+
+For short commands (`x2y`) the flag `-i` before `inputfile` can be omitted if
+`inputfile` is the last argument.
 
 # Building and installation
 
