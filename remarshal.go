@@ -27,6 +27,11 @@ const (
 	fUnknown
 )
 
+const (
+	defaultFormatFlagValue = "unspecified"
+	defaultWrapFlagValue = "key"
+)
+
 // convertMapsToStringMaps recursively converts values of type
 // map[interface{}]interface{} contained in item to map[string]interface{}. This
 // is needed before the encoders for TOML and JSON can accept data returned by
@@ -58,7 +63,7 @@ func convertMapsToStringMaps(item interface{}) (res interface{}, err error) {
 
 // convertNumberToInt64 recursively walks the structures contained in item
 // converting values of the type json.Number to int64 or, failing that, float64.
-// This approach is meant to prevent encoders putting numbers stored as
+// This approach is meant to prevent encoders from putting numbers stored as
 // json.Number in quotes or encoding large intergers in scientific notation.
 func convertNumberToInt64(item interface{}) (res interface{}, err error) {
 	switch item.(type) {
@@ -104,7 +109,7 @@ func stringToFormat(s string) (f format, err error) {
 		return fYAML, nil
 	case "json":
 		return fJSON, nil
-	case "unknown":
+	case defaultFormatFlagValue:
 		return fPlaceholder, errors.New("placeholder format")
 	default:
 		return fUnknown, errors.New("cannot convert string to format: '" +
@@ -131,13 +136,10 @@ func filenameToFormat(s string) (inputf format, outputf format, err error) {
 	return prefix, suffix, nil
 }
 
-// remarshal converts input data of format inputFormat to outputFormat and
-// returns the result.
-func remarshal(input []byte, inputFormat format, outputFormat format,
-	indentJSON bool) (result []byte, err error) {
-	var data interface{}
-
-	// Decode the serialized data.
+// unmarshal decodes serialized data in the format inputFormat into a structure
+// of nested maps and slices.
+func unmarshal(input []byte, inputFormat format) (data interface{},
+	err error) {
 	switch inputFormat {
 	case fTOML:
 		_, err = toml.Decode(string(input), &data)
@@ -157,8 +159,13 @@ func remarshal(input []byte, inputFormat format, outputFormat format,
 	if err != nil {
 		return nil, err
 	}
+	return
+}
 
-	// Reencode the data in the output format.
+// marshal encodes data stored in nested maps and slices in the format
+// outputFormat.
+func marshal(data interface{}, outputFormat format,
+	indentJSON bool) (result []byte, err error) {
 	switch outputFormat {
 	case fTOML:
 		buf := new(bytes.Buffer)
@@ -177,21 +184,26 @@ func remarshal(input []byte, inputFormat format, outputFormat format,
 	if err != nil {
 		return nil, err
 	}
-
 	return
 }
 
-func main() {
-	var inputFile, outputFile, inputFormatStr, outputFormatStr string
-	var inputFormat, outputFormat format
-	indentJSON := true
+// processCommandLine parses the command line arguments (including os.Args[0],
+// the program name) and sets the input and the output file names as well as
+// other conversion options based on them.
+func processCommandLine() (inputFile string, outputFile string,
+	inputFormat format, outputFormat format,
+	indentJSON bool, wrap string, unwrap string) {
+	var inputFormatStr, outputFormatStr string
 
-	// Parse the command line arguments and choose the input and the output
-	// format.
 	flag.StringVar(&inputFile, "i", "-", "input file")
 	flag.StringVar(&outputFile, "o", "-", "output file")
+	flag.StringVar(&wrap, "wrap", defaultWrapFlagValue,
+		"wrap the data in a map type with the given key")
+	flag.StringVar(&unwrap, "unwrap", defaultWrapFlagValue,
+		"only output the data stored under the given key")
 
-	// See if our executable is named, e.g., "json2yaml".
+	// See if our program is named, e.g., "json2yaml" (normally due to having
+	// been started through a symlink).
 	inputFormat, outputFormat, err := filenameToFormat(os.Args[0])
 	formatFromProgramName := err == nil
 	if !formatFromProgramName {
@@ -199,9 +211,9 @@ func main() {
 		// format with flags when it is mandatory, i.e., when we are *not* being
 		// run as "json2yaml" or similar. This makes the usage messages for the
 		// "x2y" commands more accurate as well.
-		flag.StringVar(&inputFormatStr, "if", "unknown",
+		flag.StringVar(&inputFormatStr, "if", defaultFormatFlagValue,
 			"input format ('toml', 'yaml' or 'json')")
-		flag.StringVar(&outputFormatStr, "of", "unknown",
+		flag.StringVar(&outputFormatStr, "of", defaultFormatFlagValue,
 			"input format ('toml', 'yaml' or 'json')")
 	}
 	if !formatFromProgramName || outputFormat == fJSON {
@@ -252,9 +264,16 @@ func main() {
 			os.Exit(1)
 		}
 	}
+	return
+}
+
+func main() {
+	inputFile, outputFile, inputFormat, outputFormat,
+	indentJSON, wrap, unwrap := processCommandLine()
 
 	// Read the input data from either standard input or a file.
 	var input []byte
+	var err error
 	if inputFile == "" || inputFile == "-" {
 		input, err = ioutil.ReadAll(os.Stdin)
 	} else {
@@ -270,9 +289,31 @@ func main() {
 
 	}
 
-	output, err := remarshal(input, inputFormat, outputFormat, indentJSON)
+	// Convert the input data from inputFormat to outputFormat.
+	data, err := unmarshal(input, inputFormat)
 	if err != nil {
 		fmt.Println(err)
+		os.Exit(1)
+	}
+	// Unwrap and/or wrap the data in a map if we were told to.
+	if unwrap != defaultWrapFlagValue {
+		temp, ok := data.(map[string]interface{})
+		if !ok {
+			fmt.Printf("cannot unwrap data: top-level value not a map\n")
+			os.Exit(1)
+		}
+		data, ok = temp[unwrap]
+		if !ok {
+			fmt.Printf("cannot unwrap data: no key '%s'\n", unwrap)
+			os.Exit(1)
+		}
+	}
+	if wrap != defaultWrapFlagValue {
+		data = map[string]interface{}{wrap: data}
+	}
+	output, err := marshal(data, outputFormat, indentJSON)
+	if err != nil {
+		fmt.Printf("cannot convert data: %v\n", err)
 		os.Exit(1)
 	}
 
