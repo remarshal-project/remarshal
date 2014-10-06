@@ -1,3 +1,5 @@
+# remarshal
+
 Convert between TOML, YAML and JSON. When installed provides the command line
 commands `toml2yaml`, `toml2json`, `yaml2toml`, `yaml2json`. `json2toml` and
 `json2yaml` for format conversion as well as `toml2toml`, `yaml2yaml` and
@@ -11,25 +13,25 @@ remarshal -if inputformat -of outputformat [-indent-json=(true|false)]
 
 ```
 
-where `inputformat` and `outputformat` can each be one of `toml`, `yaml` and
+where `inputformat` and `outputformat` can each be `toml`, `yaml` or
 `json`.
 
 ```
-toml2yaml [-o outputfile] [[-i] inputfile]
-toml2json [-indent-json=(true|false)] [-o outputfile] [[-i] inputfile]
-yaml2toml [-o outputfile] [[-i] inputfile]
-yaml2json [-indent-json=(true|false)] [-o outputfile] [[-i] inputfile]
-json2toml [-o outputfile] [[-i] inputfile]
-json2yaml [-o outputfile] [[-i] inputfile]
 toml2toml [-o outputfile] [[-i] inputfile]
+yaml2toml [-o outputfile] [[-i] inputfile]
+json2toml [-o outputfile] [[-i] inputfile]
+toml2yaml [-o outputfile] [[-i] inputfile]
 yaml2yaml [-o outputfile] [[-i] inputfile]
+json2yaml [-o outputfile] [[-i] inputfile]
+toml2json [-indent-json=(true|false)] [-o outputfile] [[-i] inputfile]
+yaml2json [-indent-json=(true|false)] [-o outputfile] [[-i] inputfile]
 json2json [-indent-json=(true|false)] [-o outputfile] [[-i] inputfile]
 ```
 
-The all of the above commands exit with status 0 on success and 1 on failure.
+The all of the commands above exit with status 0 on success and 1 on failure.
 
-If `inputfile` is not given or is `-` or a blank string the data to convert is
-read from standard input. If `outputfile` is not given or is `-` or a blank
+If no `inputfile` is given or it is `-` or a blank string the data to convert is
+read from standard input. If no `outputfile` is given or it is `-` or a blank
 string the result of the conversion is written to standard output.
 
 For short commands (`x2y`) the flag `-i` before `inputfile` can be omitted if
@@ -50,7 +52,7 @@ sh tests.sh
 sudo sh install.sh # install into /usr/local/bin
 ```
 
-# Example
+# Examples
 
 ```
 $ ./remarshal -i example.toml -if toml -of yaml
@@ -78,16 +80,70 @@ owner:
   dob: 1979-05-27T07:32:00Z
   name: Tom Preston-Werner
   organization: GitHub
+products:
+- name: Hammer
+  sku: 738594937
+- color: gray
+  name: Nail
+  sku: 284758393
 servers:
   alpha:
     dc: eqdc10
     ip: 10.0.0.1
   beta:
+    country: 中国
     dc: eqdc10
     ip: 10.0.0.2
 title: TOML Example
+
+$ curl -s http://api.openweathermap.org/data/2.5/weather\?q\=Kiev,ua | \
+./remarshal -if json -of toml
+base = "cmc stations"
+cod = 200
+dt = 1412532000
+id = 703448
+name = "Kiev"
+
+[clouds]
+  all = 44
+
+[coord]
+  lat = 50.43
+  lon = 30.52
+
+[main]
+  humidity = 66
+  pressure = 1026
+  temp = 283.49
+  temp_max = 284.15
+  temp_min = 283.15
+
+[sys]
+  country = "UA"
+  id = 7358
+  message = 0.2437
+  sunrise = 1412481902
+  sunset = 1412522846
+  type = 1
+
+[[weather]]
+  description = "scattered clouds"
+  icon = "03n"
+  id = 802
+  main = "Clouds"
+
+[wind]
+  deg = 80
+  speed = 2
 ```
+
+# Known bugs
+
+* Converting data with floating point values to YAML may cause the loss of
+precision.
 
 # License
 
 MIT. See the file `LICENSE`.
+
+`example.toml` from <https://github.com/toml-lang/toml>.
