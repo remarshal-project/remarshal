@@ -29,7 +29,7 @@ const (
 
 const (
 	defaultFormatFlagValue = "unspecified"
-	defaultWrapFlagValue = "key"
+	defaultWrapFlagValue   = "key"
 )
 
 // convertMapsToStringMaps recursively converts values of type
@@ -61,16 +61,16 @@ func convertMapsToStringMaps(item interface{}) (res interface{}, err error) {
 	}
 }
 
-// convertNumberToInt64 recursively walks the structures contained in item
+// convertNumbersToInt64 recursively walks the structures contained in item
 // converting values of the type json.Number to int64 or, failing that, float64.
 // This approach is meant to prevent encoders from putting numbers stored as
 // json.Number in quotes or encoding large intergers in scientific notation.
-func convertNumberToInt64(item interface{}) (res interface{}, err error) {
+func convertNumbersToInt64(item interface{}) (res interface{}, err error) {
 	switch item.(type) {
 	case map[string]interface{}:
 		res := make(map[string]interface{})
 		for k, v := range item.(map[string]interface{}) {
-			res[k], err = convertNumberToInt64(v)
+			res[k], err = convertNumbersToInt64(v)
 			if err != nil {
 				return nil, err
 			}
@@ -79,7 +79,7 @@ func convertNumberToInt64(item interface{}) (res interface{}, err error) {
 	case []interface{}:
 		res := make([]interface{}, len(item.([]interface{})))
 		for i, v := range item.([]interface{}) {
-			res[i], err = convertNumberToInt64(v)
+			res[i], err = convertNumbersToInt64(v)
 			if err != nil {
 				return nil, err
 			}
@@ -153,7 +153,7 @@ func unmarshal(input []byte, inputFormat format) (data interface{},
 		decoder.UseNumber()
 		err = decoder.Decode(&data)
 		if err == nil {
-			data, err = convertNumberToInt64(data)
+			data, err = convertNumbersToInt64(data)
 		}
 	}
 	if err != nil {
@@ -269,7 +269,7 @@ func processCommandLine() (inputFile string, outputFile string,
 
 func main() {
 	inputFile, outputFile, inputFormat, outputFormat,
-	indentJSON, wrap, unwrap := processCommandLine()
+		indentJSON, wrap, unwrap := processCommandLine()
 
 	// Read the input data from either standard input or a file.
 	var input []byte
