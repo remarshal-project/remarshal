@@ -1,5 +1,7 @@
 # remarshal
 
+[![Build Status](https://travis-ci.org/dbohdan/remarshal.svg?branch=master)](https://travis-ci.org/dbohdan/remarshal)
+
 Convert between TOML, YAML and JSON. When installed provides the command line
 commands `toml2yaml`, `toml2json`, `yaml2toml`, `yaml2json`. `json2toml` and
 `json2yaml` for format conversion as well as `toml2toml`, `yaml2yaml` and
