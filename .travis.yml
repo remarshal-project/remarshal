@@ -1,13 +1,15 @@
 language: go
+sudo: false
 go:
-- 1.2
-- 1.3
-- release
+  - 1.2
+  - 1.3
+  - 1.4
+  - release
 install:
-- go get github.com/BurntSushi/toml
-- go get gopkg.in/yaml.v2
+  - go get github.com/BurntSushi/toml
+  - go get gopkg.in/yaml.v2
 before_script:
-- chmod +x tests.sh
+  - chmod +x tests.sh
 script:
-- go build remarshal.go
-- ./tests.sh
+  - go build remarshal.go
+  - ./tests.sh
