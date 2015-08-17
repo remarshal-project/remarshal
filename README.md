@@ -182,10 +182,11 @@ name = "Kiev"
   speed = 2
 ```
 
-# Known bugs
+# Known bugs and limitations
 
 * Converting data with floating point values to YAML may cause a loss of
 precision.
+* `remarshal` only supports TOML [v0.2.0](https://github.com/toml-lang/toml/tree/v0.2.0).
 
 # License
 
