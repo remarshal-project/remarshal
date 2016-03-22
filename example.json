@@ -1,0 +1,57 @@
+{
+  "clients": {
+    "data": [
+      [
+        "gamma",
+        "delta"
+      ],
+      [
+        1,
+        2
+      ]
+    ],
+    "hosts": [
+      "alpha",
+      "omega"
+    ]
+  },
+  "database": {
+    "connection_max": 5000,
+    "enabled": true,
+    "ports": [
+      8001,
+      8001,
+      8002
+    ],
+    "server": "192.168.1.1"
+  },
+  "owner": {
+    "bio": "GitHub Cofounder \u0026 CEO\nLikes tater tots and beer.",
+    "dob": "1979-05-27T07:32:00Z",
+    "name": "Tom Preston-Werner",
+    "organization": "GitHub"
+  },
+  "products": [
+    {
+      "name": "Hammer",
+      "sku": 738594937
+    },
+    {
+      "color": "gray",
+      "name": "Nail",
+      "sku": 284758393
+    }
+  ],
+  "servers": {
+    "alpha": {
+      "dc": "eqdc10",
+      "ip": "10.0.0.1"
+    },
+    "beta": {
+      "country": "中国",
+      "dc": "eqdc10",
+      "ip": "10.0.0.2"
+    }
+  },
+  "title": "TOML Example"
+}

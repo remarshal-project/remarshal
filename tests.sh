@@ -2,8 +2,8 @@
 set -e
 
 cp example.toml /tmp/toml
-./remarshal -i example.toml -if toml -of json -o /tmp/json
-./remarshal -i example.toml -if toml -of yaml -o /tmp/yaml
+cp example.yaml /tmp/yaml
+cp example.json /tmp/json
 
 for if in toml yaml json; do
 	for of in toml yaml json; do

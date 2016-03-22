@@ -192,4 +192,4 @@ precision.
 
 MIT. See the file `LICENSE`.
 
-`example.toml` from <https://github.com/toml-lang/toml>.
+`example.toml` from <https://github.com/toml-lang/toml>. `example.yaml` and `example.json` are derived from it.
