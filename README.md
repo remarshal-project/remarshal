@@ -11,14 +11,21 @@ commands `toml2yaml`, `toml2json`, `yaml2toml`, `yaml2json`. `json2toml` and
 
 ```
 usage: remarshal.py [-h] [-i INPUT] [-o OUTPUT] -if {json,toml,yaml} -of
-                    {json,toml,yaml} [--indent-json] [--wrap WRAP]
+                    {json,toml,yaml} [--indent-json]
+                    [--yaml-style {,',",|,>,\}] [--wrap WRAP]
                     [--unwrap UNWRAP]
                     [inputfile]
 ```
 
 ```
-usage: {json,toml,yaml}2{toml,yaml} [-h] [-i INPUT] [-o OUTPUT] [--wrap WRAP]
+usage: {json,toml,yaml}2toml [-h] [-i INPUT] [-o OUTPUT] [--wrap WRAP]
        [--unwrap UNWRAP] [inputfile]
+```
+
+```
+usage: {json,toml,yaml}2yaml [-h] [-i INPUT] [-o OUTPUT]
+       [--yaml-style {,',",|,>,\}] [-wrap WRAP] [--unwrap UNWRAP]
+       [inputfile]
 ```
 
 ```
@@ -38,17 +45,17 @@ if `inputfile` is the last argument.
 ## Wrappers
 
 The flags `--wrap` and `--unwrap` are there to solve the problem of converting
-JSON and YAML data to TOML if the topmost element of that data is not of a map
-type (i.e., not an object in JSON or an associative array in YAML) but a list, a
-string or a number. Such data can not be represented as TOML directly; it needs
-to wrapped in a map type first. Passing the flag `--wrap someKey` to `remarshal`
-or one of its short commands wraps the input data in a "wrapper" map with one
-key, "someKey", with the input data as its value. The flag `--unwrap someKey`
-does the opposite: if it is specified only the value stored under the key
-"someKey" in the top-level map element of the input data is converted to the
-target format and output; all other data is skipped. If the top-level element is
-not a map or does not have the key `someKey` then `--unwrap someKey` returns an
-error.
+JSON and YAML data to TOML if the topmost element of that data is not of a
+dictionary type (i.e., not an object in JSON or an associative array in YAML)
+but a list, a string or a number. Such data can not be represented as TOML
+directly; it needs to wrapped in a dictionary first. Passing the flag
+`--wrap someKey` to `remarshal` or one of its short commands wraps the input
+data in a "wrapper" dictionary with one key, "someKey", with the input data as
+its value. The flag `--unwrap someKey` does the opposite: if it is specified
+only the value stored under the key "someKey" in the top-level dictionary
+element of the input data is converted to the target format and output; all
+other data is skipped. If the top-level element is not a dictionary or does not
+have the key `someKey` then `--unwrap someKey` returns an error.
 
 The following shell transcript demonstrates the problem and how `--wrap` and
 `--unwrap` solve it:
