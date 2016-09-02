@@ -18,7 +18,7 @@ import pytoml
 import yaml
 
 FORMATS = ['json', 'toml', 'yaml']
-__version__ = '0.5.1'
+__version__ = '0.6.0'
 
 def filename2format(filename):
     try:
@@ -76,6 +76,8 @@ def parse_command_line(argv):
                         help='wrap the data in a map type with the given key')
     parser.add_argument('--unwrap', dest='unwrap', default=None,
                         help='only output the data stored under the given key')
+    parser.add_argument('-v', '--version', action='version',
+                        version=__version__)
 
     args = parser.parse_args(args=argv[1:])
 
