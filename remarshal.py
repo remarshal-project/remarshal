@@ -18,7 +18,7 @@ import pytoml
 import yaml
 
 FORMATS = ['json', 'toml', 'yaml']
-__version__ = '0.4.0'
+__version__ = '0.5.0'
 
 def filename2format(filename):
     try:
@@ -37,7 +37,7 @@ def json_serialize(obj):
     raise TypeError("{0} is not JSON serializable".format(repr(obj)))
 
 
-# Fix loss of time zone inforation.
+# Fix loss of time zone information.
 # http://stackoverflow.com/questions/13294186/can-pyyaml-parse-iso8601-dates
 def timestamp_constructor(loader, node):
     return dateutil.parser.parse(node.value)
@@ -68,6 +68,10 @@ def parse_command_line(argv):
         parser.add_argument('--indent-json', dest='indent_json',
                             action='store_const', const=2, default=None,
                             help='indent JSON output')
+    if not format_from_filename or to == 'yaml':
+        parser.add_argument('--yaml-style', dest='yaml_style', default=None,
+                            help='YAML formatting style',
+                            choices=['', '\'', '"', '|', '>', '\\'])
     parser.add_argument('--wrap', dest='wrap', default=None,
                         help='wrap the data in a map type with the given key')
     parser.add_argument('--unwrap', dest='unwrap', default=None,
@@ -84,6 +88,9 @@ def parse_command_line(argv):
         args.output_format = to
         if to != 'json':
             args.__dict__['indent_json'] = None
+            args.__dict__['yaml_style'] = None
+    args.__dict__['yaml_options'] = {'default_style': args.yaml_style}
+    del args.__dict__['yaml_style']
 
     return args
 
@@ -91,11 +98,11 @@ def parse_command_line(argv):
 def run(argv):
     args = parse_command_line(argv)
     remarshal(args.input, args.output, args.input_format, args.output_format,
-            args.indent_json, args.wrap, args.unwrap)
+            args.wrap, args.unwrap, args.indent_json, args.yaml_options)
 
 
-def remarshal(input, output, input_format, output_format, indent_json=None,
-        wrap=None, unwrap=None):
+def remarshal(input, output, input_format, output_format, wrap=None,
+        unwrap=None, indent_json=None, yaml_options={}):
     if input == '-':
         input_file = sys.stdin
     else:
@@ -146,7 +153,7 @@ def remarshal(input, output, input_format, output_format, indent_json=None,
     elif output_format == 'yaml':
         output_data = yaml.safe_dump(parsed, allow_unicode=True,
                                     default_flow_style=False,
-                                    encoding=None)
+                                    encoding=None, **yaml_options)
     else:
         raise ValueError('Unknown output format: {0}'.
                 format(output_format))

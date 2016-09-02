@@ -1,0 +1,5 @@
+"balanceHeld":
+  "description": |-
+    Balance of the account held for transferring to other users (in cents) and then a bunch more text after that
+  "type": |-
+    integer

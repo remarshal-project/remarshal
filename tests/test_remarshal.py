@@ -8,10 +8,14 @@ import tempfile
 import unittest
 
 
-TEST_DATA_PATH = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
+TEST_PATH = os.path.dirname(os.path.realpath(__file__))
 
 def test_file_path(filename):
-    return os.path.join(TEST_DATA_PATH, filename)
+    path_list = [TEST_PATH]
+    if re.match(r'example\.(json|toml|yaml)', filename):
+        path_list.append('..')
+    path_list.append(filename)
+    return os.path.join(*path_list)
 
 
 def readFile(filename):
@@ -41,11 +45,13 @@ class TestRemarshal(unittest.TestCase):
         return temp_filename
 
     def convertAndRead(self, input, input_format, output_format,
-                        indent_json=True, wrap=None, unwrap=None):
+                        wrap=None, unwrap=None, indent_json=True,
+                        yaml_options={}):
         output_filename = self.tempFilename()
         remarshal.remarshal(test_file_path(input), output_filename,
                             input_format, output_format,
-                            indent_json=indent_json, wrap=wrap, unwrap=unwrap)
+                            wrap=wrap, unwrap=unwrap, indent_json=indent_json,
+                            yaml_options=yaml_options)
         return readFile(output_filename)
 
     def setUp(self):
@@ -117,6 +123,42 @@ class TestRemarshal(unittest.TestCase):
                                     unwrap='data', indent_json=None)
         reference = readFile('array.json')
         self.assertEqual(output, reference)
+
+    def test_yaml_style_default(self):
+        output = self.convertAndRead('long-line.json', 'json', 'yaml')
+        reference = readFile('long-line-default.yaml')
+        self.assertEqual(output, reference)
+
+    def test_yaml_style_single_quote(self):
+        output = self.convertAndRead('long-line.json', 'json', 'yaml',
+                                    yaml_options={'default_style': "'"})
+        reference = readFile('long-line-single-quote.yaml')
+        self.assertEqual(output, reference)
+
+    def test_yaml_style_double_quote(self):
+        output = self.convertAndRead('long-line.json', 'json', 'yaml',
+                                    yaml_options={'default_style': '"'})
+        reference = readFile('long-line-double-quote.yaml')
+        self.assertEqual(output, reference)
+
+    def test_yaml_style_slash(self):
+        output = self.convertAndRead('long-line.json', 'json', 'yaml',
+                                    yaml_options={'default_style': '\\'})
+        reference = readFile('long-line-slash.yaml')
+        self.assertEqual(output, reference)
+
+    def test_yaml_style_pipe(self):
+        output = self.convertAndRead('long-line.json', 'json', 'yaml',
+                                    yaml_options={'default_style': '|'})
+        reference = readFile('long-line-pipe.yaml')
+        self.assertEqual(output, reference)
+
+    def test_yaml_style_gt(self):
+        output = self.convertAndRead('long-line.json', 'json', 'yaml',
+                                    yaml_options={'default_style': '>'})
+        reference = readFile('long-line-gt.yaml')
+        self.assertEqual(output, reference)
+
 
 if __name__ == '__main__':
     unittest.main()
