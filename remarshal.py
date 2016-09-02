@@ -18,7 +18,7 @@ import pytoml
 import yaml
 
 FORMATS = ['json', 'toml', 'yaml']
-__version__ = '0.5.0'
+__version__ = '0.5.1'
 
 def filename2format(filename):
     try:
@@ -104,7 +104,7 @@ def run(argv):
 def remarshal(input, output, input_format, output_format, wrap=None,
         unwrap=None, indent_json=None, yaml_options={}):
     if input == '-':
-        input_file = sys.stdin
+        input_file = getattr(sys.stdin, 'buffer', sys.stdin)
     else:
         input_file = open(input, 'rb')
 
