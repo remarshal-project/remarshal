@@ -18,18 +18,16 @@ import pytoml
 import yaml
 
 FORMATS = ['json', 'toml', 'yaml']
-__version__ = '0.6.0'
+__version__ = '0.6.1'
 
 def filename2format(filename):
-    try:
-        from_, to = filename.split('2', 1)
-    except ValueError:
-        return False, None, None
-    if from_ in FORMATS and to in FORMATS:
+    possible_format = '(' + '|'.join(FORMATS) + ')'
+    match = re.search('^' + possible_format + '2' + possible_format, filename)
+    if match:
+        from_, to = match.groups()
         return True, from_, to
     else:
         return False, None, None
-
 
 def json_serialize(obj):
     if isinstance(obj, datetime.datetime):
