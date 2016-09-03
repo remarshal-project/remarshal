@@ -90,6 +90,7 @@ def parse_command_line(argv):
         args.output_format = to
         if to != 'json':
             args.__dict__['indent_json'] = None
+        if to != 'yaml':
             args.__dict__['yaml_style'] = None
     args.__dict__['yaml_options'] = {'default_style': args.yaml_style}
     del args.__dict__['yaml_style']
