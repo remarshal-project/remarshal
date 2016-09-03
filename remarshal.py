@@ -18,7 +18,7 @@ import pytoml
 import yaml
 
 
-__version__ = '0.6.1'
+__version__ = '0.7.0'
 
 FORMATS = ['json', 'toml', 'yaml']
 if hasattr(json, 'JSONDecodeError'):
