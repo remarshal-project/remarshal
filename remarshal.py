@@ -169,6 +169,8 @@ def remarshal(input, output, input_format, output_format, wrap=None,
 def main():
     try:
         run(sys.argv)
+    except KeyboardInterrupt as e:
+        pass
     except ValueError as e:
         print('Error: {0}'.format(e), file=sys.stderr)
         sys.exit(1)
