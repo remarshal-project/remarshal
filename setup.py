@@ -22,6 +22,17 @@ setup(name='remarshal',
         'PyYAML >= 3.12',
     ],
     entry_points = {
-        'console_scripts': ['remarshal = remarshal:main'],
+        'console_scripts': [
+            'remarshal = remarshal:main',
+            'json2json = remarshal:main',
+            'json2toml = remarshal:main',
+            'json2yaml = remarshal:main',
+            'toml2json = remarshal:main',
+            'toml2toml = remarshal:main',
+            'toml2yaml = remarshal:main',
+            'yaml2json = remarshal:main',
+            'yaml2toml = remarshal:main',
+            'yaml2yaml = remarshal:main',
+        ]
     },
 )
