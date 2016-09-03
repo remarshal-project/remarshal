@@ -141,12 +141,6 @@ class TestRemarshal(unittest.TestCase):
         reference = readFile('long-line-double-quote.yaml')
         self.assertEqual(output, reference)
 
-    def test_yaml_style_slash(self):
-        output = self.convertAndRead('long-line.json', 'json', 'yaml',
-                                    yaml_options={'default_style': '\\'})
-        reference = readFile('long-line-slash.yaml')
-        self.assertEqual(output, reference)
-
     def test_yaml_style_pipe(self):
         output = self.convertAndRead('long-line.json', 'json', 'yaml',
                                     yaml_options={'default_style': '|'})

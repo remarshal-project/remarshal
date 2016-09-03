@@ -12,7 +12,7 @@ commands `toml2yaml`, `toml2json`, `yaml2toml`, `yaml2json`. `json2toml` and
 ```
 usage: remarshal.py [-h] [-i INPUT] [-o OUTPUT] -if {json,toml,yaml} -of
                     {json,toml,yaml} [--indent-json]
-                    [--yaml-style {,',",|,>,\}] [--wrap WRAP]
+                    [--yaml-style {,',",|,>}] [--wrap WRAP]
                     [--unwrap UNWRAP]
                     [inputfile]
 ```
@@ -24,7 +24,7 @@ usage: {json,toml,yaml}2toml [-h] [-i INPUT] [-o OUTPUT] [--wrap WRAP]
 
 ```
 usage: {json,toml,yaml}2yaml [-h] [-i INPUT] [-o OUTPUT]
-       [--yaml-style {,',",|,>,\}] [-wrap WRAP] [--unwrap UNWRAP]
+       [--yaml-style {,',",|,>}] [-wrap WRAP] [--unwrap UNWRAP]
        [inputfile]
 ```
 

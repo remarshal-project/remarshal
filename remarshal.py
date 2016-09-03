@@ -71,7 +71,7 @@ def parse_command_line(argv):
     if not format_from_filename or to == 'yaml':
         parser.add_argument('--yaml-style', dest='yaml_style', default=None,
                             help='YAML formatting style',
-                            choices=['', '\'', '"', '|', '>', '\\'])
+                            choices=['', '\'', '"', '|', '>'])
     parser.add_argument('--wrap', dest='wrap', default=None,
                         help='wrap the data in a map type with the given key')
     parser.add_argument('--unwrap', dest='unwrap', default=None,
