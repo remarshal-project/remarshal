@@ -17,8 +17,15 @@ import sys
 import pytoml
 import yaml
 
-FORMATS = ['json', 'toml', 'yaml']
+
 __version__ = '0.6.1'
+
+FORMATS = ['json', 'toml', 'yaml']
+if hasattr(json, 'JSONDecodeError'):
+    JSONDecodeError = json.JSONDecodeError
+else:
+    JSONDecodeError = ValueError
+
 
 def filename2format(filename):
     possible_format = '(' + '|'.join(FORMATS) + ')'
@@ -28,6 +35,7 @@ def filename2format(filename):
         return True, from_, to
     else:
         return False, None, None
+
 
 def json_serialize(obj):
     if isinstance(obj, datetime.datetime):
@@ -119,7 +127,7 @@ def remarshal(input, output, input_format, output_format, wrap=None,
     if input_format == 'json':
         try:
             parsed = json.loads(input_data.decode('utf-8'))
-        except json.decoder.JSONDecodeError as e:
+        except JSONDecodeError as e:
             raise ValueError('Cannot parse JSON ({0})'.format(e))
     elif input_format == 'toml':
         try:
