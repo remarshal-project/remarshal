@@ -175,13 +175,9 @@ deg = 80
 speed = 2
 ```
 
-# Known bugs and limitations
-
-* Converting data with floating point values to YAML may cause a loss of
-precision.
-
 # License
 
 MIT. See the file `LICENSE`.
 
-`example.toml` from <https://github.com/toml-lang/toml>. `example.yaml` and `example.json` are derived from it.
+`example.toml` from <https://github.com/toml-lang/toml>. `example.yaml` and
+`example.json` are derived from it.
