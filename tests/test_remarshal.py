@@ -124,6 +124,18 @@ class TestRemarshal(unittest.TestCase):
         reference = readFile('array.json')
         self.assertEqual(output, reference)
 
+    def test_malformed_json(self):
+        with self.assertRaises(ValueError) as context:
+            self.convertAndRead('garbage', 'json', 'yaml')
+
+    def test_malformed_toml(self):
+        with self.assertRaises(ValueError) as context:
+            self.convertAndRead('garbage', 'toml', 'yaml')
+
+    def test_malformed_yaml(self):
+        with self.assertRaises(ValueError) as context:
+            self.convertAndRead('garbage', 'yaml', 'json')
+
     def test_yaml_style_default(self):
         output = self.convertAndRead('long-line.json', 'json', 'yaml')
         reference = readFile('long-line-default.yaml')

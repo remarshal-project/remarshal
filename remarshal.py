@@ -117,11 +117,20 @@ def remarshal(input, output, input_format, output_format, wrap=None,
     input_data = input_file.read()
 
     if input_format == 'json':
-        parsed = json.loads(input_data.decode('utf-8'))
+        try:
+            parsed = json.loads(input_data.decode('utf-8'))
+        except json.decoder.JSONDecodeError as e:
+            raise ValueError('Cannot parse JSON ({0})'.format(e))
     elif input_format == 'toml':
-        parsed = pytoml.loads(input_data)
+        try:
+            parsed = pytoml.loads(input_data)
+        except pytoml.core.TomlError as e:
+            raise ValueError('Cannot parse TOML ({0})'.format(e))
     elif input_format == 'yaml':
-        parsed = yaml.load(input_data)
+        try:
+            parsed = yaml.load(input_data)
+        except yaml.scanner.ScannerError as e:
+            raise ValueError('Cannot parse YAML ({0})'.format(e))
     else:
         raise ValueError('Unknown input format: {0}'.format(input_format))
 
