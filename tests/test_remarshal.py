@@ -118,6 +118,10 @@ class TestRemarshal(unittest.TestCase):
         reference = readFile('example.toml')
         self.assertEqual(tomlSignature(output), tomlSignature(reference))
 
+    def test_missing_wrap(self):
+        with self.assertRaises(ValueError) as context:
+            output = self.convertAndRead('array.json', 'json', 'toml')
+
     def test_wrap(self):
         output = self.convertAndRead('array.json', 'json', 'toml', wrap='data')
         reference = readFile('array.toml')
