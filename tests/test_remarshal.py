@@ -33,9 +33,9 @@ def tomlSignature(data):
     def f(lst):
         def q(line):
             return line.startswith('#') or line == u'' or line == u']' or \
-                    re.match(r'^".*",?$', line) or re.match(r'^hosts', line)
+                re.match(r'^".*",?$', line) or re.match(r'^hosts', line)
         return sorted([strip_more(line) for line in lst if
-                      not q(strip_more(line))])
+                       not q(strip_more(line))])
 
     return f(data.split("\n"))
 
@@ -179,13 +179,15 @@ class TestRemarshal(unittest.TestCase):
         def test_format_string(s):
             for from_str in 'json', 'toml', 'yaml':
                 for to_str in 'json', 'toml', 'yaml':
-                    found, from_parsed, to_parsed = remarshal.\
-                            filename2format(s.format(from_str, to_str))
+                    found, from_parsed, to_parsed = remarshal.filename2format(
+                        s.format(from_str, to_str)
+                    )
                     self.assertEqual((found, from_parsed, to_parsed),
                                      (found, from_str, to_str))
         test_format_string('{0}2{1}')
         test_format_string('{0}2{1}.exe')
         test_format_string('{0}2{1}-script.py')
+
 
 if __name__ == '__main__':
     unittest.main()
