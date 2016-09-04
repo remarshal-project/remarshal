@@ -139,7 +139,7 @@ def remarshal(input, output, input_format, output_format, wrap=None,
         elif input_format == 'yaml':
             try:
                 parsed = yaml.load(input_data)
-            except yaml.scanner.ScannerError as e:
+            except (yaml.scanner.ScannerError, yaml.parser.ParserError) as e:
                 raise ValueError('Cannot parse as YAML ({0})'.format(e))
         else:
             raise ValueError('Unknown input format: {0}'.format(input_format))
