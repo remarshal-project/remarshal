@@ -113,73 +113,77 @@ def run(argv):
 
 def remarshal(input, output, input_format, output_format, wrap=None,
               unwrap=None, indent_json=None, yaml_options={}):
-    if input == '-':
-        input_file = getattr(sys.stdin, 'buffer', sys.stdin)
-    else:
-        input_file = open(input, 'rb')
-
-    if output == '-':
-        output_file = getattr(sys.stdout, 'buffer', sys.stdout)
-    else:
-        output_file = open(output, 'wb')
-
-    input_data = input_file.read()
-
-    if input_format == 'json':
-        try:
-            parsed = json.loads(input_data.decode('utf-8'))
-        except JSONDecodeError as e:
-            raise ValueError('Cannot parse JSON ({0})'.format(e))
-    elif input_format == 'toml':
-        try:
-            parsed = pytoml.loads(input_data)
-        except pytoml.core.TomlError as e:
-            raise ValueError('Cannot parse TOML ({0})'.format(e))
-    elif input_format == 'yaml':
-        try:
-            parsed = yaml.load(input_data)
-        except yaml.scanner.ScannerError as e:
-            raise ValueError('Cannot parse YAML ({0})'.format(e))
-    else:
-        raise ValueError('Unknown input format: {0}'.format(input_format))
-
-    if unwrap is not None:
-        parsed = parsed[unwrap]
-    if wrap is not None:
-        temp = {}
-        temp[wrap] = parsed
-        parsed = temp
-
-    if output_format == 'json':
-        if indent_json is True:
-            indent_json = 2
-        if indent_json:
-            separators = (',', ': ')
+    try:
+        if input == '-':
+            input_file = getattr(sys.stdin, 'buffer', sys.stdin)
         else:
-            separators = (',', ':')
-        output_data = json.dumps(parsed, default=json_serialize,
-                                 ensure_ascii=False, indent=indent_json,
-                                 separators=separators, sort_keys=True) + "\n"
-    elif output_format == 'toml':
-        try:
-            output_data = pytoml.dumps(parsed, sort_keys=True)
-        except AttributeError as e:
-            if str(e) == "'list' object has no attribute 'keys'":
-                raise ValueError('cannot convert non-dictionary data to TOML;'
-                                 ' use "wrap" to wrap it in a dictionary')
-            else:
-                raise e
-    elif output_format == 'yaml':
-        output_data = yaml.safe_dump(parsed, allow_unicode=True,
-                                     default_flow_style=False,
-                                     encoding=None, **yaml_options)
-    else:
-        raise ValueError('Unknown output format: {0}'.
-                         format(output_format))
-    output_file.write(output_data.encode('utf-8'))
+            input_file = open(input, 'rb')
 
-    input_file.close()
-    output_file.close()
+        if output == '-':
+            output_file = getattr(sys.stdout, 'buffer', sys.stdout)
+        else:
+            output_file = open(output, 'wb')
+
+        input_data = input_file.read()
+
+        if input_format == 'json':
+            try:
+                parsed = json.loads(input_data.decode('utf-8'))
+            except JSONDecodeError as e:
+                raise ValueError('Cannot parse JSON ({0})'.format(e))
+        elif input_format == 'toml':
+            try:
+                parsed = pytoml.loads(input_data)
+            except pytoml.core.TomlError as e:
+                raise ValueError('Cannot parse TOML ({0})'.format(e))
+        elif input_format == 'yaml':
+            try:
+                parsed = yaml.load(input_data)
+            except yaml.scanner.ScannerError as e:
+                raise ValueError('Cannot parse YAML ({0})'.format(e))
+        else:
+            raise ValueError('Unknown input format: {0}'.format(input_format))
+
+        if unwrap is not None:
+            parsed = parsed[unwrap]
+        if wrap is not None:
+            temp = {}
+            temp[wrap] = parsed
+            parsed = temp
+
+        if output_format == 'json':
+            if indent_json is True:
+                indent_json = 2
+            if indent_json:
+                separators = (',', ': ')
+            else:
+                separators = (',', ':')
+            output_data = json.dumps(parsed, default=json_serialize,
+                                     ensure_ascii=False, indent=indent_json,
+                                     separators=separators,
+                                     sort_keys=True) + "\n"
+        elif output_format == 'toml':
+            try:
+                output_data = pytoml.dumps(parsed, sort_keys=True)
+            except AttributeError as e:
+                if str(e) == "'list' object has no attribute 'keys'":
+                    raise ValueError('cannot convert non-dictionary data to '
+                                     'TOML; use "wrap" to wrap it in a '
+                                     'dictionary')
+                else:
+                    raise e
+        elif output_format == 'yaml':
+            output_data = yaml.safe_dump(parsed, allow_unicode=True,
+                                         default_flow_style=False,
+                                         encoding=None, **yaml_options)
+        else:
+            raise ValueError('Unknown output format: {0}'.
+                             format(output_format))
+        output_file.write(output_data.encode('utf-8'))
+        output_file.close()
+    finally:
+        input_file.close()
+        output_file.close()
 
 
 def main():
