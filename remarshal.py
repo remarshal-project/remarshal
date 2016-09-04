@@ -54,19 +54,20 @@ def parse_command_line(argv):
     me = os.path.basename(argv[0])
     format_from_filename, from_, to = filename2format(me)
 
-    parser = argparse.ArgumentParser(description='Convert between JSON, TOML ' +
-                                    'and YAML.')
+    parser = argparse.ArgumentParser(description='Convert between JSON, TOML '
+                                     'and YAML.')
 
     group = parser.add_mutually_exclusive_group()
     group.add_argument('-i', '--input', dest='input_flag', metavar='INPUT',
-                        default=None, help='input file')
+                       default=None, help='input file')
     group.add_argument('inputfile', nargs='?', default='-', help='input file')
 
     parser.add_argument('-o', '--output', dest='output', default='-',
                         help='output file')
     if not format_from_filename:
         parser.add_argument('-if', '--input-format', dest='input_format',
-                            required=True, help="input format", choices=FORMATS)
+                            required=True, help="input format",
+                            choices=FORMATS)
         parser.add_argument('-of', '--output-format', dest='output_format',
                             required=True, help="output format",
                             choices=FORMATS)
@@ -107,11 +108,11 @@ def parse_command_line(argv):
 def run(argv):
     args = parse_command_line(argv)
     remarshal(args.input, args.output, args.input_format, args.output_format,
-            args.wrap, args.unwrap, args.indent_json, args.yaml_options)
+              args.wrap, args.unwrap, args.indent_json, args.yaml_options)
 
 
 def remarshal(input, output, input_format, output_format, wrap=None,
-        unwrap=None, indent_json=None, yaml_options={}):
+              unwrap=None, indent_json=None, yaml_options={}):
     if input == '-':
         input_file = getattr(sys.stdin, 'buffer', sys.stdin)
     else:
@@ -150,31 +151,31 @@ def remarshal(input, output, input_format, output_format, wrap=None,
         parsed = temp
 
     if output_format == 'json':
-        if indent_json == True:
+        if indent_json is True:
             indent_json = 2
         if indent_json:
-            separators=(',', ': ')
+            separators = (',', ': ')
         else:
-            separators=(',', ':')
+            separators = (',', ':')
         output_data = json.dumps(parsed, default=json_serialize,
-                                ensure_ascii=False, indent=indent_json,
-                                separators=separators, sort_keys=True) + "\n"
+                                 ensure_ascii=False, indent=indent_json,
+                                 separators=separators, sort_keys=True) + "\n"
     elif output_format == 'toml':
         try:
             output_data = pytoml.dumps(parsed, sort_keys=True)
         except AttributeError as e:
             if str(e) == "'list' object has no attribute 'keys'":
-                raise ValueError('cannot convert non-dictionary data to TOML;' +
-                        ' use "wrap" to wrap it in a dictionary')
+                raise ValueError('cannot convert non-dictionary data to TOML;'
+                                 ' use "wrap" to wrap it in a dictionary')
             else:
                 raise e
     elif output_format == 'yaml':
         output_data = yaml.safe_dump(parsed, allow_unicode=True,
-                                    default_flow_style=False,
-                                    encoding=None, **yaml_options)
+                                     default_flow_style=False,
+                                     encoding=None, **yaml_options)
     else:
         raise ValueError('Unknown output format: {0}'.
-                format(output_format))
+                         format(output_format))
     output_file.write(output_data.encode('utf-8'))
 
     input_file.close()

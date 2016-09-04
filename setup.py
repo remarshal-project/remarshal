@@ -5,13 +5,14 @@ import re
 from setuptools import find_packages, setup
 
 remarshal_file = os.path.join(os.path.dirname(os.path.realpath(__file__)),
-        'remarshal.py')
+                              'remarshal.py')
 with open(remarshal_file, 'rb') as f:
     content = f.read().decode('utf-8')
     version = re.search(r"__version__ = '(\d+\.\d+\.\d+)",
                         content, re.MULTILINE).group(1)
 
-setup(name='remarshal',
+setup(
+    name='remarshal',
     version=version,
     description='Convert between TOML, YAML and JSON',
     author='dbohdan',
@@ -24,7 +25,7 @@ setup(name='remarshal',
         'pytoml >= 0.1.11',
         'PyYAML >= 3.12',
     ],
-    entry_points = {
+    entry_points={
         'console_scripts': [
             'remarshal = remarshal:main',
             'json2json = remarshal:main',
