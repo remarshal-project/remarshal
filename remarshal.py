@@ -122,7 +122,13 @@ def remarshal(input, output, input_format, output_format, wrap=None,
         if output == '-':
             output_file = getattr(sys.stdout, 'buffer', sys.stdout)
         else:
-            output_file = open(output, 'wb')
+            try:
+                output_file = open(output, 'wb')
+            except FileNotFoundError as e:
+                # There should never be another reason for a FileNotFoundError
+                # here than a missing parent directory.
+                raise NotADirectoryError("Not a directory: '{0}'"
+                                         .format(os.path.dirname(output)))
 
         input_data = input_file.read()
 
@@ -182,8 +188,10 @@ def remarshal(input, output, input_format, output_format, wrap=None,
         output_file.write(output_data.encode('utf-8'))
         output_file.close()
     finally:
-        input_file.close()
-        output_file.close()
+        if 'input_file' in locals():
+            input_file.close()
+        if 'output_file' in locals():
+            output_file.close()
 
 
 def main():
@@ -191,7 +199,8 @@ def main():
         run(sys.argv)
     except KeyboardInterrupt as e:
         pass
-    except ValueError as e:
+    except (FileNotFoundError, NotADirectoryError, PermissionError,
+            ValueError) as e:
         print('Error: {0}'.format(e), file=sys.stderr)
         sys.exit(1)
 
