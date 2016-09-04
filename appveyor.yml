@@ -32,6 +32,8 @@ environment:
       PYTHON_VERSION: "3.5.x"
       PYTHON_ARCH: "64"
 version: "0.7.0.{build}"
+init:
+  - cmd: python --version
 build_script:
   - cmd: python setup.py install
 test_script:
