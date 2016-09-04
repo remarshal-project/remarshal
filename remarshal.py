@@ -40,7 +40,7 @@ def filename2format(filename):
 def json_serialize(obj):
     if isinstance(obj, datetime.datetime):
         return obj.isoformat()
-    raise TypeError("{0} is not JSON serializable".format(repr(obj)))
+    raise TypeError("{0} is not JSON-serializable".format(repr(obj)))
 
 
 # Fix loss of time zone information.
@@ -54,8 +54,8 @@ def parse_command_line(argv):
     me = os.path.basename(argv[0])
     format_from_filename, from_, to = filename2format(me)
 
-    parser = argparse.ArgumentParser(description='Convert between JSON, TOML '
-                                     'and YAML.')
+    parser = argparse.ArgumentParser(description='Convert between TOML, YAML '
+                                     'and JSON.')
 
     group = parser.add_mutually_exclusive_group()
     group.add_argument('-i', '--input', dest='input_flag', metavar='INPUT',
@@ -130,17 +130,17 @@ def remarshal(input, output, input_format, output_format, wrap=None,
             try:
                 parsed = json.loads(input_data.decode('utf-8'))
             except JSONDecodeError as e:
-                raise ValueError('Cannot parse JSON ({0})'.format(e))
+                raise ValueError('Cannot parse as JSON ({0})'.format(e))
         elif input_format == 'toml':
             try:
                 parsed = pytoml.loads(input_data)
             except pytoml.core.TomlError as e:
-                raise ValueError('Cannot parse TOML ({0})'.format(e))
+                raise ValueError('Cannot parse as TOML ({0})'.format(e))
         elif input_format == 'yaml':
             try:
                 parsed = yaml.load(input_data)
             except yaml.scanner.ScannerError as e:
-                raise ValueError('Cannot parse YAML ({0})'.format(e))
+                raise ValueError('Cannot parse as YAML ({0})'.format(e))
         else:
             raise ValueError('Unknown input format: {0}'.format(input_format))
 
@@ -167,7 +167,7 @@ def remarshal(input, output, input_format, output_format, wrap=None,
                 output_data = pytoml.dumps(parsed, sort_keys=True)
             except AttributeError as e:
                 if str(e) == "'list' object has no attribute 'keys'":
-                    raise ValueError('cannot convert non-dictionary data to '
+                    raise ValueError('Cannot convert non-dictionary data to '
                                      'TOML; use "wrap" to wrap it in a '
                                      'dictionary')
                 else:
