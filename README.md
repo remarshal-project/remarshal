@@ -1,6 +1,7 @@
 # remarshal
 
-[![Build Status](https://travis-ci.org/dbohdan/remarshal.svg?branch=master)](https://travis-ci.org/dbohdan/remarshal)
+[![Travis CI Build Status](https://travis-ci.org/dbohdan/remarshal.svg?branch=master)](https://travis-ci.org/dbohdan/remarshal)
+[![AppVeyor CI Build Status](https://ci.appveyor.com/api/projects/status/github/dbohdan/remarshal?branch=master&svg=true)](https://ci.appveyor.com/project/dbohdan/remarshal)
 
 Convert between TOML, YAML and JSON. When installed provides the command line
 commands `toml2yaml`, `toml2json`, `yaml2toml`, `yaml2json`. `json2toml` and
