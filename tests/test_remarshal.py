@@ -43,7 +43,8 @@ def tomlSignature(data):
 class TestRemarshal(unittest.TestCase):
 
     def tempFilename(self):
-        temp_filename = tempfile.mkstemp()[1]
+        fd, temp_filename = tempfile.mkstemp()
+        os.close(fd)
         self.temp_files.append(temp_filename)
         return temp_filename
 
