@@ -8,6 +8,14 @@ commands `toml2yaml`, `toml2json`, `yaml2toml`, `yaml2json`. `json2toml` and
 `json2yaml` for format conversion as well as `toml2toml`, `yaml2yaml` and
 `json2json` for reformatting and error detection.
 
+# Installation
+
+You will need Python 2.7 or Python 3.3 or later.
+
+```sh
+sudo python setup.py install
+```
+
 # Usage
 
 ```
@@ -81,14 +89,6 @@ $ ./remarshal.py -if toml -of json < test.toml
 
 $ ./remarshal.py -if toml -of json --unwrap main < test.toml
 [{"a":"b"},{"c":[1,2,3]}]
-```
-
-# Installation
-
-You will need Python 2.7 or Python 3.3 or later.
-
-```sh
-sudo python setup.py install
 ```
 
 # Examples
