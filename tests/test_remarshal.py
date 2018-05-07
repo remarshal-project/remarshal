@@ -216,7 +216,7 @@ class TestRemarshal(unittest.TestCase):
                     'this_path/almost-certainly/doesnt-exist-5836',
                     test_file_path('example.json')]
             remarshal.run(args)
-        self.assertEqual(cm.exception.errno, 2)
+        self.assertEqual(cm.exception.errno, errno.ENOENT)
 
 if __name__ == '__main__':
     unittest.main()
