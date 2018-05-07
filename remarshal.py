@@ -18,7 +18,7 @@ import pytoml
 import yaml
 
 
-__version__ = '0.7.0'
+__version__ = '0.8.0'
 
 FORMATS = ['json', 'toml', 'yaml']
 if hasattr(json, 'JSONDecodeError'):
@@ -122,13 +122,7 @@ def remarshal(input, output, input_format, output_format, wrap=None,
         if output == '-':
             output_file = getattr(sys.stdout, 'buffer', sys.stdout)
         else:
-            try:
-                output_file = open(output, 'wb')
-            except FileNotFoundError as e:
-                # There should never be another reason for a FileNotFoundError
-                # here than a missing parent directory.
-                raise NotADirectoryError("Not a directory: '{0}'"
-                                         .format(os.path.dirname(output)))
+            output_file = open(output, 'wb')
 
         input_data = input_file.read()
 
@@ -199,8 +193,7 @@ def main():
         run(sys.argv)
     except KeyboardInterrupt as e:
         pass
-    except (FileNotFoundError, NotADirectoryError, PermissionError,
-            ValueError) as e:
+    except (IOError, ValueError) as e:
         print('Error: {0}'.format(e), file=sys.stderr)
         sys.exit(1)
 

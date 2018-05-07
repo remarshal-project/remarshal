@@ -4,9 +4,11 @@
 # License: MIT
 
 from .context import remarshal
+import errno
 import os
 import os.path
 import re
+import sys
 import tempfile
 import unittest
 
@@ -191,6 +193,30 @@ class TestRemarshal(unittest.TestCase):
         test_format_string('{0}2{1}.exe')
         test_format_string('{0}2{1}-script.py')
 
+    def test_run_no_args(self):
+        with self.assertRaises(SystemExit) as cm:
+            remarshal.run([sys.argv[0]])
+        self.assertEqual(cm.exception.code, 2)
+
+    def test_run_help(self):
+        with self.assertRaises(SystemExit) as cm:
+            remarshal.run([sys.argv[0], '--help'])
+        self.assertEqual(cm.exception.code, 0)
+
+    def test_run_no_input_file(self):
+        with self.assertRaises(IOError) as cm:
+            args = [sys.argv[0], '-if', 'json', '-of', 'json',
+                    'fake-input-file-that-almost-certainly-doesnt-exist-2382']
+            remarshal.run(args)
+        self.assertEqual(cm.exception.errno, errno.ENOENT)
+
+    def test_run_no_output_dir(self):
+        with self.assertRaises(IOError) as cm:
+            args = [sys.argv[0], '-if', 'json', '-of', 'json', '-o',
+                    'this_path/almost-certainly/doesnt-exist-5836',
+                    test_file_path('example.json')]
+            remarshal.run(args)
+        self.assertEqual(cm.exception.errno, 2)
 
 if __name__ == '__main__':
     unittest.main()
