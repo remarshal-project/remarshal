@@ -12,7 +12,17 @@ commands `toml2yaml`, `toml2json`, `yaml2toml`, `yaml2json`. `json2toml` and
 
 You will need Python 2.7 or Python 3.3 or later.
 
+You can install the latest release from PyPI using pip.
+
 ```sh
+python3 -m pip install remarshal
+```
+
+Alternatively, clone the `master` branch to install the development version.
+
+```sh
+git clone https://github.com/dbohdan/remarshal
+cd remarshal
 python3 setup.py install --user
 ```
 
