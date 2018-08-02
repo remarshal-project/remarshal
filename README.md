@@ -13,7 +13,7 @@ commands `toml2yaml`, `toml2json`, `yaml2toml`, `yaml2json`. `json2toml` and
 You will need Python 2.7 or Python 3.3 or later.
 
 ```sh
-sudo python setup.py install
+python3 setup.py install --user
 ```
 
 # Usage
