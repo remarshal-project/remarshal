@@ -30,26 +30,31 @@ python3 setup.py install --user
 
 ```
 usage: remarshal.py [-h] [-i INPUT] [-o OUTPUT] -if {json,toml,yaml} -of
-                    {json,toml,yaml} [--indent-json]
-                    [--yaml-style {,',",|,>}] [--wrap WRAP]
-                    [--unwrap UNWRAP]
+                    {json,toml,yaml} [--indent-json] [--yaml-style {,',",|,>}]
+                    [--wrap WRAP] [--unwrap UNWRAP] [--preserve-key-order]
+                    [-v]
                     [inputfile]
 ```
 
 ```
-usage: {json,toml,yaml}2toml [-h] [-i INPUT] [-o OUTPUT] [--wrap WRAP]
-       [--unwrap UNWRAP] [inputfile]
-```
-
-```
-usage: {json,toml,yaml}2yaml [-h] [-i INPUT] [-o OUTPUT]
-       [--yaml-style {,',",|,>}] [-wrap WRAP] [--unwrap UNWRAP]
+usage: {json,toml,yaml}2toml [-h] [-i INPUT] [-o OUTPUT]
+       [--wrap WRAP] [--unwrap UNWRAP]
+       [--preserve-key-order] [-v]
        [inputfile]
 ```
 
 ```
-usage: {json,toml,yaml}2json [-h] [-i INPUT] [-o OUTPUT] [--indent-json]
-       [-wrap WRAP] [-unwrap UNWRAP] [inputfile]
+usage: {json,toml,yaml}2yaml [-h] [-i INPUT] [-o OUTPUT]
+       [--yaml-style {,',",|,>}] [--wrap WRAP] [--unwrap UNWRAP]
+       [--preserve-key-order] [-v]
+       [inputfile]
+```
+
+```
+usage: {json,toml,yaml}2json [-h] [-i INPUT] [-o OUTPUT]
+       [--indent-json] [--wrap WRAP] [--unwrap UNWRAP]
+       [--preserve-key-order] [-v]
+       [inputfile]
 ```
 
 All of the commands above exit with status 0 on success and 1 on failure.
