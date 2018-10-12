@@ -95,35 +95,58 @@ def parse_command_line(argv):
                                      'and JSON.')
 
     group = parser.add_mutually_exclusive_group()
-    group.add_argument('-i', '--input', dest='input_flag', metavar='INPUT',
-                       default=None, help='input file')
-    group.add_argument('inputfile', nargs='?', default='-', help='input file')
+    group.add_argument('-i', '--input',
+                       dest='input_flag',
+                       metavar='INPUT',
+                       default=None,
+                       help='input file')
+    group.add_argument('inputfile',
+                       nargs='?',
+                       default='-',
+                       help='input file')
 
-    parser.add_argument('-o', '--output', dest='output', default='-',
+    parser.add_argument('-o', '--output',
+                        dest='output',
+                        default='-',
                         help='output file')
     if not format_from_filename:
-        parser.add_argument('-if', '--input-format', dest='input_format',
-                            required=True, help="input format",
+        parser.add_argument('-if', '--input-format',
+                            dest='input_format',
+                            required=True,
+                            help="input format",
                             choices=FORMATS)
-        parser.add_argument('-of', '--output-format', dest='output_format',
-                            required=True, help="output format",
+        parser.add_argument('-of', '--output-format',
+                            dest='output_format',
+                            required=True,
+                            help="output format",
                             choices=FORMATS)
     if not format_from_filename or to == 'json':
-        parser.add_argument('--indent-json', dest='indent_json',
-                            action='store_const', const=2, default=None,
+        parser.add_argument('--indent-json',
+                            dest='indent_json',
+                            action='store_const',
+                            const=2,
+                            default=None,
                             help='indent JSON output')
     if not format_from_filename or to == 'yaml':
-        parser.add_argument('--yaml-style', dest='yaml_style', default=None,
+        parser.add_argument('--yaml-style',
+                            dest='yaml_style',
+                            default=None,
                             help='YAML formatting style',
                             choices=['', '\'', '"', '|', '>'])
-    parser.add_argument('--wrap', dest='wrap', default=None,
+    parser.add_argument('--wrap',
+                        dest='wrap',
+                        default=None,
                         help='wrap the data in a map type with the given key')
-    parser.add_argument('--unwrap', dest='unwrap', default=None,
+    parser.add_argument('--unwrap',
+                        dest='unwrap',
+                        default=None,
                         help='only output the data stored under the given key')
-    parser.add_argument('--preserve-key-order', dest='ordered',
+    parser.add_argument('--preserve-key-order',
+                        dest='ordered',
                         action='store_true',
                         help='preserve the order of dictionary/mapping keys')
-    parser.add_argument('-v', '--version', action='version',
+    parser.add_argument('-v', '--version',
+                        action='version',
                         version=__version__)
 
     args = parser.parse_args(args=argv[1:])
@@ -147,13 +170,25 @@ def parse_command_line(argv):
 
 def run(argv):
     args = parse_command_line(argv)
-    remarshal(args.input, args.output, args.input_format, args.output_format,
-              args.wrap, args.unwrap, args.indent_json, args.yaml_options,
+    remarshal(args.input,
+              args.output,
+              args.input_format,
+              args.output_format,
+              args.wrap,
+              args.unwrap,
+              args.indent_json,
+              args.yaml_options,
               args.ordered)
 
 
-def remarshal(input, output, input_format, output_format, wrap=None,
-              unwrap=None, indent_json=None, yaml_options={},
+def remarshal(input,
+              output,
+              input_format,
+              output_format,
+              wrap=None,
+              unwrap=None,
+              indent_json=None,
+              yaml_options={},
               ordered=False):
     try:
         if input == '-':
@@ -185,7 +220,8 @@ def remarshal(input, output, input_format, output_format, wrap=None,
         elif input_format == 'yaml':
             try:
                 loader = OrderedLoader if ordered else TimezoneLoader
-                parsed = yaml.load(input_data, loader)
+                parsed = yaml.load(input_data,
+                                   loader)
             except (yaml.scanner.ScannerError, yaml.parser.ParserError) as e:
                 raise ValueError('Cannot parse as YAML ({0})'.format(e))
         else:

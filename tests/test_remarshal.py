@@ -53,14 +53,25 @@ class TestRemarshal(unittest.TestCase):
         self.temp_files.append(temp_filename)
         return temp_filename
 
-    def convertAndRead(self, input, input_format, output_format,
-                       wrap=None, unwrap=None, indent_json=True,
-                       yaml_options={}, ordered=False):
+    def convertAndRead(self,
+                       input,
+                       input_format,
+                       output_format,
+                       wrap=None,
+                       unwrap=None,
+                       indent_json=True,
+                       yaml_options={},
+                       ordered=False):
         output_filename = self.tempFilename()
-        remarshal.remarshal(test_file_path(input), output_filename,
-                            input_format, output_format,
-                            wrap=wrap, unwrap=unwrap, indent_json=indent_json,
-                            yaml_options=yaml_options, ordered=ordered)
+        remarshal.remarshal(test_file_path(input),
+                            output_filename,
+                            input_format,
+                            output_format,
+                            wrap=wrap,
+                            unwrap=unwrap,
+                            indent_json=indent_json,
+                            yaml_options=yaml_options,
+                            ordered=ordered)
         return readFile(output_filename)
 
     def setUp(self):
@@ -130,13 +141,15 @@ class TestRemarshal(unittest.TestCase):
             output = self.convertAndRead('array.json', 'json', 'toml')
 
     def test_wrap(self):
-        output = self.convertAndRead('array.json', 'json', 'toml', wrap='data')
+        output = self.convertAndRead('array.json', 'json', 'toml',
+                                     wrap='data')
         reference = readFile('array.toml')
         self.assertEqual(output, reference)
 
     def test_unwrap(self):
         output = self.convertAndRead('array.toml', 'toml', 'json',
-                                     unwrap='data', indent_json=None)
+                                     unwrap='data',
+                                     indent_json=None)
         reference = readFile('array.json')
         self.assertEqual(output, reference)
 
