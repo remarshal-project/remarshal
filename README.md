@@ -15,7 +15,7 @@ You will need Python 2.7 or Python 3.3 or later.
 You can install the latest release from PyPI using pip.
 
 ```sh
-python3 -m pip install remarshal
+python3 -m pip install remarshal --user
 ```
 
 Alternatively, clone the `master` branch to install the development version.
