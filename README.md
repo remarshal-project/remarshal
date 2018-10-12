@@ -57,7 +57,8 @@ usage: {json,toml,yaml}2json [-h] [-i INPUT] [-o OUTPUT]
        [inputfile]
 ```
 
-All of the commands above exit with status 0 on success and 1 on failure.
+All of the commands above exit with status 0 on success, 1 on operational
+failure and 2 when they fail to parse the command line.
 
 If no `inputfile` or `-i INPUT` is given or it is `-` or a blank string the data
 to convert is read from standard input. If no `-o OUTPUT` is given or it is `-`
