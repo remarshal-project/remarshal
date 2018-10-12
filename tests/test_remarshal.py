@@ -55,15 +55,16 @@ class TestRemarshal(unittest.TestCase):
 
     def convertAndRead(self, input, input_format, output_format,
                        wrap=None, unwrap=None, indent_json=True,
-                       yaml_options={}):
+                       yaml_options={}, ordered=False):
         output_filename = self.tempFilename()
         remarshal.remarshal(test_file_path(input), output_filename,
                             input_format, output_format,
                             wrap=wrap, unwrap=unwrap, indent_json=indent_json,
-                            yaml_options=yaml_options)
+                            yaml_options=yaml_options, ordered=ordered)
         return readFile(output_filename)
 
     def setUp(self):
+        self.maxDiff = None
         self.temp_files = []
 
     def tearDown(self):
@@ -217,6 +218,25 @@ class TestRemarshal(unittest.TestCase):
                     test_file_path('example.json')]
             remarshal.run(args)
         self.assertEqual(cm.exception.errno, errno.ENOENT)
+
+    def test_ordered_simple(self):
+        for from_ in 'json', 'toml', 'yaml':
+            for to in 'json', 'toml', 'yaml':
+                output = self.convertAndRead('order.' + from_,
+                                             from_,
+                                             to,
+                                             ordered=True)
+                reference = readFile('order.' + to)
+                self.assertEqual(output, reference)
+
+    def test_ordered_yaml2yaml(self):
+        output = self.convertAndRead('example.yaml',
+                                     'yaml',
+                                     'yaml',
+                                     ordered=True)
+        reference = readFile('example.yaml')
+        self.assertEqual(output, reference)
+
 
 if __name__ == '__main__':
     unittest.main()

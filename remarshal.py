@@ -17,14 +17,58 @@ import sys
 import pytoml
 import yaml
 
+from collections import OrderedDict
 
-__version__ = '0.8.0'
+
+__version__ = '0.9.0'
 
 FORMATS = ['json', 'toml', 'yaml']
 if hasattr(json, 'JSONDecodeError'):
     JSONDecodeError = json.JSONDecodeError
 else:
     JSONDecodeError = ValueError
+
+
+# An OrderedDict loader and dumper for PyYAML.
+class OrderedLoader(yaml.SafeLoader):
+    pass
+
+
+class OrderedDumper(yaml.SafeDumper):
+    pass
+
+
+def mapping_constructor(loader, node):
+    loader.flatten_mapping(node)
+    return OrderedDict(loader.construct_pairs(node))
+
+
+def dict_representer(dumper, data):
+    return dumper.represent_mapping(
+        yaml.resolver.BaseResolver.DEFAULT_MAPPING_TAG,
+        data.items()
+    )
+
+
+OrderedLoader.add_constructor(yaml.resolver.BaseResolver.DEFAULT_MAPPING_TAG,
+                              mapping_constructor)
+OrderedDumper.add_representer(OrderedDict,
+                              dict_representer)
+
+
+# Fix loss of time zone information in PyYAML.
+# http://stackoverflow.com/questions/13294186/can-pyyaml-parse-iso8601-dates
+class TimezoneLoader(yaml.SafeLoader):
+    pass
+
+
+def timestamp_constructor(loader, node):
+    return dateutil.parser.parse(node.value)
+
+
+for loader in [OrderedLoader, TimezoneLoader]:
+    loader.add_constructor(u'tag:yaml.org,2002:timestamp',
+                           timestamp_constructor)
 
 
 def filename2format(filename):
@@ -41,13 +85,6 @@ def json_serialize(obj):
     if isinstance(obj, datetime.datetime):
         return obj.isoformat()
     raise TypeError("{0} is not JSON-serializable".format(repr(obj)))
-
-
-# Fix loss of time zone information.
-# http://stackoverflow.com/questions/13294186/can-pyyaml-parse-iso8601-dates
-def timestamp_constructor(loader, node):
-    return dateutil.parser.parse(node.value)
-yaml.add_constructor(u'tag:yaml.org,2002:timestamp', timestamp_constructor)
 
 
 def parse_command_line(argv):
@@ -83,6 +120,9 @@ def parse_command_line(argv):
                         help='wrap the data in a map type with the given key')
     parser.add_argument('--unwrap', dest='unwrap', default=None,
                         help='only output the data stored under the given key')
+    parser.add_argument('--preserve-key-order', dest='ordered',
+                        action='store_true',
+                        help='preserve the order of dictionary/mapping keys')
     parser.add_argument('-v', '--version', action='version',
                         version=__version__)
 
@@ -108,11 +148,13 @@ def parse_command_line(argv):
 def run(argv):
     args = parse_command_line(argv)
     remarshal(args.input, args.output, args.input_format, args.output_format,
-              args.wrap, args.unwrap, args.indent_json, args.yaml_options)
+              args.wrap, args.unwrap, args.indent_json, args.yaml_options,
+              args.ordered)
 
 
 def remarshal(input, output, input_format, output_format, wrap=None,
-              unwrap=None, indent_json=None, yaml_options={}):
+              unwrap=None, indent_json=None, yaml_options={},
+              ordered=False):
     try:
         if input == '-':
             input_file = getattr(sys.stdin, 'buffer', sys.stdin)
@@ -128,17 +170,22 @@ def remarshal(input, output, input_format, output_format, wrap=None,
 
         if input_format == 'json':
             try:
-                parsed = json.loads(input_data.decode('utf-8'))
+                pairs_hook = OrderedDict if ordered else dict
+                parsed = json.loads(input_data.decode('utf-8'),
+                                    object_pairs_hook=pairs_hook)
             except JSONDecodeError as e:
                 raise ValueError('Cannot parse as JSON ({0})'.format(e))
         elif input_format == 'toml':
             try:
-                parsed = pytoml.loads(input_data)
+                pairs_hook = OrderedDict if ordered else dict
+                parsed = pytoml.loads(input_data,
+                                      object_pairs_hook=pairs_hook)
             except pytoml.core.TomlError as e:
                 raise ValueError('Cannot parse as TOML ({0})'.format(e))
         elif input_format == 'yaml':
             try:
-                parsed = yaml.load(input_data)
+                loader = OrderedLoader if ordered else TimezoneLoader
+                parsed = yaml.load(input_data, loader)
             except (yaml.scanner.ScannerError, yaml.parser.ParserError) as e:
                 raise ValueError('Cannot parse as YAML ({0})'.format(e))
         else:
@@ -158,13 +205,16 @@ def remarshal(input, output, input_format, output_format, wrap=None,
                 separators = (',', ': ')
             else:
                 separators = (',', ':')
-            output_data = json.dumps(parsed, default=json_serialize,
-                                     ensure_ascii=False, indent=indent_json,
+            output_data = json.dumps(parsed,
+                                     default=json_serialize,
+                                     ensure_ascii=False,
+                                     indent=indent_json,
                                      separators=separators,
-                                     sort_keys=True) + "\n"
+                                     sort_keys=not ordered) + "\n"
         elif output_format == 'toml':
             try:
-                output_data = pytoml.dumps(parsed, sort_keys=True)
+                output_data = pytoml.dumps(parsed,
+                                           sort_keys=not ordered)
             except AttributeError as e:
                 if str(e) == "'list' object has no attribute 'keys'":
                     raise ValueError('Cannot convert non-dictionary data to '
@@ -173,9 +223,14 @@ def remarshal(input, output, input_format, output_format, wrap=None,
                 else:
                     raise e
         elif output_format == 'yaml':
-            output_data = yaml.safe_dump(parsed, allow_unicode=True,
-                                         default_flow_style=False,
-                                         encoding=None, **yaml_options)
+            dumper = OrderedDumper if ordered else yaml.SafeDumper
+            output_data = yaml.dump(parsed,
+                                    None,
+                                    dumper,
+                                    allow_unicode=True,
+                                    default_flow_style=False,
+                                    encoding=None,
+                                    **yaml_options)
         else:
             raise ValueError('Unknown output format: {0}'.
                              format(output_format))
