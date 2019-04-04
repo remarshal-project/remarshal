@@ -10,7 +10,8 @@ commands `toml2yaml`, `toml2json`, `yaml2toml`, `yaml2json`. `json2toml` and
 
 # Installation
 
-You will need Python 2.7 or Python 3.3 or later.
+You will need Python 2.7 or Python 3.5 or later. Earlier versions of Python 3
+may work but are not supported.
 
 You can install the latest release from PyPI using pip.
 
