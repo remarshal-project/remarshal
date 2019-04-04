@@ -23,7 +23,7 @@ setup(
     install_requires=[
         'python-dateutil >= 2.5.0',
         'pytoml >= 0.1.11',
-        'PyYAML >= 3.12',
+        'PyYAML >= 5.1',
     ],
     entry_points={
         'console_scripts': [
