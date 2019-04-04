@@ -1,0 +1,2 @@
+recursive-include tests *.py *.json *.toml *.yaml garbage
+include example.*
