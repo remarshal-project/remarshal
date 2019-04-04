@@ -20,7 +20,7 @@ import yaml
 from collections import OrderedDict
 
 
-__version__ = '0.9.0'
+__version__ = '0.9.1'
 
 FORMATS = ['json', 'toml', 'yaml']
 if hasattr(json, 'JSONDecodeError'):
