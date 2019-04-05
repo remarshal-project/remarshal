@@ -208,6 +208,44 @@ class TestRemarshal(unittest.TestCase):
         test_format_string('{0}2{1}.exe')
         test_format_string('{0}2{1}-script.py')
 
+    def test_format_detection(self):
+        ext_to_fmt = {
+            'json': 'json',
+            'toml': 'toml',
+            'yaml': 'yaml',
+            'yml': 'yaml',
+        }
+
+        for from_ext in ext_to_fmt.keys():
+            for to_ext in ext_to_fmt.keys():
+                args = remarshal.parse_command_line([
+                    sys.argv[0],
+                    'input.' + from_ext,
+                    'output.' + to_ext
+                ])
+
+                self.assertEqual(args.input_format, ext_to_fmt[from_ext])
+                self.assertEqual(args.output_format, ext_to_fmt[to_ext])
+
+    def test_format_detection_failure_input_stdin(self):
+        with self.assertRaises(SystemExit) as cm:
+            remarshal.parse_command_line([sys.argv[0], '-'])
+        self.assertEqual(cm.exception.code, 2)
+
+    def test_format_detection_failure_input_txt(self):
+        with self.assertRaises(SystemExit) as cm:
+            remarshal.parse_command_line([sys.argv[0], 'input.txt'])
+        self.assertEqual(cm.exception.code, 2)
+
+    def test_format_detection_failure_output_txt(self):
+        with self.assertRaises(SystemExit) as cm:
+            remarshal.parse_command_line([
+                sys.argv[0],
+                'input.json',
+                'output.txt'
+            ])
+        self.assertEqual(cm.exception.code, 2)
+
     def test_run_no_args(self):
         with self.assertRaises(SystemExit) as cm:
             remarshal.run([sys.argv[0]])
@@ -232,6 +270,11 @@ class TestRemarshal(unittest.TestCase):
                     test_file_path('example.json')]
             remarshal.run(args)
         self.assertEqual(cm.exception.errno, errno.ENOENT)
+
+    def test_run_no_output_format(self):
+        with self.assertRaises(SystemExit) as cm:
+            remarshal.run([sys.argv[0], test_file_path('array.toml')])
+        self.assertEqual(cm.exception.code, 2)
 
     def test_ordered_simple(self):
         for from_ in 'json', 'toml', 'yaml':

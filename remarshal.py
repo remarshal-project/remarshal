@@ -81,6 +81,17 @@ def argv0_to_format(argv0):
         return False, None, None
 
 
+def extension_to_format(path):
+    _, ext = os.path.splitext(path)
+
+    ext = ext[1:]
+
+    if ext == 'yml':
+        ext = 'yaml'
+
+    return ext if ext in FORMATS else None
+
+
 def json_serialize(obj):
     if isinstance(obj, datetime.datetime):
         return obj.isoformat()
@@ -119,12 +130,10 @@ def parse_command_line(argv):
     if not format_from_argv0:
         parser.add_argument('--if', '-if', '--input-format',
                             dest='input_format',
-                            required=True,
                             help="input format",
                             choices=FORMATS)
         parser.add_argument('--of', '-of', '--output-format',
                             dest='output_format',
-                            required=True,
                             help="output format",
                             choices=FORMATS)
 
@@ -177,6 +186,16 @@ def parse_command_line(argv):
             args.__dict__['indent_json'] = None
         if argv0_to != 'yaml':
             args.__dict__['yaml_style'] = None
+    else:
+        if args.input_format is None:
+            args.input_format = extension_to_format(args.input)
+            if args.input_format is None:
+                parser.error('Cannot determine the input format')
+
+        if args.output_format is None:
+            args.output_format = extension_to_format(args.output)
+            if args.output_format is None:
+                parser.error('Cannot determine the output format')
 
     # Wrap yaml_style.
     args.__dict__['yaml_options'] = {'default_style': args.yaml_style}
