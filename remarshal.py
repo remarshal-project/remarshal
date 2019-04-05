@@ -190,12 +190,12 @@ def parse_command_line(argv):
         if args.input_format is None:
             args.input_format = extension_to_format(args.input)
             if args.input_format is None:
-                parser.error('Cannot determine the input format')
+                parser.error('Need an explicit input format')
 
         if args.output_format is None:
             args.output_format = extension_to_format(args.output)
             if args.output_format is None:
-                parser.error('Cannot determine the output format')
+                parser.error('Need an explicit output format')
 
     # Wrap yaml_style.
     args.__dict__['yaml_options'] = {'default_style': args.yaml_style}
