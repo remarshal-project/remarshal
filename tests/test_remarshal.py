@@ -194,15 +194,16 @@ class TestRemarshal(unittest.TestCase):
         reference = readFile('long-line-gt.yaml')
         self.assertEqual(output, reference)
 
-    def test_filename2format(self):
+    def test_argv0_to_format(self):
         def test_format_string(s):
             for from_str in 'json', 'toml', 'yaml':
                 for to_str in 'json', 'toml', 'yaml':
-                    found, from_parsed, to_parsed = remarshal.filename2format(
+                    found, from_parsed, to_parsed = remarshal.argv0_to_format(
                         s.format(from_str, to_str)
                     )
                     self.assertEqual((found, from_parsed, to_parsed),
                                      (found, from_str, to_str))
+
         test_format_string('{0}2{1}')
         test_format_string('{0}2{1}.exe')
         test_format_string('{0}2{1}-script.py')

@@ -20,7 +20,7 @@ import yaml
 from collections import OrderedDict
 
 
-__version__ = '0.9.2'
+__version__ = '0.10.0'
 
 FORMATS = ['json', 'toml', 'yaml']
 if hasattr(json, 'JSONDecodeError'):
@@ -71,9 +71,9 @@ for loader in [OrderedLoader, TimezoneLoader]:
                            timestamp_constructor)
 
 
-def filename2format(filename):
+def argv0_to_format(argv0):
     possible_format = '(' + '|'.join(FORMATS) + ')'
-    match = re.search('^' + possible_format + '2' + possible_format, filename)
+    match = re.search('^' + possible_format + '2' + possible_format, argv0)
     if match:
         from_, to = match.groups()
         return True, from_, to
@@ -89,50 +89,60 @@ def json_serialize(obj):
 
 def parse_command_line(argv):
     me = os.path.basename(argv[0])
-    format_from_filename, from_, to = filename2format(me)
+    format_from_argv0, argv0_from, argv0_to = argv0_to_format(me)
 
     parser = argparse.ArgumentParser(description='Convert between TOML, YAML '
                                      'and JSON.')
 
-    group = parser.add_mutually_exclusive_group()
-    group.add_argument('-i', '--input',
-                       dest='input_flag',
-                       metavar='INPUT',
-                       default=None,
-                       help='input file')
-    group.add_argument('inputfile',
-                       nargs='?',
-                       default='-',
-                       help='input file')
+    input_group = parser.add_mutually_exclusive_group()
+    input_group.add_argument('input',
+                             nargs='?',
+                             default='-',
+                             help='input file')
+    input_group.add_argument('-i', '--input',
+                             dest='input_flag',
+                             metavar='input',
+                             default=None,
+                             help='input file')
 
-    parser.add_argument('-o', '--output',
-                        dest='output',
-                        default='-',
-                        help='output file')
-    if not format_from_filename:
-        parser.add_argument('-if', '--input-format',
+    output_group = parser.add_mutually_exclusive_group()
+    output_group.add_argument('output',
+                              nargs='?',
+                              default='-',
+                              help='input file')
+    output_group.add_argument('-o', '--output',
+                              dest='output_flag',
+                              metavar='output',
+                              default=None,
+                              help='output file')
+
+    if not format_from_argv0:
+        parser.add_argument('--if', '-if', '--input-format',
                             dest='input_format',
                             required=True,
                             help="input format",
                             choices=FORMATS)
-        parser.add_argument('-of', '--output-format',
+        parser.add_argument('--of', '-of', '--output-format',
                             dest='output_format',
                             required=True,
                             help="output format",
                             choices=FORMATS)
-    if not format_from_filename or to == 'json':
+
+    if not format_from_argv0 or argv0_to == 'json':
         parser.add_argument('--indent-json',
                             dest='indent_json',
                             action='store_const',
                             const=2,
                             default=None,
                             help='indent JSON output')
-    if not format_from_filename or to == 'yaml':
+
+    if not format_from_argv0 or argv0_to == 'yaml':
         parser.add_argument('--yaml-style',
                             dest='yaml_style',
                             default=None,
                             help='YAML formatting style',
                             choices=['', '\'', '"', '|', '>'])
+
     parser.add_argument('--wrap',
                         dest='wrap',
                         default=None,
@@ -151,17 +161,24 @@ def parse_command_line(argv):
 
     args = parser.parse_args(args=argv[1:])
 
+    # Use the positional input and output arguments.
     if args.input_flag is not None:
         args.input = args.input_flag
-    else:
-        args.input = args.inputfile
-    if format_from_filename:
-        args.input_format = from_
-        args.output_format = to
-        if to != 'json':
+
+    if args.output_flag is not None:
+        args.output = args.output_flag
+
+    # Determine the implicit input and output format if possible.
+    if format_from_argv0:
+        args.input_format = argv0_from
+        args.output_format = argv0_to
+
+        if argv0_to != 'json':
             args.__dict__['indent_json'] = None
-        if to != 'yaml':
+        if argv0_to != 'yaml':
             args.__dict__['yaml_style'] = None
+
+    # Wrap yaml_style.
     args.__dict__['yaml_options'] = {'default_style': args.yaml_style}
     del args.__dict__['yaml_style']
 
