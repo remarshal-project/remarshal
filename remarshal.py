@@ -154,10 +154,12 @@ def parse_command_line(argv):
 
     parser.add_argument('--wrap',
                         dest='wrap',
+                        metavar='key',
                         default=None,
                         help='wrap the data in a map type with the given key')
     parser.add_argument('--unwrap',
                         dest='unwrap',
+                        metavar='key',
                         default=None,
                         help='only output the data stored under the given key')
     parser.add_argument('--preserve-key-order',
