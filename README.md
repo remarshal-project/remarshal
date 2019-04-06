@@ -3,14 +3,15 @@
 [![Travis CI Build Status](https://travis-ci.org/dbohdan/remarshal.svg?branch=master)](https://travis-ci.org/dbohdan/remarshal)
 [![AppVeyor CI Build Status](https://ci.appveyor.com/api/projects/status/github/dbohdan/remarshal?branch=master&svg=true)](https://ci.appveyor.com/project/dbohdan/remarshal)
 
-Convert between TOML, YAML and JSON. When installed provides the command line
-commands `toml2yaml`, `toml2json`, `yaml2toml`, `yaml2json`. `json2toml` and
-`json2yaml` for format conversion as well as `toml2toml`, `yaml2yaml` and
-`json2json` for reformatting and error detection.
+Convert between TOML, YAML, and JSON.  When installed provides the
+command line commands `toml2yaml`, `toml2json`, `yaml2toml`, `yaml2json`.
+`json2toml` and `json2yaml` for format conversion as well as `toml2toml`,
+`yaml2yaml` and `json2json` for reformatting and error detection.  Remarshal
+currently supports TOML 0.4.0.
 
-# Installation
+## Installation
 
-You will need Python 2.7 or Python 3.5 or later. Earlier versions of Python 3
+You will need Python 2.7 or Python 3.5 or later.  Earlier versions of Python 3
 may work but are not supported.
 
 You can install the latest release from PyPI using pip.
@@ -27,91 +28,93 @@ cd remarshal
 python3 setup.py install --user
 ```
 
-# Usage
+## Usage
 
 ```
-usage: remarshal.py [-h] [-i INPUT] [-o OUTPUT] -if {json,toml,yaml} -of
-                    {json,toml,yaml} [--indent-json] [--yaml-style {,',",|,>}]
-                    [--wrap WRAP] [--unwrap UNWRAP] [--preserve-key-order]
-                    [-v]
-                    [inputfile]
-```
-
-```
-usage: {json,toml,yaml}2toml [-h] [-i INPUT] [-o OUTPUT]
-       [--wrap WRAP] [--unwrap UNWRAP]
-       [--preserve-key-order] [-v]
-       [inputfile]
+usage: remarshal.py [-h] [-i input] [-o output]
+                    [--if {json,toml,yaml}] [--of {json,toml,yaml}]
+                    [--indent-json n]
+                    [--yaml-style {,',",|,>}]
+                    [--wrap key] [--unwrap key]
+                    [--preserve-key-order] [-v]
+                    [input] [output]
 ```
 
 ```
-usage: {json,toml,yaml}2yaml [-h] [-i INPUT] [-o OUTPUT]
-       [--yaml-style {,',",|,>}] [--wrap WRAP] [--unwrap UNWRAP]
-       [--preserve-key-order] [-v]
-       [inputfile]
+usage: {json,toml,yaml}2toml [-h] [-i input] [-o output]
+                             [--wrap key] [--unwrap key]
+                             [--preserve-key-order] [-v]
+                             [input] [output]
 ```
 
 ```
-usage: {json,toml,yaml}2json [-h] [-i INPUT] [-o OUTPUT]
-       [--indent-json] [--wrap WRAP] [--unwrap UNWRAP]
-       [--preserve-key-order] [-v]
-       [inputfile]
+usage: {json,toml,yaml}2yaml [-h] [-i input] [-o output]
+                             [--yaml-style {,',",|,>}]
+                             [--wrap key] [--unwrap key]
+                             [--preserve-key-order] [-v]
+                             [input] [output]
+```
+
+```
+usage: {json,toml,yaml}2json [-h] [-i input] [-o output]
+                             [--indent-json n]
+                             [--wrap key] [--unwrap key]
+                             [--preserve-key-order] [-v]
+                             [input] [output]
 ```
 
 All of the commands above exit with status 0 on success, 1 on operational
-failure and 2 when they fail to parse the command line.
+failure, and 2 when they fail to parse the command line.
 
-If no `inputfile` or `-i INPUT` is given or it is `-` or a blank string the data
-to convert is read from standard input. If no `-o OUTPUT` is given or it is `-`
-or a blank string the result of the conversion is written to standard output.
+If no input argument `input`/ `-i input` is given or its value is `-` or
+a blank string the data to convert is read from the standard input.  Similarly,
+with no `output`/`-o output` or an output argument that is `-` or a blank
+string the result of the conversion is written to the standard output.
 
-For the short commands (`x2y`) the flag `-i` before `inputfile` can be omitted
-if `inputfile` is the last argument.
+### Wrappers
 
-## Wrappers
-
-The flags `--wrap` and `--unwrap` are there to solve the problem of converting
-JSON and YAML data to TOML if the topmost element of that data is not of a
-dictionary type (i.e., not an object in JSON or an associative array in YAML)
-but a list, a string or a number. Such data can not be represented as TOML
-directly; it needs to wrapped in a dictionary first. Passing the flag
+The arguments `--wrap` and `--unwrap` are there to solve the problem of
+converting JSON and YAML data to TOML if the topmost element of that data is not
+of a dictionary type (i.e., not an object in JSON or an associative array in
+YAML) but a list, a string, or a number.  Such data can not be represented as
+TOML directly; it needs to wrapped in a dictionary first.  Passing the flag
 `--wrap someKey` to `remarshal` or one of its short commands wraps the input
 data in a "wrapper" dictionary with one key, "someKey", with the input data as
-its value. The flag `--unwrap someKey` does the opposite: if it is specified
+its value.  The flag `--unwrap someKey` does the opposite: if it is specified
 only the value stored under the key "someKey" in the top-level dictionary
 element of the input data is converted to the target format and output; all
-other data is skipped. If the top-level element is not a dictionary or does not
-have the key `someKey` then `--unwrap someKey` returns an error.
+other data is ignored.  If the top-level element is not a dictionary or does not
+have the key "someKey" then `--unwrap someKey` returns an error.
 
 The following shell transcript demonstrates the problem and how `--wrap` and
 `--unwrap` solve it:
 
 ```
-$ echo '[{"a":"b"},{"c":[1,2,3]}]' | ./remarshal.py -if json -of toml
+$ echo '[{"a":"b"},{"c":[1,2,3]}]' | ./remarshal.py --if json --of toml
 Error: cannot convert non-dictionary data to TOML; use "wrap" to wrap it in a dictionary
 
-$ echo '[{"a":"b"},{"c":[1,2,3]}]' | \
-./remarshal.py -if json -of toml --wrap main
+$ echo '[{"a":"b"},{"c":[1,2,3]}]' \
+  | ./remarshal.py --if json --of toml --wrap main
 [[main]]
 a = "b"
 
 [[main]]
 c = [1, 2, 3]
 
-$ echo '[{"a":"b"},{"c":[1,2,3]}]' | \
-./remarshal.py -if json -of toml --wrap main > test.toml
+$ echo '[{"a":"b"},{"c":[1,2,3]}]' \
+  | ./remarshal.py --if json --wrap main - test.toml
 
-$ ./remarshal.py -if toml -of json < test.toml
+$ ./remarshal.py test.toml --of json
 {"main":[{"a":"b"},{"c":[1,2,3]}]}
 
-$ ./remarshal.py -if toml -of json --unwrap main < test.toml
+$ ./remarshal.py test.toml --of json --unwrap main
 [{"a":"b"},{"c":[1,2,3]}]
 ```
 
-# Examples
+## Examples
 
 ```
-$ ./remarshal.py -i example.toml -if toml -of yaml
+$ ./remarshal.py example.toml --of yaml
 clients:
   data:
   - - gamma
@@ -153,7 +156,7 @@ servers:
 title: TOML Example
 
 $ curl -s http://api.openweathermap.org/data/2.5/weather\?q\=Kiev,ua | \
-./remarshal.py -if json -of toml
+./remarshal.py --if json --of toml
 base = "cmc stations"
 cod = 200
 dt = 1412532000
@@ -193,9 +196,9 @@ deg = 80
 speed = 2
 ```
 
-# License
+## License
 
-MIT. See the file `LICENSE`.
+MIT.  See the file `LICENSE`.
 
 `example.toml` from <https://github.com/toml-lang/toml>. `example.yaml` and
 `example.json` are derived from it.
