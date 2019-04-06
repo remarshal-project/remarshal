@@ -140,8 +140,8 @@ def parse_command_line(argv):
     if not format_from_argv0 or argv0_to == 'json':
         parser.add_argument('--indent-json',
                             dest='indent_json',
-                            action='store_const',
-                            const=2,
+                            metavar='n',
+                            type=int,
                             default=None,
                             help='indent JSON output')
 
