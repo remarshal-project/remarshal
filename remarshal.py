@@ -1,4 +1,4 @@
-#! /usr/bin/env python
+#! /usr/bin/env python3
 # remarshal, a utility to convert between serialization formats.
 # Copyright (c) 2014, 2015, 2016, 2017, 2018, 2019 dbohdan
 # License: MIT
