@@ -4,10 +4,10 @@
 [![AppVeyor CI Build Status](https://ci.appveyor.com/api/projects/status/github/dbohdan/remarshal?branch=master&svg=true)](https://ci.appveyor.com/project/dbohdan/remarshal)
 
 Convert between TOML, YAML, and JSON.  When installed provides the
-command line commands `toml2yaml`, `toml2json`, `yaml2toml`, `yaml2json`.
-`json2toml` and `json2yaml` for format conversion as well as `toml2toml`,
-`yaml2yaml` and `json2json` for reformatting and error detection.  Remarshal
-currently supports TOML 0.4.0.
+command line commands `toml2yaml`, `toml2json`, `yaml2toml`, `yaml2json`,
+`json2toml`, and `json2yaml` for format conversion as well as `toml2toml`,
+`yaml2yaml`, and `json2json` for reformatting and error detection.
+Remarshal currently supports TOML 0.4.0.
 
 ## Installation
 
@@ -74,8 +74,8 @@ string the result of the conversion is written to the standard output.
 ### Wrappers
 
 The arguments `--wrap` and `--unwrap` are there to solve the problem of
-converting JSON and YAML data to TOML if the topmost element of that data is not
-of a dictionary type (i.e., not an object in JSON or an associative array in
+converting JSON and YAML data to TOML if the top-level element of that data is
+not of a dictionary type (i.e., not an object in JSON or an associative array in
 YAML) but a list, a string, or a number.  Such data can not be represented as
 TOML directly; it needs to wrapped in a dictionary first.  Passing the flag
 `--wrap someKey` to `remarshal` or one of its short commands wraps the input
@@ -155,8 +155,8 @@ servers:
     ip: 10.0.0.2
 title: TOML Example
 
-$ curl -s http://api.openweathermap.org/data/2.5/weather\?q\=Kiev,ua | \
-./remarshal.py --if json --of toml
+$ curl -s http://api.openweathermap.org/data/2.5/weather\?q\=Kiev,ua \
+  | ./remarshal.py --if json --of toml
 base = "cmc stations"
 cod = 200
 dt = 1412532000
