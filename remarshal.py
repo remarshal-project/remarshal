@@ -162,7 +162,7 @@ def parse_command_line(argv):
                         metavar='key',
                         default=None,
                         help='only output the data stored under the given key')
-    parser.add_argument('--preserve-key-order',
+    parser.add_argument('-p', '--preserve-key-order',
                         dest='ordered',
                         action='store_true',
                         help='preserve the order of dictionary/mapping keys')
