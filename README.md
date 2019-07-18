@@ -3,11 +3,18 @@
 [![Travis CI Build Status](https://travis-ci.org/dbohdan/remarshal.svg?branch=master)](https://travis-ci.org/dbohdan/remarshal)
 [![AppVeyor CI Build Status](https://ci.appveyor.com/api/projects/status/github/dbohdan/remarshal?branch=master&svg=true)](https://ci.appveyor.com/project/dbohdan/remarshal)
 
-Convert between TOML, YAML, and JSON.  When installed, provides
-the command line command `remarshal` as well as the short commands
-`{json,msgpack,toml,yaml}2{json,msgpack,toml,yaml}`.  These commands
-can be used for format conversion, reformatting, and error detection.
-Remarshal currently supports TOML 0.4.0.
+Convert between TOML, MessagePack, YAML, and JSON.  When installed,
+provides the command line command `remarshal` as well as the short commands
+`{json,msgpack,toml,yaml}2{json,msgpack,toml,yaml}`.  These commands can be
+used for format conversion, reformatting, and error detection.
+
+## Known limitations
+
+* Remarshal currently only supports TOML 0.4.0.
+* MessagePack with binary fields can't be converted to JSON or TOML with the
+Python 3 version of remarshal.  It is properly converted to and from YAML.
+With Python 2 binary fields are coerced to strings.  This means that
+`msgpack2*` is lossy.
 
 ## Installation
 
