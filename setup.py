@@ -11,7 +11,7 @@ with open(remarshal_file, 'rb') as f:
     version = re.search(r"__version__ = '(\d+\.\d+\.\d+)",
                         content, re.MULTILINE).group(1)
 
-formats = ['json', 'toml', 'yaml']
+formats = ['json', 'toml', 'msgpack', 'yaml']
 
 setup(
     name='remarshal',
@@ -26,9 +26,10 @@ setup(
         'python-dateutil >= 2.5.0',
         'pytoml >= 0.1.11',
         'PyYAML >= 5.1',
+        'u-msgpack-python >= 2.5.1',
     ],
     entry_points={
-        'console_scripts': [x + '2' + y + ' = remarshal:main'
+        'console_scripts': ['{0}2{1} = remarshal:main'.format(x, y)
                             for x in formats for y in formats]
     },
 )

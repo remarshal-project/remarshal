@@ -15,6 +15,7 @@ import re
 import string
 import sys
 import pytoml
+import umsgpack
 import yaml
 
 from collections import OrderedDict
@@ -22,7 +23,7 @@ from collections import OrderedDict
 
 __version__ = '0.11.0'
 
-FORMATS = ['json', 'toml', 'yaml']
+FORMATS = ['json', 'msgpack', 'toml', 'yaml']
 
 
 # === YAML ===
@@ -226,6 +227,13 @@ def decode_json(input_data, ordered):
         raise ValueError('Cannot parse as JSON ({0})'.format(e))
 
 
+def decode_msgpack(input_data, ordered):
+    try:
+        return umsgpack.unpackb(input_data, use_ordered_dict=ordered)
+    except umsgpack.UnpackException as e:
+        raise ValueError('Cannot parse as MessagePack ({0})'.format(e))
+
+
 def decode_toml(input_data, ordered):
     try:
         pairs_hook = OrderedDict if ordered else dict
@@ -251,6 +259,7 @@ def decode_yaml(input_data, ordered):
 def decode(input_format, input_data, ordered):
     decoder = {
         'json': decode_json,
+        'msgpack': decode_msgpack,
         'toml': decode_toml,
         'yaml': decode_yaml,
     }
@@ -278,6 +287,10 @@ def encode_json(data, ordered, indent):
         separators=separators,
         sort_keys=not ordered
     ) + "\n"
+
+
+def encode_msgpack(data):
+    return umsgpack.packb(data)
 
 
 def encode_toml(data, ordered):
@@ -320,15 +333,18 @@ def run(argv):
               args.ordered)
 
 
-def remarshal(input,
-              output,
-              input_format,
-              output_format,
-              wrap=None,
-              unwrap=None,
-              indent_json=None,
-              yaml_options={},
-              ordered=False):
+def remarshal(
+    input,
+    output,
+    input_format,
+    output_format,
+    wrap=None,
+    unwrap=None,
+    indent_json=None,
+    yaml_options={},
+    ordered=False,
+    transform=None,
+):
     try:
         if input == '-':
             input_file = getattr(sys.stdin, 'buffer', sys.stdin)
@@ -351,8 +367,13 @@ def remarshal(input,
             temp[wrap] = parsed
             parsed = temp
 
+        if transform:
+            parsed = transform(parsed)
+
         if output_format == 'json':
             output_data = encode_json(parsed, ordered, indent_json)
+        elif output_format == 'msgpack':
+            output_data = encode_msgpack(parsed)
         elif output_format == 'toml':
             output_data = encode_toml(parsed, ordered)
         elif output_format == 'yaml':
@@ -361,7 +382,12 @@ def remarshal(input,
             raise ValueError('Unknown output format: {0}'.
                              format(output_format))
 
-        output_file.write(output_data.encode('utf-8'))
+        if output_format == 'msgpack':
+            encoded = output_data
+        else:
+            encoded = output_data.encode('utf-8')
+        output_file.write(encoded)
+
         output_file.close()
     finally:
         if 'input_file' in locals():

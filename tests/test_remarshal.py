@@ -4,6 +4,8 @@
 # License: MIT
 
 from .context import remarshal
+import collections
+import datetime
 import errno
 import os
 import os.path
@@ -18,15 +20,17 @@ TEST_PATH = os.path.dirname(os.path.realpath(__file__))
 
 def test_file_path(filename):
     path_list = [TEST_PATH]
-    if re.match(r'example\.(json|toml|yaml)', filename):
+    if re.match(r'example\.(json|msgpack|toml|yaml)', filename):
         path_list.append('..')
     path_list.append(filename)
     return os.path.join(*path_list)
 
 
-def readFile(filename):
+def readFile(filename, binary=False):
     with open(test_file_path(filename), 'rb') as f:
-        content = f.read().decode('utf-8')
+        content = f.read()
+        if not binary:
+            content = content.decode('utf-8')
     return content
 
 
@@ -53,15 +57,19 @@ class TestRemarshal(unittest.TestCase):
         self.temp_files.append(temp_filename)
         return temp_filename
 
-    def convertAndRead(self,
-                       input,
-                       input_format,
-                       output_format,
-                       wrap=None,
-                       unwrap=None,
-                       indent_json=True,
-                       yaml_options={},
-                       ordered=False):
+    def convertAndRead(
+        self,
+        input,
+        input_format,
+        output_format,
+        wrap=None,
+        unwrap=None,
+        indent_json=True,
+        yaml_options={},
+        ordered=False,
+        binary=False,
+        transform=None,
+    ):
         output_filename = self.tempFilename()
         remarshal.remarshal(test_file_path(input),
                             output_filename,
@@ -71,8 +79,9 @@ class TestRemarshal(unittest.TestCase):
                             unwrap=unwrap,
                             indent_json=indent_json,
                             yaml_options=yaml_options,
-                            ordered=ordered)
-        return readFile(output_filename)
+                            ordered=ordered,
+                            transform=transform)
+        return readFile(output_filename, binary)
 
     def setUp(self):
         self.maxDiff = None
@@ -87,6 +96,16 @@ class TestRemarshal(unittest.TestCase):
         reference = readFile('example.json')
         self.assertEqual(output, reference)
 
+    def test_msgpack2msgpack(self):
+        output = self.convertAndRead(
+            'example.msgpack',
+            'msgpack',
+            'msgpack',
+            binary=True,
+        )
+        reference = readFile('example.msgpack', binary=True)
+        self.assertEqual(output, reference)
+
     def test_toml2toml(self):
         output = self.convertAndRead('example.toml', 'toml', 'toml')
         reference = readFile('example.toml')
@@ -95,6 +114,21 @@ class TestRemarshal(unittest.TestCase):
     def test_yaml2yaml(self):
         output = self.convertAndRead('example.yaml', 'yaml', 'yaml')
         reference = readFile('example.yaml')
+        self.assertEqual(output, reference)
+
+    def test_json2msgpack(self):
+        def patch(x):
+            x['owner']['dob'] = datetime.datetime(1979, 5, 27, 7, 32)
+            return x
+
+        output = self.convertAndRead(
+            'example.json',
+            'json',
+            'msgpack',
+            binary=True,
+            transform=patch,
+        )
+        reference = readFile('example.msgpack', binary=True)
         self.assertEqual(output, reference)
 
     def test_json2toml(self):
@@ -116,9 +150,48 @@ class TestRemarshal(unittest.TestCase):
                                               "'1979-05-27T07:32:00+00:00'")
         self.assertEqual(output, reference_patched)
 
+    def test_msgpack2json(self):
+        output = self.convertAndRead('example.msgpack', 'msgpack', 'json')
+        reference = readFile('example.json')
+        self.assertEqual(output, reference)
+
+    def test_msgpack2toml(self):
+        output = self.convertAndRead('example.msgpack', 'msgpack', 'toml')
+        reference = readFile('example.toml')
+        self.assertEqual(tomlSignature(output), tomlSignature(reference))
+
+    def test_msgpack2yaml(self):
+        output = self.convertAndRead('example.msgpack', 'msgpack', 'yaml')
+        reference = readFile('example.yaml')
+        self.assertEqual(output, reference)
+
     def test_toml2json(self):
         output = self.convertAndRead('example.toml', 'toml', 'json')
         reference = readFile('example.json')
+        self.assertEqual(output, reference)
+
+    def test_toml2msgpack(self):
+        def sorted_dict(d):
+            return collections.OrderedDict(sorted(d.items()))
+        
+        def rec_sorted_dicts(col):
+            if isinstance(col, dict):
+                return sorted_dict({
+                    k: rec_sorted_dicts(v) for (k, v) in col.items()
+                })
+            elif isinstance(col, list):
+                return [rec_sorted_dicts(x) for x in col]
+            else:
+                return col
+
+        output = self.convertAndRead(
+            'example.toml',
+            'toml',
+            'msgpack',
+            binary=True,
+            transform=rec_sorted_dicts,
+        )
+        reference = readFile('example.msgpack', binary=True)
         self.assertEqual(output, reference)
 
     def test_toml2yaml(self):
@@ -129,6 +202,16 @@ class TestRemarshal(unittest.TestCase):
     def test_yaml2json(self):
         output = self.convertAndRead('example.yaml', 'yaml', 'json')
         reference = readFile('example.json')
+        self.assertEqual(output, reference)
+
+    def test_yaml2msgpack(self):
+        output = self.convertAndRead(
+            'example.yaml',
+            'yaml',
+            'msgpack',
+            binary=True
+        )
+        reference = readFile('example.msgpack', binary=True)
         self.assertEqual(output, reference)
 
     def test_yaml2toml(self):

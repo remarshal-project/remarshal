@@ -3,10 +3,10 @@
 [![Travis CI Build Status](https://travis-ci.org/dbohdan/remarshal.svg?branch=master)](https://travis-ci.org/dbohdan/remarshal)
 [![AppVeyor CI Build Status](https://ci.appveyor.com/api/projects/status/github/dbohdan/remarshal?branch=master&svg=true)](https://ci.appveyor.com/project/dbohdan/remarshal)
 
-Convert between TOML, YAML, and JSON.  When installed provides the
-command line commands `toml2yaml`, `toml2json`, `yaml2toml`, `yaml2json`,
-`json2toml`, and `json2yaml` for format conversion as well as `toml2toml`,
-`yaml2yaml`, and `json2json` for reformatting and error detection.
+Convert between TOML, YAML, and JSON.  When installed, provides
+the command line command `remarshal` as well as the short commands
+`{json,msgpack,toml,yaml}2{json,msgpack,toml,yaml}`.  These commands
+can be used for format conversion, reformatting, and error detection.
 Remarshal currently supports TOML 0.4.0.
 
 ## Installation
@@ -32,7 +32,8 @@ python3 setup.py install --user
 
 ```
 usage: remarshal.py [-h] [-i input] [-o output]
-                    [--if {json,toml,yaml}] [--of {json,toml,yaml}]
+                    [--if {json,msgpack,toml,yaml}]
+                    [--of {json,msgpack,toml,yaml}]
                     [--indent-json n]
                     [--yaml-style {,',",|,>}]
                     [--wrap key] [--unwrap key]
@@ -41,27 +42,35 @@ usage: remarshal.py [-h] [-i input] [-o output]
 ```
 
 ```
-usage: {json,toml,yaml}2toml [-h] [-i input] [-o output]
-                             [--wrap key] [--unwrap key]
-                             [--preserve-key-order] [-v]
-                             [input] [output]
+usage: {json,msgpack,toml,yaml}2json [-h] [-i input] [-o output]
+                                     [--indent-json n]
+                                     [--wrap key] [--unwrap key]
+                                     [--preserve-key-order] [-v]
+                                     [input] [output]
 ```
 
 ```
-usage: {json,toml,yaml}2yaml [-h] [-i input] [-o output]
-                             [--yaml-style {,',",|,>}]
-                             [--wrap key] [--unwrap key]
-                             [--preserve-key-order] [-v]
-                             [input] [output]
+usage: {json,msgpack,toml,yaml}2msgpack [-h] [-i input] [-o output]
+                                        [--wrap key] [--unwrap key]
+                                        [--preserve-key-order] [-v]
+                                        [input] [output]
 ```
 
 ```
-usage: {json,toml,yaml}2json [-h] [-i input] [-o output]
-                             [--indent-json n]
-                             [--wrap key] [--unwrap key]
-                             [--preserve-key-order] [-v]
-                             [input] [output]
+usage: {json,msgpack,toml,yaml}2toml [-h] [-i input] [-o output]
+                                     [--wrap key] [--unwrap key]
+                                     [--preserve-key-order] [-v]
+                                     [input] [output]
 ```
+
+```
+usage: {json,msgpack,toml,yaml}2yaml [-h] [-i input] [-o output]
+                                     [--yaml-style {,',",|,>}]
+                                     [--wrap key] [--unwrap key]
+                                     [--preserve-key-order] [-v]
+                                     [input] [output]
+```
+
 
 All of the commands above exit with status 0 on success, 1 on operational
 failure, and 2 when they fail to parse the command line.
