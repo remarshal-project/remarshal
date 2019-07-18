@@ -49,6 +49,10 @@ def tomlSignature(data):
     return f(data.split("\n"))
 
 
+def sorted_dict(d):
+    return collections.OrderedDict(sorted(d.items()))
+
+
 class TestRemarshal(unittest.TestCase):
 
     def tempFilename(self):
@@ -102,6 +106,7 @@ class TestRemarshal(unittest.TestCase):
             'msgpack',
             'msgpack',
             binary=True,
+            ordered=True,
         )
         reference = readFile('example.msgpack', binary=True)
         self.assertEqual(output, reference)
@@ -126,6 +131,7 @@ class TestRemarshal(unittest.TestCase):
             'json',
             'msgpack',
             binary=True,
+            ordered=True,
             transform=patch,
         )
         reference = readFile('example.msgpack', binary=True)
@@ -171,25 +177,15 @@ class TestRemarshal(unittest.TestCase):
         self.assertEqual(output, reference)
 
     def test_toml2msgpack(self):
-        def sorted_dict(d):
-            return collections.OrderedDict(sorted(d.items()))
-        
-        def rec_sorted_dicts(col):
-            if isinstance(col, dict):
-                return sorted_dict({
-                    k: rec_sorted_dicts(v) for (k, v) in col.items()
-                })
-            elif isinstance(col, list):
-                return [rec_sorted_dicts(x) for x in col]
-            else:
-                return col
-
         output = self.convertAndRead(
             'example.toml',
             'toml',
             'msgpack',
             binary=True,
-            transform=rec_sorted_dicts,
+            transform=lambda col: remarshal.traverse(
+                col,
+                dict_callback=sorted_dict
+            ),
         )
         reference = readFile('example.msgpack', binary=True)
         self.assertEqual(output, reference)
@@ -209,7 +205,8 @@ class TestRemarshal(unittest.TestCase):
             'example.yaml',
             'yaml',
             'msgpack',
-            binary=True
+            ordered=True,
+            binary=True,
         )
         reference = readFile('example.msgpack', binary=True)
         self.assertEqual(output, reference)
@@ -362,10 +359,12 @@ class TestRemarshal(unittest.TestCase):
     def test_ordered_simple(self):
         for from_ in 'json', 'toml', 'yaml':
             for to in 'json', 'toml', 'yaml':
-                output = self.convertAndRead('order.' + from_,
-                                             from_,
-                                             to,
-                                             ordered=True)
+                output = self.convertAndRead(
+                    'order.' + from_,
+                    from_,
+                    to,
+                    ordered=True
+                )
                 reference = readFile('order.' + to)
                 self.assertEqual(output, reference)
 

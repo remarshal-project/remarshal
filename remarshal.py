@@ -289,7 +289,56 @@ def encode_json(data, ordered, indent):
     ) + "\n"
 
 
+def traverse(
+    col,
+    dict_callback=lambda x: x,
+    list_callback=lambda x: x,
+    key_callback=lambda x: x,
+    value_callback=lambda x: x
+):
+    if isinstance(col, dict):
+        return dict_callback(col.__class__([
+            (key_callback(k), traverse(
+                v,
+                dict_callback,
+                list_callback,
+                key_callback,
+                value_callback
+            )) for (k, v) in col.items()
+        ]))
+    elif isinstance(col, list):
+        return list_callback([traverse(
+            x,
+            dict_callback,
+            list_callback,
+            key_callback,
+            value_callback
+        ) for x in col])
+    else:
+        return value_callback(col)
+
+
 def encode_msgpack(data):
+    try:
+        # Ensure that in Python 2 strings are serialized as MessagePack
+        # strings, not binaries.  We are shamelessly using an exception
+        # for flow control here.
+        unicode
+
+        def str_to_unicode(obj):
+            if isinstance(obj, str):
+                return unicode(obj)
+            else:
+                return obj
+
+        data = traverse(
+            data,
+            key_callback=str_to_unicode,
+            value_callback=str_to_unicode,
+        )
+    except NameError:
+        pass
+
     return umsgpack.packb(data)
 
 
