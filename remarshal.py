@@ -65,9 +65,27 @@ def timestamp_constructor(loader, node):
     return dateutil.parser.parse(node.value)
 
 
-for loader in [OrderedLoader, TimezoneLoader]:
-    loader.add_constructor(u'tag:yaml.org,2002:timestamp',
-                           timestamp_constructor)
+loaders = [OrderedLoader, TimezoneLoader]
+for loader in loaders:
+    loader.add_constructor(
+        u'tag:yaml.org,2002:timestamp',
+        timestamp_constructor
+    )
+
+
+# Construct YAML strs as Unicode in Python 2.
+# We are shamelessly using an exception for flow control here.
+try:
+    unicode
+
+    for loader in loaders:
+        loader.add_constructor(
+            u'tag:yaml.org,2002:str',
+            lambda self, node: self.construct_scalar(node)
+        )
+except NameError:
+    pass
+
 
 # === JSON ===
 
@@ -319,26 +337,6 @@ def traverse(
 
 
 def encode_msgpack(data):
-    try:
-        # Ensure that in Python 2 strings are serialized as MessagePack
-        # strings, not binaries.  We are shamelessly using an exception
-        # for flow control here.
-        unicode
-
-        def str_to_unicode(obj):
-            if isinstance(obj, str):
-                return unicode(obj)
-            else:
-                return obj
-
-        data = traverse(
-            data,
-            key_callback=str_to_unicode,
-            value_callback=str_to_unicode,
-        )
-    except NameError:
-        pass
-
     return umsgpack.packb(data)
 
 
