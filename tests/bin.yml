@@ -1,0 +1,53 @@
+clients:
+  data:
+  - - !!binary |
+      Z2FtbWE=
+    - !!binary |
+      ZGVsdGE=
+  - - 1
+    - 2
+  hosts:
+  - !!binary |
+    YWxwaGE=
+  - !!binary |
+    b21lZ2E=
+database:
+  connection_max: 5000
+  enabled: true
+  ports:
+  - 8001
+  - 8001
+  - 8002
+  server: !!binary |
+    MTkyLjE2OC4xLjE=
+owner:
+  bio: !!binary |
+    R2l0SHViIENvZm91bmRlciAmIENFTwpMaWtlcyB0YXRlciB0b3RzIGFuZCBiZWVyLg==
+  dob: 1979-05-27 07:32:00+00:00
+  name: !!binary |
+    VG9tIFByZXN0b24tV2VybmVy
+  organization: !!binary |
+    R2l0SHVi
+products:
+- name: !!binary |
+    SGFtbWVy
+  sku: 738594937
+- color: !!binary |
+    Z3JheQ==
+  name: !!binary |
+    TmFpbA==
+  sku: 284758393
+servers:
+  alpha:
+    dc: !!binary |
+      ZXFkYzEw
+    ip: !!binary |
+      MTAuMC4wLjE=
+  beta:
+    country: 中国
+    dc: !!binary |
+      ZXFkYzEw
+    ip: !!binary |
+      MTAuMC4wLjI=
+title: !!binary |
+  VE9NTCBFeGFtcGxl
