@@ -49,10 +49,14 @@ def dict_representer(dumper, data):
     )
 
 
-OrderedLoader.add_constructor(yaml.resolver.BaseResolver.DEFAULT_MAPPING_TAG,
-                              mapping_constructor)
-OrderedDumper.add_representer(OrderedDict,
-                              dict_representer)
+OrderedLoader.add_constructor(
+    yaml.resolver.BaseResolver.DEFAULT_MAPPING_TAG,
+    mapping_constructor
+)
+OrderedDumper.add_representer(
+    OrderedDict,
+    dict_representer
+)
 
 
 # Fix loss of time zone information in PyYAML.
@@ -128,73 +132,100 @@ def parse_command_line(argv):
     me = os.path.basename(argv[0])
     format_from_argv0, argv0_from, argv0_to = argv0_to_format(me)
 
-    parser = argparse.ArgumentParser(description='Convert between TOML, YAML '
-                                     'and JSON.')
+    parser = argparse.ArgumentParser(
+        description='Convert between TOML, MessagePack, YAML, and JSON.'
+    )
 
     input_group = parser.add_mutually_exclusive_group()
-    input_group.add_argument('input',
-                             nargs='?',
-                             default='-',
-                             help='input file')
-    input_group.add_argument('-i', '--input',
-                             dest='input_flag',
-                             metavar='input',
-                             default=None,
-                             help='input file')
+    input_group.add_argument(
+        'input',
+        nargs='?',
+        default='-',
+        help='input file'
+    )
+    input_group.add_argument(
+        '-i', '--input',
+        dest='input_flag',
+        metavar='input',
+        default=None,
+        help='input file'
+    )
 
     output_group = parser.add_mutually_exclusive_group()
-    output_group.add_argument('output',
-                              nargs='?',
-                              default='-',
-                              help='input file')
-    output_group.add_argument('-o', '--output',
-                              dest='output_flag',
-                              metavar='output',
-                              default=None,
-                              help='output file')
+    output_group.add_argument(
+        'output',
+        nargs='?',
+        default='-',
+        help='input file'
+    )
+    output_group.add_argument(
+        '-o', '--output',
+        dest='output_flag',
+        metavar='output',
+        default=None,
+        help='output file'
+    )
 
     if not format_from_argv0:
-        parser.add_argument('--if', '-if', '--input-format',
-                            dest='input_format',
-                            help="input format",
-                            choices=FORMATS)
-        parser.add_argument('--of', '-of', '--output-format',
-                            dest='output_format',
-                            help="output format",
-                            choices=FORMATS)
+        parser.add_argument(
+            '--if', '-if', '--input-format',
+            dest='input_format',
+            help="input format",
+            choices=FORMATS
+        )
+        parser.add_argument(
+            '--of',
+            '-of',
+            '--output-format',
+            dest='output_format',
+            help="output format",
+            choices=FORMATS
+        )
 
     if not format_from_argv0 or argv0_to == 'json':
-        parser.add_argument('--indent-json',
-                            dest='indent_json',
-                            metavar='n',
-                            type=int,
-                            default=None,
-                            help='indent JSON output')
+        parser.add_argument(
+            '--indent-json',
+            dest='indent_json',
+            metavar='n',
+            type=int,
+            default=None,
+            help='indent JSON output'
+        )
 
     if not format_from_argv0 or argv0_to == 'yaml':
-        parser.add_argument('--yaml-style',
-                            dest='yaml_style',
-                            default=None,
-                            help='YAML formatting style',
-                            choices=['', '\'', '"', '|', '>'])
+        parser.add_argument(
+            '--yaml-style',
+            dest='yaml_style',
+            default=None,
+            help='YAML formatting style',
+            choices=['', '\'', '"', '|', '>']
+        )
 
-    parser.add_argument('--wrap',
-                        dest='wrap',
-                        metavar='key',
-                        default=None,
-                        help='wrap the data in a map type with the given key')
-    parser.add_argument('--unwrap',
-                        dest='unwrap',
-                        metavar='key',
-                        default=None,
-                        help='only output the data stored under the given key')
-    parser.add_argument('-p', '--preserve-key-order',
-                        dest='ordered',
-                        action='store_true',
-                        help='preserve the order of dictionary/mapping keys')
-    parser.add_argument('-v', '--version',
-                        action='version',
-                        version=__version__)
+    parser.add_argument(
+        '--wrap',
+        dest='wrap',
+        metavar='key',
+        default=None,
+        help='wrap the data in a map type with the given key'
+    )
+    parser.add_argument(
+        '--unwrap',
+        dest='unwrap',
+        metavar='key',
+        default=None,
+        help='only output the data stored under the given key'
+    )
+    parser.add_argument(
+        '-p', '--preserve-key-order',
+        dest='ordered',
+        action='store_true',
+        help='preserve the order of dictionary/mapping keys'
+    )
+    parser.add_argument(
+        '-v', '--version',
+        action='version',
+        version=__version__
+    )
 
     args = parser.parse_args(args=argv[1:])
 
@@ -345,9 +376,11 @@ def encode_toml(data, ordered):
         return pytoml.dumps(data, sort_keys=not ordered)
     except AttributeError as e:
         if str(e) == "'list' object has no attribute 'keys'":
-            raise ValueError('Cannot convert non-dictionary data to '
-                             'TOML; use "wrap" to wrap it in a '
-                             'dictionary')
+            raise ValueError(
+                'Cannot convert non-dictionary data to '
+                'TOML; use "wrap" to wrap it in a '
+                'dictionary'
+            )
         else:
             raise e
 
@@ -369,15 +402,17 @@ def encode_yaml(data, ordered, yaml_options):
 
 def run(argv):
     args = parse_command_line(argv)
-    remarshal(args.input,
-              args.output,
-              args.input_format,
-              args.output_format,
-              args.wrap,
-              args.unwrap,
-              args.indent_json,
-              args.yaml_options,
-              args.ordered)
+    remarshal(
+        args.input,
+        args.output,
+        args.input_format,
+        args.output_format,
+        args.wrap,
+        args.unwrap,
+        args.indent_json,
+        args.yaml_options,
+        args.ordered
+    )
 
 
 def remarshal(
@@ -426,8 +461,9 @@ def remarshal(
         elif output_format == 'yaml':
             output_data = encode_yaml(parsed, ordered, yaml_options)
         else:
-            raise ValueError('Unknown output format: {0}'.
-                             format(output_format))
+            raise ValueError(
+                'Unknown output format: {0}'.format(output_format)
+            )
 
         if output_format == 'msgpack':
             encoded = output_data

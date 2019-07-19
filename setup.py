@@ -4,12 +4,16 @@ import os.path
 import re
 from setuptools import find_packages, setup
 
-remarshal_file = os.path.join(os.path.dirname(os.path.realpath(__file__)),
-                              'remarshal.py')
+remarshal_file = os.path.join(
+    os.path.dirname(os.path.realpath(__file__)),
+    'remarshal.py'
+)
 with open(remarshal_file, 'rb') as f:
     content = f.read().decode('utf-8')
-    version = re.search(r"__version__ = '(\d+\.\d+\.\d+)",
-                        content, re.MULTILINE).group(1)
+    version = re.search(
+        r"__version__ = '(\d+\.\d+\.\d+)",
+        content, re.MULTILINE
+    ).group(1)
 
 formats = ['json', 'toml', 'msgpack', 'yaml']
 

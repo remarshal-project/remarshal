@@ -41,10 +41,16 @@ def tomlSignature(data):
 
     def f(lst):
         def q(line):
-            return line.startswith('#') or line == u'' or line == u']' or \
-                re.match(r'^".*",?$', line) or re.match(r'^hosts', line)
-        return sorted([strip_more(line) for line in lst if
-                       not q(strip_more(line))])
+            return (
+                line.startswith('#') or
+                line == u'' or
+                line == u']' or
+                re.match(r'^".*",?$', line) or
+                re.match(r'^hosts', line)
+            )
+        return sorted(
+            [strip_more(line) for line in lst if not q(strip_more(line))]
+        )
 
     return f(data.split("\n"))
 
@@ -75,16 +81,18 @@ class TestRemarshal(unittest.TestCase):
         transform=None,
     ):
         output_filename = self.tempFilename()
-        remarshal.remarshal(test_file_path(input),
-                            output_filename,
-                            input_format,
-                            output_format,
-                            wrap=wrap,
-                            unwrap=unwrap,
-                            indent_json=indent_json,
-                            yaml_options=yaml_options,
-                            ordered=ordered,
-                            transform=transform)
+        remarshal.remarshal(
+            test_file_path(input),
+            output_filename,
+            input_format,
+            output_format,
+            wrap=wrap,
+            unwrap=unwrap,
+            indent_json=indent_json,
+            yaml_options=yaml_options,
+            ordered=ordered,
+            transform=transform
+        )
         return readFile(output_filename, binary)
 
     def setUp(self):
@@ -143,8 +151,10 @@ class TestRemarshal(unittest.TestCase):
         output_sig = tomlSignature(output)
         # The date in 'example.json' is a string.
         reference_sig = tomlSignature(
-            reference.replace('1979-05-27T07:32:00Z',
-                              '"1979-05-27T07:32:00+00:00"')
+            reference.replace(
+                '1979-05-27T07:32:00Z',
+                '"1979-05-27T07:32:00+00:00"'
+            )
         )
         self.assertEqual(output_sig, reference_sig)
 
@@ -152,8 +162,10 @@ class TestRemarshal(unittest.TestCase):
         output = self.convertAndRead('example.json', 'json', 'yaml')
         reference = readFile('example.yaml')
         # The date in 'example.json' is a string.
-        reference_patched = reference.replace('1979-05-27 07:32:00+00:00',
-                                              "'1979-05-27T07:32:00+00:00'")
+        reference_patched = reference.replace(
+            '1979-05-27 07:32:00+00:00',
+            "'1979-05-27T07:32:00+00:00'"
+        )
         self.assertEqual(output, reference_patched)
 
     def test_msgpack2json(self):
@@ -251,26 +263,42 @@ class TestRemarshal(unittest.TestCase):
         self.assertEqual(output, reference)
 
     def test_yaml_style_single_quote(self):
-        output = self.convertAndRead('long-line.json', 'json', 'yaml',
-                                     yaml_options={'default_style': "'"})
+        output = self.convertAndRead(
+            'long-line.json',
+            'json',
+            'yaml',
+            yaml_options={'default_style': "'"}
+        )
         reference = readFile('long-line-single-quote.yaml')
         self.assertEqual(output, reference)
 
     def test_yaml_style_double_quote(self):
-        output = self.convertAndRead('long-line.json', 'json', 'yaml',
-                                     yaml_options={'default_style': '"'})
+        output = self.convertAndRead(
+            'long-line.json',
+            'json',
+            'yaml',
+            yaml_options={'default_style': '"'}
+        )
         reference = readFile('long-line-double-quote.yaml')
         self.assertEqual(output, reference)
 
     def test_yaml_style_pipe(self):
-        output = self.convertAndRead('long-line.json', 'json', 'yaml',
-                                     yaml_options={'default_style': '|'})
+        output = self.convertAndRead(
+            'long-line.json',
+            'json',
+            'yaml',
+            yaml_options={'default_style': '|'}
+        )
         reference = readFile('long-line-pipe.yaml')
         self.assertEqual(output, reference)
 
     def test_yaml_style_gt(self):
-        output = self.convertAndRead('long-line.json', 'json', 'yaml',
-                                     yaml_options={'default_style': '>'})
+        output = self.convertAndRead(
+            'long-line.json',
+            'json',
+            'yaml',
+            yaml_options={'default_style': '>'}
+        )
         reference = readFile('long-line-gt.yaml')
         self.assertEqual(output, reference)
 
@@ -281,8 +309,10 @@ class TestRemarshal(unittest.TestCase):
                     found, from_parsed, to_parsed = remarshal.argv0_to_format(
                         s.format(from_str, to_str)
                     )
-                    self.assertEqual((found, from_parsed, to_parsed),
-                                     (found, from_str, to_str))
+                    self.assertEqual(
+                        (found, from_parsed, to_parsed),
+                        (found, from_str, to_str)
+                    )
 
         test_format_string('{0}2{1}')
         test_format_string('{0}2{1}.exe')
@@ -338,16 +368,29 @@ class TestRemarshal(unittest.TestCase):
 
     def test_run_no_input_file(self):
         with self.assertRaises(IOError) as cm:
-            args = [sys.argv[0], '-if', 'json', '-of', 'json',
-                    'fake-input-file-that-almost-certainly-doesnt-exist-2382']
+            args = [
+                sys.argv[0],
+                '-if',
+                'json',
+                '-of',
+                'json',
+                'fake-input-file-that-almost-certainly-doesnt-exist-2382'
+            ]
             remarshal.run(args)
         self.assertEqual(cm.exception.errno, errno.ENOENT)
 
     def test_run_no_output_dir(self):
         with self.assertRaises(IOError) as cm:
-            args = [sys.argv[0], '-if', 'json', '-of', 'json', '-o',
-                    'this_path/almost-certainly/doesnt-exist-5836',
-                    test_file_path('example.json')]
+            args = [
+                sys.argv[0],
+                '-if',
+                'json',
+                '-of',
+                'json',
+                '-o',
+                'this_path/almost-certainly/doesnt-exist-5836',
+                test_file_path('example.json')
+            ]
             remarshal.run(args)
         self.assertEqual(cm.exception.errno, errno.ENOENT)
 
@@ -369,10 +412,12 @@ class TestRemarshal(unittest.TestCase):
                 self.assertEqual(output, reference)
 
     def test_ordered_yaml2yaml(self):
-        output = self.convertAndRead('example.yaml',
-                                     'yaml',
-                                     'yaml',
-                                     ordered=True)
+        output = self.convertAndRead(
+            'example.yaml',
+            'yaml',
+            'yaml',
+            ordered=True
+        )
         reference = readFile('example.yaml')
         self.assertEqual(output, reference)
 
