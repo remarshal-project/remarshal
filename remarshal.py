@@ -21,7 +21,7 @@ import yaml
 from collections import OrderedDict
 
 
-__version__ = '0.11.0'
+__version__ = '0.11.1'
 
 FORMATS = ['json', 'msgpack', 'toml', 'yaml']
 
@@ -328,14 +328,17 @@ def encode_json(data, ordered, indent):
     else:
         separators = (',', ':')
 
-    return json.dumps(
-        data,
-        default=json_default,
-        ensure_ascii=False,
-        indent=indent,
-        separators=separators,
-        sort_keys=not ordered
-    ) + "\n"
+    try:
+        return json.dumps(
+            data,
+            default=json_default,
+            ensure_ascii=False,
+            indent=indent,
+            separators=separators,
+            sort_keys=not ordered
+        ) + "\n"
+    except TypeError as e:
+        raise ValueError('Cannot convert data to JSON ({0})'.format(e))
 
 
 def traverse(
@@ -368,7 +371,10 @@ def traverse(
 
 
 def encode_msgpack(data):
-    return umsgpack.packb(data)
+    try:
+        return umsgpack.packb(data)
+    except umsgpack.UnsupportedTypeException as e:
+        raise ValueError('Cannot convert data to MessagePack ({0})'.format(e))
 
 
 def encode_toml(data, ordered):
@@ -383,7 +389,11 @@ def encode_toml(data, ordered):
             )
         else:
             raise e
-
+    except TypeError as e:
+        if str(e) == "'in <string>' requires string as left operand, not int":
+            raise ValueError('Cannot convert binary to TOML')
+        else:
+            raise ValueError('Cannot convert data to TOML ({0})'.format(e))
 
 def encode_yaml(data, ordered, yaml_options):
     dumper = OrderedDumper if ordered else yaml.SafeDumper

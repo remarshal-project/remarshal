@@ -16,11 +16,17 @@ import unittest
 
 
 TEST_PATH = os.path.dirname(os.path.realpath(__file__))
+PYTHON_3 = True
+try:
+    unicode
+    PYTHON_3 = False
+except NameError:
+    pass
 
 
 def test_file_path(filename):
     path_list = [TEST_PATH]
-    if re.match(r'example\.(json|msgpack|toml|yaml)', filename):
+    if re.match(r'example\.(json|msgpack|toml|yaml)$', filename):
         path_list.append('..')
     path_list.append(filename)
     return os.path.join(*path_list)
@@ -256,6 +262,28 @@ class TestRemarshal(unittest.TestCase):
     def test_malformed_yaml(self):
         with self.assertRaises(ValueError) as context:
             self.convertAndRead('garbage', 'yaml', 'json')
+
+    @unittest.skipUnless(PYTHON_3, 'requires Python 3')
+    def test_binary_to_json(self):
+        with self.assertRaises(ValueError) as context:
+            self.convertAndRead('bin.msgpack', 'msgpack', 'json')
+        with self.assertRaises(ValueError) as context:
+            self.convertAndRead('bin.yml', 'yaml', 'json')
+
+    @unittest.skipUnless(PYTHON_3, 'requires Python 3')
+    def test_binary_to_msgpack(self):
+        self.convertAndRead('bin.yml', 'yaml', 'msgpack', binary=True)
+
+    @unittest.skipUnless(PYTHON_3, 'requires Python 3')
+    def test_binary_to_toml(self):
+        with self.assertRaises(ValueError) as context:
+            self.convertAndRead('bin.msgpack', 'msgpack', 'toml')
+        with self.assertRaises(ValueError) as context:
+            self.convertAndRead('bin.yml', 'yaml', 'toml')
+
+    @unittest.skipUnless(PYTHON_3, 'requires Python 3')
+    def test_binary_to_yaml(self):
+        self.convertAndRead('bin.msgpack', 'msgpack', 'yaml')
 
     def test_yaml_style_default(self):
         output = self.convertAndRead('long-line.json', 'json', 'yaml')
