@@ -216,5 +216,6 @@ speed = 2
 
 MIT.  See the file `LICENSE`.
 
-`example.toml` from <https://github.com/toml-lang/toml>. `example.yaml` and
-`example.json` are derived from it.
+`example.toml` from <https://github.com/toml-lang/toml>.  `example.json`,
+`example.msgpack`, `example.yml`, `tests/bin.msgpack`, and `tests/bin.yml`
+are derived from it.
