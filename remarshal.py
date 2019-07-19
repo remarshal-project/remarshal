@@ -21,7 +21,7 @@ import yaml
 from collections import OrderedDict
 
 
-__version__ = '0.11.1'
+__version__ = '0.11.2'
 
 FORMATS = ['json', 'msgpack', 'toml', 'yaml']
 

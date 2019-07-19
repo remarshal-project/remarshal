@@ -33,7 +33,11 @@ setup(
         'u-msgpack-python >= 2.5.1',
     ],
     entry_points={
-        'console_scripts': ['{0}2{1} = remarshal:main'.format(x, y)
-                            for x in formats for y in formats]
+        'console_scripts': [
+            'remarshal = remarshal:main'
+        ] + [
+            '{0}2{1} = remarshal:main'.format(x, y)
+            for x in formats for y in formats
+        ]
     },
 )
