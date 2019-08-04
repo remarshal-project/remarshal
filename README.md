@@ -11,10 +11,10 @@ used for format conversion, reformatting, and error detection.
 ## Known limitations
 
 * Remarshal currently only supports TOML 0.4.0.
-* MessagePack with binary fields can't be converted to JSON or TOML with the
-Python 3 version of remarshal.  It is properly converted to and from YAML.
-With Python 2 binary fields are coerced to strings.  This means that
-`msgpack2*` is lossy.
+* MessagePack and YAML with binary fields can't be converted to JSON or TOML
+with the Python 3 version of remarshal.  They can be converted between each
+other.  With Python 2 binary fields are coerced to strings.  This means that
+with Python 2 `{msgpack,yaml}2*` is lossy.
 
 ## Installation
 
