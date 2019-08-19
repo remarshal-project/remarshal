@@ -3,7 +3,7 @@
 [![Travis CI Build Status](https://travis-ci.org/dbohdan/remarshal.svg?branch=master)](https://travis-ci.org/dbohdan/remarshal)
 [![AppVeyor CI Build Status](https://ci.appveyor.com/api/projects/status/github/dbohdan/remarshal?branch=master&svg=true)](https://ci.appveyor.com/project/dbohdan/remarshal)
 
-Convert between TOML, MessagePack, YAML, and JSON.  When installed,
+Convert between JSON, MessagePack, TOML, and YAML.  When installed,
 provides the command line command `remarshal` as well as the short commands
 `{json,msgpack,toml,yaml}2{json,msgpack,toml,yaml}`.  These commands can be
 used for format conversion, reformatting, and error detection.
