@@ -90,14 +90,15 @@ string the result of the conversion is written to the standard output.
 ### Wrappers
 
 The arguments `--wrap` and `--unwrap` are there to solve the problem of
-converting JSON and YAML data to TOML if the top-level element of that data is
-not of a dictionary type (i.e., not an object in JSON or an associative array in
-YAML) but a list, a string, or a number.  Such data can not be represented as
-TOML directly; it needs to wrapped in a dictionary first.  Passing the flag
-`--wrap someKey` to `remarshal` or one of its short commands wraps the input
-data in a "wrapper" dictionary with one key, "someKey", with the input data as
-its value.  The flag `--unwrap someKey` does the opposite: if it is specified
-only the value stored under the key "someKey" in the top-level dictionary
+converting JSON, MessagePack, and YAML data to TOML if the top-level element
+of that data is not of a dictionary type (i.e., not an object in JSON, a map
+in MessagePack, or an associative array in YAML) but a list, a string, or
+a number.  Such data can not be represented as TOML directly; it needs to be
+wrapped in a dictionary first.  Passing the flag `--wrap someKey` to
+`remarshal` or one of its short commands wraps the input data in a "wrapper"
+dictionary with one key, "someKey", with the input data as its value.
+The flag `--unwrap someKey` does the opposite: if it is specified only
+the value stored under the key "someKey" in the top-level dictionary
 element of the input data is converted to the target format and output; all
 other data is ignored.  If the top-level element is not a dictionary or does not
 have the key "someKey" then `--unwrap someKey` returns an error.
