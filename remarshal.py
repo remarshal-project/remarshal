@@ -17,13 +17,14 @@ import sys
 import pytoml
 import umsgpack
 import yaml
+import flunn
 
 from collections import OrderedDict
 
 
 __version__ = '0.11.2'
 
-FORMATS = ['json', 'msgpack', 'toml', 'yaml']
+FORMATS = ['json', 'msgpack', 'toml', 'yaml', 'cbor']
 
 
 # === YAML ===
@@ -133,7 +134,7 @@ def parse_command_line(argv):
     format_from_argv0, argv0_from, argv0_to = argv0_to_format(me)
 
     parser = argparse.ArgumentParser(
-        description='Convert between TOML, MessagePack, YAML, and JSON.'
+        description='Convert between TOML, MessagePack, YAML, JSON, and CBOR.'
     )
 
     input_group = parser.add_mutually_exclusive_group()
@@ -283,6 +284,13 @@ def decode_msgpack(input_data, ordered):
         raise ValueError('Cannot parse as MessagePack ({0})'.format(e))
 
 
+def decode_cbor(input_data, ordered):
+    try:
+        return flunn.loads(input_data)
+    except flunn.InvalidCborError as e:
+        raise ValueError('Cannot parse as CBOR ({0})'.format(e))
+
+
 def decode_toml(input_data, ordered):
     try:
         pairs_hook = OrderedDict if ordered else dict
@@ -311,6 +319,7 @@ def decode(input_format, input_data, ordered):
         'msgpack': decode_msgpack,
         'toml': decode_toml,
         'yaml': decode_yaml,
+        'cbor': decode_cbor,
     }
 
     if input_format not in decoder:
@@ -375,6 +384,13 @@ def encode_msgpack(data):
         return umsgpack.packb(data)
     except umsgpack.UnsupportedTypeException as e:
         raise ValueError('Cannot convert data to MessagePack ({0})'.format(e))
+
+
+def encode_cbor(data):
+    try:
+        return flunn.dumps(data)
+    except flunn.EncoderError as e:
+        raise ValueError('Cannot convert data to CBOR ({0})'.format(e))
 
 
 def encode_toml(data, ordered):
@@ -470,12 +486,14 @@ def remarshal(
             output_data = encode_toml(parsed, ordered)
         elif output_format == 'yaml':
             output_data = encode_yaml(parsed, ordered, yaml_options)
+        elif output_format == 'cbor':
+            output_data = encode_cbor(parsed)
         else:
             raise ValueError(
                 'Unknown output format: {0}'.format(output_format)
             )
 
-        if output_format == 'msgpack':
+        if output_format == 'msgpack' or output_format == 'cbor':
             encoded = output_data
         else:
             encoded = output_data.encode('utf-8')

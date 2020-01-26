@@ -31,6 +31,7 @@ setup(
         'pytoml >= 0.1.11',
         'PyYAML >= 5.1',
         'u-msgpack-python >= 2.5.1',
+        'flunn >= 1.0.0',
     ],
     entry_points={
         'console_scripts': [
