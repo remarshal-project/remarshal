@@ -376,6 +376,10 @@ class TestRemarshal(unittest.TestCase):
     def test_binary_to_yaml(self):
         self.convertAndRead('bin.msgpack', 'msgpack', 'yaml')
 
+    @unittest.skipUnless(PYTHON_3, 'requires Python 3')
+    def test_binary_to_cbor(self):
+        self.convertAndRead('bin.msgpack', 'msgpack', 'cbor', binary=True)
+
     def test_yaml_style_default(self):
         output = self.convertAndRead('long-line.json', 'json', 'yaml')
         reference = readFile('long-line-default.yaml')
