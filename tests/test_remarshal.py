@@ -13,6 +13,9 @@ import re
 import sys
 import tempfile
 import unittest
+import cbor2
+
+from datetime import timezone
 
 
 TEST_PATH = os.path.dirname(os.path.realpath(__file__))
@@ -26,7 +29,7 @@ except NameError:
 
 def test_file_path(filename):
     path_list = [TEST_PATH]
-    if re.match(r'example\.(json|msgpack|toml|yaml)$', filename):
+    if re.match(r'example\.(json|msgpack|toml|yaml|cbor)$', filename):
         path_list.append('..')
     path_list.append(filename)
     return os.path.join(*path_list)
@@ -64,6 +67,8 @@ def tomlSignature(data):
 def sorted_dict(d):
     return collections.OrderedDict(sorted(d.items()))
 
+def transformDateToIso(col):
+    return col.isoformat() if isinstance(col, datetime.datetime) else col
 
 class TestRemarshal(unittest.TestCase):
 
@@ -72,6 +77,14 @@ class TestRemarshal(unittest.TestCase):
         os.close(fd)
         self.temp_files.append(temp_filename)
         return temp_filename
+
+    def assertCborSame(self, output, reference):
+
+        # To date, Python’s CBOR libraries don’t support encoding to
+        # canonical-form CBOR, so we have to parse and deep-compare.
+        output_dec = cbor2.loads(output)
+        reference_dec = cbor2.loads(reference)
+        self.assertEqual(output_dec, reference_dec)
 
     def convertAndRead(
         self,
@@ -135,6 +148,11 @@ class TestRemarshal(unittest.TestCase):
         reference = readFile('example.yaml')
         self.assertEqual(output, reference)
 
+    def test_cbor2cbor(self):
+        output = self.convertAndRead('example.cbor', 'cbor', 'cbor', binary=True)
+        reference = readFile('example.cbor', binary=True)
+        self.assertCborSame(output, reference)
+
     def test_json2msgpack(self):
         def patch(x):
             x['owner']['dob'] = datetime.datetime(1979, 5, 27, 7, 32)
@@ -150,6 +168,23 @@ class TestRemarshal(unittest.TestCase):
         )
         reference = readFile('example.msgpack', binary=True)
         self.assertEqual(output, reference)
+
+    def test_json2cbor(self):
+        def patch(x):
+            x['owner']['dob'] = datetime.datetime(1979, 5, 27, 7, 32, 0, 0, timezone.utc)
+            return x
+
+        output = self.convertAndRead(
+            'example.json',
+            'json',
+            'cbor',
+            binary=True,
+            ordered=True,
+            transform=patch,
+        )
+
+        reference = readFile('example.cbor', binary=True)
+        self.assertCborSame(output, reference)
 
     def test_json2toml(self):
         output = self.convertAndRead('example.json', 'json', 'toml')
@@ -189,6 +224,14 @@ class TestRemarshal(unittest.TestCase):
         reference = readFile('example.yaml')
         self.assertEqual(output, reference)
 
+    def test_msgpack2cbor(self):
+        output = self.convertAndRead(
+            'example.msgpack', 'msgpack', 'cbor',
+            binary=True,
+        )
+        reference = readFile('example.cbor', binary=True)
+        self.assertCborSame(output, reference)
+
     def test_toml2json(self):
         output = self.convertAndRead('example.toml', 'toml', 'json')
         reference = readFile('example.json')
@@ -213,6 +256,14 @@ class TestRemarshal(unittest.TestCase):
         reference = readFile('example.yaml')
         self.assertEqual(output, reference)
 
+    def test_toml2cbor(self):
+        output = self.convertAndRead(
+            'example.toml', 'toml', 'cbor',
+            binary=True,
+        )
+        reference = readFile('example.cbor', binary=True)
+        self.assertCborSame(output, reference)
+
     def test_yaml2json(self):
         output = self.convertAndRead('example.yaml', 'yaml', 'json')
         reference = readFile('example.json')
@@ -233,6 +284,46 @@ class TestRemarshal(unittest.TestCase):
         output = self.convertAndRead('example.yaml', 'yaml', 'toml')
         reference = readFile('example.toml')
         self.assertEqual(tomlSignature(output), tomlSignature(reference))
+
+    def test_yaml2cbor(self):
+        output = self.convertAndRead(
+            'example.yaml', 'yaml', 'cbor',
+            binary=True,
+        )
+        reference = readFile('example.cbor', binary=True)
+        self.assertCborSame(output, reference)
+
+    def test_cbor2json(self):
+        output = self.convertAndRead('example.cbor', 'cbor', 'json')
+        reference = readFile('example.json')
+        self.assertEqual(output, reference)
+
+    def test_cbor2toml(self):
+        output = self.convertAndRead('example.cbor', 'cbor', 'toml')
+        reference = readFile('example.toml')
+        output_sig = tomlSignature(output)
+        reference_sig = tomlSignature(reference)
+        self.assertEqual(output_sig, reference_sig)
+
+    def test_cbor2yaml(self):
+        output = self.convertAndRead('example.cbor', 'cbor', 'yaml')
+        reference = readFile('example.yaml')
+        self.assertEqual(output, reference)
+
+    def test_cbor2msgpack(self):
+        output = self.convertAndRead(
+            'example.cbor',
+            'cbor',
+            'msgpack',
+            binary=True,
+            ordered=True,
+            transform=lambda col: remarshal.traverse(
+                col,
+                dict_callback=sorted_dict
+            ),
+        )
+        reference = readFile('example.msgpack', binary=True)
+        self.assertEqual(output, reference)
 
     def test_missing_wrap(self):
         with self.assertRaises(ValueError) as context:

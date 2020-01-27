@@ -15,7 +15,7 @@ with open(remarshal_file, 'rb') as f:
         content, re.MULTILINE
     ).group(1)
 
-formats = ['json', 'toml', 'msgpack', 'yaml']
+formats = ['json', 'toml', 'msgpack', 'yaml', 'cbor']
 
 setup(
     name='remarshal',
@@ -31,7 +31,7 @@ setup(
         'pytoml >= 0.1.11',
         'PyYAML >= 5.1',
         'u-msgpack-python >= 2.5.1',
-        'flunn >= 1.0.0',
+        'cbor2 >= 5.0.0',
     ],
     entry_points={
         'console_scripts': [

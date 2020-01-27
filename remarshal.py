@@ -17,7 +17,7 @@ import sys
 import pytoml
 import umsgpack
 import yaml
-import flunn
+import cbor2
 
 from collections import OrderedDict
 
@@ -286,8 +286,8 @@ def decode_msgpack(input_data, ordered):
 
 def decode_cbor(input_data, ordered):
     try:
-        return flunn.loads(input_data)
-    except flunn.InvalidCborError as e:
+        return cbor2.loads(input_data)
+    except cbor2.InvalidCborError as e:
         raise ValueError('Cannot parse as CBOR ({0})'.format(e))
 
 
@@ -388,8 +388,8 @@ def encode_msgpack(data):
 
 def encode_cbor(data):
     try:
-        return flunn.dumps(data)
-    except flunn.EncoderError as e:
+        return cbor2.dumps(data)
+    except cbor2.EncoderError as e:
         raise ValueError('Cannot convert data to CBOR ({0})'.format(e))
 
 
