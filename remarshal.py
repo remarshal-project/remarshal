@@ -156,7 +156,7 @@ def parse_command_line(argv):
         'output',
         nargs='?',
         default='-',
-        help='input file'
+        help='output file'
     )
     output_group.add_argument(
         '-o', '--output',
