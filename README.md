@@ -5,7 +5,7 @@
 
 Convert between CBOR, JSON, MessagePack, TOML, and YAML.  When installed,
 provides the command line command `remarshal` as well as the short commands
-`{json,msgpack,toml,yaml,cbor}2{json,msgpack,toml,yaml,cbor}`.  These commands
+`{cbor,json,msgpack,toml,yaml}2{cbor,json,msgpack,toml,yaml}`.  These commands
 can be used for format conversion, reformatting, and error detection.
 
 ## Known limitations
@@ -15,7 +15,7 @@ can be used for format conversion, reformatting, and error detection.
 to JSON or TOML
 with the Python 3 version of remarshal.  They can be converted between each
 other.  With Python 2 binary fields are coerced to strings.  This means that
-with Python 2 `{msgpack,yaml,cbor}2*` is lossy.
+with Python 2 `{cbor,msgpack,yaml}2*` is lossy.
 
 ## Installation
 
