@@ -31,7 +31,7 @@ environment:
     - PYTHON: "C:\\Python38-x64"
       PYTHON_VERSION: "3.8.x"
       PYTHON_ARCH: "64"
-version: "0.11.2.{build}"
+version: "0.12.0.{build}"
 init:
   - cmd: echo ===== INIT & %PYTHON%\python --version
 build_script:

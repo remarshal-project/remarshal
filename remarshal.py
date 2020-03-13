@@ -22,7 +22,7 @@ import cbor2
 from collections import OrderedDict
 
 
-__version__ = '0.11.2'
+__version__ = '0.12.0'
 
 FORMATS = ['json', 'msgpack', 'toml', 'yaml', 'cbor']
 
