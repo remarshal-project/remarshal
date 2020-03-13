@@ -24,7 +24,7 @@ from collections import OrderedDict
 
 __version__ = '0.12.0'
 
-FORMATS = ['json', 'msgpack', 'toml', 'yaml', 'cbor']
+FORMATS = ['cbor', 'json', 'msgpack', 'toml', 'yaml']
 
 
 # === YAML ===
@@ -315,11 +315,11 @@ def decode_yaml(input_data, ordered):
 
 def decode(input_format, input_data, ordered):
     decoder = {
+        'cbor': decode_cbor,
         'json': decode_json,
         'msgpack': decode_msgpack,
         'toml': decode_toml,
         'yaml': decode_yaml,
-        'cbor': decode_cbor,
     }
 
     if input_format not in decoder:
