@@ -3,7 +3,7 @@
 [![Travis CI Build Status](https://travis-ci.org/dbohdan/remarshal.svg?branch=master)](https://travis-ci.org/dbohdan/remarshal)
 [![AppVeyor CI Build Status](https://ci.appveyor.com/api/projects/status/github/dbohdan/remarshal?branch=master&svg=true)](https://ci.appveyor.com/project/dbohdan/remarshal)
 
-Convert between JSON, MessagePack, TOML, YAML, and CBOR.  When installed,
+Convert between CBOR, JSON, MessagePack, TOML, and YAML.  When installed,
 provides the command line command `remarshal` as well as the short commands
 `{json,msgpack,toml,yaml,cbor}2{json,msgpack,toml,yaml,cbor}`.  These commands
 can be used for format conversion, reformatting, and error detection.
@@ -11,7 +11,7 @@ can be used for format conversion, reformatting, and error detection.
 ## Known limitations
 
 * Remarshal currently only supports TOML 0.4.0.
-* Binary fields (i.e., from MessagePack, YAML, or CBOR) can't be converted
+* Binary fields (i.e., from CBOR, MessagePack, or YAML) can't be converted
 to JSON or TOML
 with the Python 3 version of remarshal.  They can be converted between each
 other.  With Python 2 binary fields are coerced to strings.  This means that
@@ -40,8 +40,8 @@ python3 setup.py install --user
 
 ```
 usage: remarshal.py [-h] [-i input] [-o output]
-                    [--if {json,msgpack,toml,yaml,cbor}]
-                    [--of {json,msgpack,toml,yaml,cbor}]
+                    [--if {cbor,json,msgpack,toml,yaml}]
+                    [--of {cbor,json,msgpack,toml,yaml}]
                     [--indent-json n]
                     [--yaml-style {,',",|,>}]
                     [--wrap key] [--unwrap key]
@@ -50,7 +50,7 @@ usage: remarshal.py [-h] [-i input] [-o output]
 ```
 
 ```
-usage: {json,msgpack,toml,yaml,cbor}2json [-h] [-i input] [-o output]
+usage: {cbor,json,msgpack,toml,yaml}2json [-h] [-i input] [-o output]
                                           [--indent-json n]
                                           [--wrap key] [--unwrap key]
                                           [--preserve-key-order] [-v]
@@ -58,21 +58,21 @@ usage: {json,msgpack,toml,yaml,cbor}2json [-h] [-i input] [-o output]
 ```
 
 ```
-usage: {json,msgpack,toml,yaml,cbor}2msgpack [-h] [-i input] [-o output]
+usage: {cbor,json,msgpack,toml,yaml}2msgpack [-h] [-i input] [-o output]
                                              [--wrap key] [--unwrap key]
                                              [--preserve-key-order] [-v]
                                              [input] [output]
 ```
 
 ```
-usage: {json,msgpack,toml,yaml,cbor}2toml [-h] [-i input] [-o output]
+usage: {cbor,json,msgpack,toml,yaml}2toml [-h] [-i input] [-o output]
                                           [--wrap key] [--unwrap key]
                                           [--preserve-key-order] [-v]
                                           [input] [output]
 ```
 
 ```
-usage: {json,msgpack,toml,yaml,cbor}2yaml [-h] [-i input] [-o output]
+usage: {cbor,json,msgpack,toml,yaml}2yaml [-h] [-i input] [-o output]
                                           [--yaml-style {,',",|,>}]
                                           [--wrap key] [--unwrap key]
                                           [--preserve-key-order] [-v]
@@ -80,7 +80,7 @@ usage: {json,msgpack,toml,yaml,cbor}2yaml [-h] [-i input] [-o output]
 ```
 
 ```
-usage: {json,msgpack,toml,yaml,cbor}2cbor [-h] [-i input] [-o output]
+usage: {cbor,json,msgpack,toml,yaml}2cbor [-h] [-i input] [-o output]
                                           [--wrap key] [--unwrap key]
                                           [--preserve-key-order] [-v]
                                           [input] [output]
