@@ -80,7 +80,7 @@ class TestRemarshal(unittest.TestCase):
 
     def assertCborSame(self, output, reference):
 
-        # To date, Python’s CBOR libraries don’t support encoding to
+        # To date, Python's CBOR libraries don't support encoding to
         # canonical-form CBOR, so we have to parse and deep-compare.
         output_dec = cbor2.loads(output)
         reference_dec = cbor2.loads(reference)
