@@ -15,9 +15,6 @@ import tempfile
 import unittest
 import cbor2
 
-from datetime import timezone
-
-
 TEST_PATH = os.path.dirname(os.path.realpath(__file__))
 PYTHON_3 = True
 try:
@@ -169,9 +166,10 @@ class TestRemarshal(unittest.TestCase):
         reference = readFile('example.msgpack', binary=True)
         self.assertEqual(output, reference)
 
+    @unittest.skipUnless(PYTHON_3, 'requires Python 3')
     def test_json2cbor(self):
         def patch(x):
-            x['owner']['dob'] = datetime.datetime(1979, 5, 27, 7, 32, 0, 0, timezone.utc)
+            x['owner']['dob'] = datetime.datetime(1979, 5, 27, 7, 32, 0, 0, datetime.timezone.utc)
             return x
 
         output = self.convertAndRead(
