@@ -13,6 +13,9 @@ PyYAML = "^5.3"
 u-msgpack-python = "^2.6"
 cbor2 = "^5.1"
 
+[tool.poetry.dev-dependencies]
+pytest = "^4.0"
+
 [build-system]
 requires = ["poetry>=0.12"]
 build-backend = "poetry.masonry.api"

@@ -4,6 +4,7 @@
 # License: MIT
 
 from .context import remarshal
+
 import collections
 import datetime
 import errno
@@ -13,7 +14,9 @@ import re
 import sys
 import tempfile
 import unittest
+
 import cbor2
+import pytest
 
 TEST_PATH = os.path.dirname(os.path.realpath(__file__))
 PYTHON_3 = True
@@ -24,7 +27,7 @@ except NameError:
     pass
 
 
-def test_file_path(filename):
+def data_file_path(filename):
     path_list = [TEST_PATH]
     if re.match(r'example\.(json|msgpack|toml|yaml|cbor)$', filename):
         path_list.append('..')
@@ -33,7 +36,7 @@ def test_file_path(filename):
 
 
 def readFile(filename, binary=False):
-    with open(test_file_path(filename), 'rb') as f:
+    with open(data_file_path(filename), 'rb') as f:
         content = f.read()
         if not binary:
             content = content.decode('utf-8')
@@ -81,7 +84,7 @@ class TestRemarshal(unittest.TestCase):
         # canonical-form CBOR, so we have to parse and deep-compare.
         output_dec = cbor2.loads(output)
         reference_dec = cbor2.loads(reference)
-        self.assertEqual(output_dec, reference_dec)
+        assert output_dec == reference_dec
 
     def convertAndRead(
         self,
@@ -98,7 +101,7 @@ class TestRemarshal(unittest.TestCase):
     ):
         output_filename = self.tempFilename()
         remarshal.remarshal(
-            test_file_path(input),
+            data_file_path(input),
             output_filename,
             input_format,
             output_format,
@@ -122,7 +125,7 @@ class TestRemarshal(unittest.TestCase):
     def test_json2json(self):
         output = self.convertAndRead('example.json', 'json', 'json')
         reference = readFile('example.json')
-        self.assertEqual(output, reference)
+        assert output == reference
 
     def test_msgpack2msgpack(self):
         output = self.convertAndRead(
@@ -133,17 +136,17 @@ class TestRemarshal(unittest.TestCase):
             ordered=True,
         )
         reference = readFile('example.msgpack', binary=True)
-        self.assertEqual(output, reference)
+        assert output == reference
 
     def test_toml2toml(self):
         output = self.convertAndRead('example.toml', 'toml', 'toml')
         reference = readFile('example.toml')
-        self.assertEqual(tomlSignature(output), tomlSignature(reference))
+        assert tomlSignature(output) == tomlSignature(reference)
 
     def test_yaml2yaml(self):
         output = self.convertAndRead('example.yaml', 'yaml', 'yaml')
         reference = readFile('example.yaml')
-        self.assertEqual(output, reference)
+        assert output == reference
 
     def test_cbor2cbor(self):
         output = self.convertAndRead('example.cbor', 'cbor', 'cbor', binary=True)
@@ -164,7 +167,7 @@ class TestRemarshal(unittest.TestCase):
             transform=patch,
         )
         reference = readFile('example.msgpack', binary=True)
-        self.assertEqual(output, reference)
+        assert output == reference
 
     @unittest.skipUnless(PYTHON_3, 'requires Python 3')
     def test_json2cbor(self):
@@ -195,7 +198,7 @@ class TestRemarshal(unittest.TestCase):
                 '"1979-05-27T07:32:00+00:00"'
             )
         )
-        self.assertEqual(output_sig, reference_sig)
+        assert output_sig == reference_sig
 
     def test_json2yaml(self):
         output = self.convertAndRead('example.json', 'json', 'yaml')
@@ -205,22 +208,22 @@ class TestRemarshal(unittest.TestCase):
             '1979-05-27 07:32:00+00:00',
             "'1979-05-27T07:32:00+00:00'"
         )
-        self.assertEqual(output, reference_patched)
+        assert output == reference_patched
 
     def test_msgpack2json(self):
         output = self.convertAndRead('example.msgpack', 'msgpack', 'json')
         reference = readFile('example.json')
-        self.assertEqual(output, reference)
+        assert output == reference
 
     def test_msgpack2toml(self):
         output = self.convertAndRead('example.msgpack', 'msgpack', 'toml')
         reference = readFile('example.toml')
-        self.assertEqual(tomlSignature(output), tomlSignature(reference))
+        assert tomlSignature(output) == tomlSignature(reference)
 
     def test_msgpack2yaml(self):
         output = self.convertAndRead('example.msgpack', 'msgpack', 'yaml')
         reference = readFile('example.yaml')
-        self.assertEqual(output, reference)
+        assert output == reference
 
     def test_msgpack2cbor(self):
         output = self.convertAndRead(
@@ -233,7 +236,7 @@ class TestRemarshal(unittest.TestCase):
     def test_toml2json(self):
         output = self.convertAndRead('example.toml', 'toml', 'json')
         reference = readFile('example.json')
-        self.assertEqual(output, reference)
+        assert output == reference
 
     def test_toml2msgpack(self):
         output = self.convertAndRead(
@@ -247,12 +250,12 @@ class TestRemarshal(unittest.TestCase):
             ),
         )
         reference = readFile('example.msgpack', binary=True)
-        self.assertEqual(output, reference)
+        assert output == reference
 
     def test_toml2yaml(self):
         output = self.convertAndRead('example.toml', 'toml', 'yaml')
         reference = readFile('example.yaml')
-        self.assertEqual(output, reference)
+        assert output == reference
 
     def test_toml2cbor(self):
         output = self.convertAndRead(
@@ -265,7 +268,7 @@ class TestRemarshal(unittest.TestCase):
     def test_yaml2json(self):
         output = self.convertAndRead('example.yaml', 'yaml', 'json')
         reference = readFile('example.json')
-        self.assertEqual(output, reference)
+        assert output == reference
 
     def test_yaml2msgpack(self):
         output = self.convertAndRead(
@@ -276,12 +279,12 @@ class TestRemarshal(unittest.TestCase):
             binary=True,
         )
         reference = readFile('example.msgpack', binary=True)
-        self.assertEqual(output, reference)
+        assert output == reference
 
     def test_yaml2toml(self):
         output = self.convertAndRead('example.yaml', 'yaml', 'toml')
         reference = readFile('example.toml')
-        self.assertEqual(tomlSignature(output), tomlSignature(reference))
+        assert tomlSignature(output) == tomlSignature(reference)
 
     def test_yaml2cbor(self):
         output = self.convertAndRead(
@@ -294,19 +297,19 @@ class TestRemarshal(unittest.TestCase):
     def test_cbor2json(self):
         output = self.convertAndRead('example.cbor', 'cbor', 'json')
         reference = readFile('example.json')
-        self.assertEqual(output, reference)
+        assert output == reference
 
     def test_cbor2toml(self):
         output = self.convertAndRead('example.cbor', 'cbor', 'toml')
         reference = readFile('example.toml')
         output_sig = tomlSignature(output)
         reference_sig = tomlSignature(reference)
-        self.assertEqual(output_sig, reference_sig)
+        assert output_sig == reference_sig
 
     def test_cbor2yaml(self):
         output = self.convertAndRead('example.cbor', 'cbor', 'yaml')
         reference = readFile('example.yaml')
-        self.assertEqual(output, reference)
+        assert output == reference
 
     def test_cbor2msgpack(self):
         output = self.convertAndRead(
@@ -321,42 +324,42 @@ class TestRemarshal(unittest.TestCase):
             ),
         )
         reference = readFile('example.msgpack', binary=True)
-        self.assertEqual(output, reference)
+        assert output == reference
 
     def test_missing_wrap(self):
-        with self.assertRaises(ValueError) as context:
+        with pytest.raises(ValueError) as context:
             output = self.convertAndRead('array.json', 'json', 'toml')
 
     def test_wrap(self):
         output = self.convertAndRead('array.json', 'json', 'toml',
                                      wrap='data')
         reference = readFile('array.toml')
-        self.assertEqual(output, reference)
+        assert output == reference
 
     def test_unwrap(self):
         output = self.convertAndRead('array.toml', 'toml', 'json',
                                      unwrap='data',
                                      indent_json=None)
         reference = readFile('array.json')
-        self.assertEqual(output, reference)
+        assert output == reference
 
     def test_malformed_json(self):
-        with self.assertRaises(ValueError) as context:
+        with pytest.raises(ValueError) as context:
             self.convertAndRead('garbage', 'json', 'yaml')
 
     def test_malformed_toml(self):
-        with self.assertRaises(ValueError) as context:
+        with pytest.raises(ValueError) as context:
             self.convertAndRead('garbage', 'toml', 'yaml')
 
     def test_malformed_yaml(self):
-        with self.assertRaises(ValueError) as context:
+        with pytest.raises(ValueError) as context:
             self.convertAndRead('garbage', 'yaml', 'json')
 
     @unittest.skipUnless(PYTHON_3, 'requires Python 3')
     def test_binary_to_json(self):
-        with self.assertRaises(ValueError) as context:
+        with pytest.raises(ValueError) as context:
             self.convertAndRead('bin.msgpack', 'msgpack', 'json')
-        with self.assertRaises(ValueError) as context:
+        with pytest.raises(ValueError) as context:
             self.convertAndRead('bin.yml', 'yaml', 'json')
 
     @unittest.skipUnless(PYTHON_3, 'requires Python 3')
@@ -365,9 +368,9 @@ class TestRemarshal(unittest.TestCase):
 
     @unittest.skipUnless(PYTHON_3, 'requires Python 3')
     def test_binary_to_toml(self):
-        with self.assertRaises(ValueError) as context:
+        with pytest.raises(ValueError) as context:
             self.convertAndRead('bin.msgpack', 'msgpack', 'toml')
-        with self.assertRaises(ValueError) as context:
+        with pytest.raises(ValueError) as context:
             self.convertAndRead('bin.yml', 'yaml', 'toml')
 
     @unittest.skipUnless(PYTHON_3, 'requires Python 3')
@@ -381,7 +384,7 @@ class TestRemarshal(unittest.TestCase):
     def test_yaml_style_default(self):
         output = self.convertAndRead('long-line.json', 'json', 'yaml')
         reference = readFile('long-line-default.yaml')
-        self.assertEqual(output, reference)
+        assert output == reference
 
     def test_yaml_style_single_quote(self):
         output = self.convertAndRead(
@@ -391,7 +394,7 @@ class TestRemarshal(unittest.TestCase):
             yaml_options={'default_style': "'"}
         )
         reference = readFile('long-line-single-quote.yaml')
-        self.assertEqual(output, reference)
+        assert output == reference
 
     def test_yaml_style_double_quote(self):
         output = self.convertAndRead(
@@ -401,7 +404,7 @@ class TestRemarshal(unittest.TestCase):
             yaml_options={'default_style': '"'}
         )
         reference = readFile('long-line-double-quote.yaml')
-        self.assertEqual(output, reference)
+        assert output == reference
 
     def test_yaml_style_pipe(self):
         output = self.convertAndRead(
@@ -411,7 +414,7 @@ class TestRemarshal(unittest.TestCase):
             yaml_options={'default_style': '|'}
         )
         reference = readFile('long-line-pipe.yaml')
-        self.assertEqual(output, reference)
+        assert output == reference
 
     def test_yaml_style_gt(self):
         output = self.convertAndRead(
@@ -421,7 +424,7 @@ class TestRemarshal(unittest.TestCase):
             yaml_options={'default_style': '>'}
         )
         reference = readFile('long-line-gt.yaml')
-        self.assertEqual(output, reference)
+        assert output == reference
 
     def test_argv0_to_format(self):
         def test_format_string(s):
@@ -430,10 +433,8 @@ class TestRemarshal(unittest.TestCase):
                     found, from_parsed, to_parsed = remarshal.argv0_to_format(
                         s.format(from_str, to_str)
                     )
-                    self.assertEqual(
-                        (found, from_parsed, to_parsed),
+                    assert (found, from_parsed, to_parsed) == \
                         (found, from_str, to_str)
-                    )
 
         test_format_string('{0}2{1}')
         test_format_string('{0}2{1}.exe')
@@ -455,40 +456,40 @@ class TestRemarshal(unittest.TestCase):
                     'output.' + to_ext
                 ])
 
-                self.assertEqual(args.input_format, ext_to_fmt[from_ext])
-                self.assertEqual(args.output_format, ext_to_fmt[to_ext])
+                assert args.input_format == ext_to_fmt[from_ext]
+                assert args.output_format == ext_to_fmt[to_ext]
 
     def test_format_detection_failure_input_stdin(self):
-        with self.assertRaises(SystemExit) as cm:
+        with pytest.raises(SystemExit) as cm:
             remarshal.parse_command_line([sys.argv[0], '-'])
-        self.assertEqual(cm.exception.code, 2)
+        assert cm.value.code == 2
 
     def test_format_detection_failure_input_txt(self):
-        with self.assertRaises(SystemExit) as cm:
+        with pytest.raises(SystemExit) as cm:
             remarshal.parse_command_line([sys.argv[0], 'input.txt'])
-        self.assertEqual(cm.exception.code, 2)
+        assert cm.value.code == 2
 
     def test_format_detection_failure_output_txt(self):
-        with self.assertRaises(SystemExit) as cm:
+        with pytest.raises(SystemExit) as cm:
             remarshal.parse_command_line([
                 sys.argv[0],
                 'input.json',
                 'output.txt'
             ])
-        self.assertEqual(cm.exception.code, 2)
+        assert cm.value.code == 2
 
     def test_run_no_args(self):
-        with self.assertRaises(SystemExit) as cm:
+        with pytest.raises(SystemExit) as cm:
             remarshal.run([sys.argv[0]])
-        self.assertEqual(cm.exception.code, 2)
+        assert cm.value.code == 2
 
     def test_run_help(self):
-        with self.assertRaises(SystemExit) as cm:
+        with pytest.raises(SystemExit) as cm:
             remarshal.run([sys.argv[0], '--help'])
-        self.assertEqual(cm.exception.code, 0)
+        assert cm.value.code == 0
 
     def test_run_no_input_file(self):
-        with self.assertRaises(IOError) as cm:
+        with pytest.raises(IOError) as cm:
             args = [
                 sys.argv[0],
                 '-if',
@@ -498,10 +499,10 @@ class TestRemarshal(unittest.TestCase):
                 'fake-input-file-that-almost-certainly-doesnt-exist-2382'
             ]
             remarshal.run(args)
-        self.assertEqual(cm.exception.errno, errno.ENOENT)
+        assert cm.value.errno == errno.ENOENT
 
     def test_run_no_output_dir(self):
-        with self.assertRaises(IOError) as cm:
+        with pytest.raises(IOError) as cm:
             args = [
                 sys.argv[0],
                 '-if',
@@ -510,15 +511,15 @@ class TestRemarshal(unittest.TestCase):
                 'json',
                 '-o',
                 'this_path/almost-certainly/doesnt-exist-5836',
-                test_file_path('example.json')
+                data_file_path('example.json')
             ]
             remarshal.run(args)
-        self.assertEqual(cm.exception.errno, errno.ENOENT)
+        assert cm.value.errno == errno.ENOENT
 
     def test_run_no_output_format(self):
-        with self.assertRaises(SystemExit) as cm:
-            remarshal.run([sys.argv[0], test_file_path('array.toml')])
-        self.assertEqual(cm.exception.code, 2)
+        with pytest.raises(SystemExit) as cm:
+            remarshal.run([sys.argv[0], data_file_path('array.toml')])
+        assert cm.value.code == 2
 
     def test_ordered_simple(self):
         for from_ in 'json', 'toml', 'yaml':
@@ -530,7 +531,7 @@ class TestRemarshal(unittest.TestCase):
                     ordered=True
                 )
                 reference = readFile('order.' + to)
-                self.assertEqual(output, reference)
+                assert output == reference
 
     def test_ordered_yaml2yaml(self):
         output = self.convertAndRead(
@@ -540,8 +541,4 @@ class TestRemarshal(unittest.TestCase):
             ordered=True
         )
         reference = readFile('example.yaml')
-        self.assertEqual(output, reference)
-
-
-if __name__ == '__main__':
-    unittest.main()
+        assert output == reference
