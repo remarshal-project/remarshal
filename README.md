@@ -25,15 +25,17 @@ may work but are not supported.
 You can install the latest release from PyPI using pip.
 
 ```sh
-python3 -m pip install remarshal --user
+python3 -m pip install --user remarshal
 ```
 
 Alternatively, clone the `master` branch to install the development version.
+Install [Poetry](https://github.com/python-poetry/poetry) then run
 
 ```sh
 git clone https://github.com/dbohdan/remarshal
 cd remarshal
-python3 setup.py install --user
+poetry build
+python3 -m pip install --user dist/remarshal-0.??.?-py2.py3-none-any.whl
 ```
 
 ## Usage
