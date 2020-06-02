@@ -22,7 +22,7 @@ import cbor2
 from collections import OrderedDict
 
 
-__version__ = '0.12.0'
+__version__ = '0.13.0'
 
 FORMATS = ['cbor', 'json', 'msgpack', 'toml', 'yaml']
 
@@ -134,7 +134,7 @@ def parse_command_line(argv):
     format_from_argv0, argv0_from, argv0_to = argv0_to_format(me)
 
     parser = argparse.ArgumentParser(
-        description='Convert between TOML, MessagePack, YAML, JSON, and CBOR.'
+        description='Convert between CBOR, JSON, MessagePack, TOML, and YAML.'
     )
 
     input_group = parser.add_mutually_exclusive_group()
