@@ -287,7 +287,7 @@ def decode_msgpack(input_data, ordered):
 def decode_cbor(input_data, ordered):
     try:
         return cbor2.loads(input_data)
-    except cbor2.InvalidCborError as e:
+    except cbor2.CBORDecodeError as e:
         raise ValueError('Cannot parse as CBOR ({0})'.format(e))
 
 
