@@ -67,8 +67,39 @@ def tomlSignature(data):
 def sorted_dict(d):
     return collections.OrderedDict(sorted(d.items()))
 
+
 def transformDateToIso(col):
     return col.isoformat() if isinstance(col, datetime.datetime) else col
+
+
+def traverse(
+    col,
+    dict_callback=lambda x: x,
+    list_callback=lambda x: x,
+    key_callback=lambda x: x,
+    value_callback=lambda x: x
+):
+    if isinstance(col, dict):
+        return dict_callback(col.__class__([
+            (key_callback(k), traverse(
+                v,
+                dict_callback,
+                list_callback,
+                key_callback,
+                value_callback
+            )) for (k, v) in col.items()
+        ]))
+    elif isinstance(col, list):
+        return list_callback([traverse(
+            x,
+            dict_callback,
+            list_callback,
+            key_callback,
+            value_callback
+        ) for x in col])
+    else:
+        return value_callback(col)
+
 
 class TestRemarshal(unittest.TestCase):
 
@@ -149,7 +180,12 @@ class TestRemarshal(unittest.TestCase):
         assert output == reference
 
     def test_cbor2cbor(self):
-        output = self.convertAndRead('example.cbor', 'cbor', 'cbor', binary=True)
+        output = self.convertAndRead(
+            'example.cbor',
+            'cbor',
+            'cbor',
+            binary=True
+        )
         reference = readFile('example.cbor', binary=True)
         self.assertCborSame(output, reference)
 
@@ -172,7 +208,11 @@ class TestRemarshal(unittest.TestCase):
     @unittest.skipUnless(PYTHON_3, 'requires Python 3')
     def test_json2cbor(self):
         def patch(x):
-            x['owner']['dob'] = datetime.datetime(1979, 5, 27, 7, 32, 0, 0, datetime.timezone.utc)
+            x['owner']['dob'] = datetime.datetime(
+                1979, 5, 27,
+                7, 32, 0, 0,
+                datetime.timezone.utc
+            )
             return x
 
         output = self.convertAndRead(
@@ -244,7 +284,7 @@ class TestRemarshal(unittest.TestCase):
             'toml',
             'msgpack',
             binary=True,
-            transform=lambda col: remarshal.traverse(
+            transform=lambda col: traverse(
                 col,
                 dict_callback=sorted_dict
             ),
@@ -318,7 +358,7 @@ class TestRemarshal(unittest.TestCase):
             'msgpack',
             binary=True,
             ordered=True,
-            transform=lambda col: remarshal.traverse(
+            transform=lambda col: traverse(
                 col,
                 dict_callback=sorted_dict
             ),

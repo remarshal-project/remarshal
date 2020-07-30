@@ -350,35 +350,6 @@ def encode_json(data, ordered, indent):
         raise ValueError('Cannot convert data to JSON ({0})'.format(e))
 
 
-def traverse(
-    col,
-    dict_callback=lambda x: x,
-    list_callback=lambda x: x,
-    key_callback=lambda x: x,
-    value_callback=lambda x: x
-):
-    if isinstance(col, dict):
-        return dict_callback(col.__class__([
-            (key_callback(k), traverse(
-                v,
-                dict_callback,
-                list_callback,
-                key_callback,
-                value_callback
-            )) for (k, v) in col.items()
-        ]))
-    elif isinstance(col, list):
-        return list_callback([traverse(
-            x,
-            dict_callback,
-            list_callback,
-            key_callback,
-            value_callback
-        ) for x in col])
-    else:
-        return value_callback(col)
-
-
 def encode_msgpack(data):
     try:
         return umsgpack.packb(data)
@@ -410,6 +381,7 @@ def encode_toml(data, ordered):
             raise ValueError('Cannot convert binary to TOML')
         else:
             raise ValueError('Cannot convert data to TOML ({0})'.format(e))
+
 
 def encode_yaml(data, ordered, yaml_options):
     dumper = OrderedDumper if ordered else yaml.SafeDumper
