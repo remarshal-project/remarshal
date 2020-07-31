@@ -43,8 +43,8 @@ def read_file(filename, binary=False):
     return content
 
 
-def sorted_dict(d):
-    return collections.OrderedDict(sorted(d.items()))
+def sorted_dict(pairs):
+    return collections.OrderedDict(sorted(pairs))
 
 
 def toml_signature(data):
@@ -66,35 +66,6 @@ def toml_signature(data):
         )
 
     return f(data.split("\n"))
-
-
-def traverse(
-    col,
-    dict_callback=lambda x: x,
-    list_callback=lambda x: x,
-    key_callback=lambda x: x,
-    value_callback=lambda x: x
-):
-    if isinstance(col, dict):
-        return dict_callback(col.__class__([
-            (key_callback(k), traverse(
-                v,
-                dict_callback,
-                list_callback,
-                key_callback,
-                value_callback
-            )) for (k, v) in col.items()
-        ]))
-    elif isinstance(col, list):
-        return list_callback([traverse(
-            x,
-            dict_callback,
-            list_callback,
-            key_callback,
-            value_callback
-        ) for x in col])
-    else:
-        return value_callback(col)
 
 
 class TestRemarshal(unittest.TestCase):
@@ -279,7 +250,7 @@ class TestRemarshal(unittest.TestCase):
             'toml',
             'msgpack',
             binary=True,
-            transform=lambda col: traverse(
+            transform=lambda col: remarshal.traverse(
                 col,
                 dict_callback=sorted_dict
             ),
@@ -353,7 +324,7 @@ class TestRemarshal(unittest.TestCase):
             'msgpack',
             binary=True,
             ordered=True,
-            transform=lambda col: traverse(
+            transform=lambda col: remarshal.traverse(
                 col,
                 dict_callback=sorted_dict
             ),
@@ -566,7 +537,11 @@ class TestRemarshal(unittest.TestCase):
                     ordered=True
                 )
                 reference = read_file('order.' + to)
-                assert output == reference
+
+                message = 'failed for %s to %s (%r instead of %r)' % (
+                    from_, to, output, reference
+                )
+                assert output == reference, message
 
     def test_ordered_yaml2yaml(self):
         output = self.convert_and_read(

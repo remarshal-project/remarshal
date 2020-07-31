@@ -6,6 +6,7 @@
 from __future__ import print_function
 
 import argparse
+import cbor2
 import datetime
 import dateutil.parser
 import io
@@ -14,15 +15,14 @@ import os.path
 import re
 import string
 import sys
-import pytoml
+import tomlkit
 import umsgpack
 import yaml
-import cbor2
 
 from collections import OrderedDict
 
 
-__version__ = '0.13.0'
+__version__ = '0.14.0'
 
 FORMATS = ['cbor', 'json', 'msgpack', 'toml', 'yaml']
 
@@ -43,7 +43,7 @@ def mapping_constructor(loader, node):
     return OrderedDict(loader.construct_pairs(node))
 
 
-def dict_representer(dumper, data):
+def mapping_representer(dumper, data):
     return dumper.represent_mapping(
         yaml.resolver.BaseResolver.DEFAULT_MAPPING_TAG,
         data.items()
@@ -56,7 +56,7 @@ OrderedLoader.add_constructor(
 )
 OrderedDumper.add_representer(
     OrderedDict,
-    dict_representer
+    mapping_representer
 )
 
 
@@ -266,6 +266,48 @@ def parse_command_line(argv):
 
 # === Parser/serializer wrappers ===
 
+def traverse(
+    col,
+    dict_callback=lambda x: dict(x),
+    list_callback=lambda x: x,
+    key_callback=lambda x: x,
+    instance_callbacks=[],
+    default_callback=lambda x: x,
+):
+    if isinstance(col, dict):
+        res = dict_callback([
+            (key_callback(k), traverse(
+                v,
+                dict_callback,
+                list_callback,
+                key_callback,
+                instance_callbacks,
+                default_callback,
+            )) for (k, v) in col.items()
+        ])
+    elif isinstance(col, list):
+        res = list_callback([traverse(
+            x,
+            dict_callback,
+            list_callback,
+            key_callback,
+            instance_callbacks,
+            default_callback,
+        ) for x in col])
+    else:
+        matched = False
+        for (t, callback) in instance_callbacks:
+            if isinstance(col, t):
+                matched = True
+                res = callback(col)
+                break
+
+        if not matched:
+            res = default_callback(col)
+
+    return res
+
+
 def decode_json(input_data, ordered):
     try:
         pairs_hook = OrderedDict if ordered else dict
@@ -292,13 +334,44 @@ def decode_cbor(input_data, ordered):
 
 
 def decode_toml(input_data, ordered):
+    dictionary = OrderedDict if ordered else dict
     try:
-        pairs_hook = OrderedDict if ordered else dict
-        return pytoml.loads(
-            input_data,
-            object_pairs_hook=pairs_hook
+        # Remove TOML Kit's custom classes.
+        # https://github.com/sdispater/tomlkit/issues/43
+        return traverse(
+            tomlkit.loads(input_data),
+            dict_callback=dictionary,
+            instance_callbacks={
+                (tomlkit.items.Bool, bool),
+                (tomlkit.items.Date, lambda x: datetime.date(
+                    x.year,
+                    x.month,
+                    x.day,
+                )),
+                (tomlkit.items.DateTime, lambda x: datetime.datetime(
+                    x.year,
+                    x.month,
+                    x.day,
+                    x.hour,
+                    x.minute,
+                    x.second,
+                    x.microsecond,
+                    x.tzinfo,
+                )),
+                (tomlkit.items.Float, float),
+                (tomlkit.items.Integer, int),
+                (tomlkit.items.Null, lambda _: null),
+                (tomlkit.items.String, str),
+                (tomlkit.items.Time, lambda x: datetime.time(
+                    x.hour,
+                    x.minute,
+                    x.second,
+                    x.microsecond,
+                    x.tzinfo,
+                )),
+            }
         )
-    except pytoml.core.TomlError as e:
+    except tomlkit.exceptions.ParseError as e:
         raise ValueError('Cannot parse as TOML ({0})'.format(e))
 
 
@@ -360,15 +433,15 @@ def encode_msgpack(data):
 def encode_cbor(data):
     try:
         return cbor2.dumps(data)
-    except cbor2.EncoderError as e:
+    except cbor2.CBOREncodeError as e:
         raise ValueError('Cannot convert data to CBOR ({0})'.format(e))
 
 
 def encode_toml(data, ordered):
     try:
-        return pytoml.dumps(data, sort_keys=not ordered)
+        return tomlkit.dumps(data, sort_keys=not ordered)
     except AttributeError as e:
-        if str(e) == "'list' object has no attribute 'keys'":
+        if str(e) == "'list' object has no attribute 'as_string'":
             raise ValueError(
                 'Cannot convert non-dictionary data to '
                 'TOML; use "wrap" to wrap it in a '

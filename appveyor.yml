@@ -31,7 +31,7 @@ environment:
     - PYTHON: "C:\\Python38-x64"
       PYTHON_VERSION: "3.8.x"
       PYTHON_ARCH: "64"
-version: "0.13.0.{build}"
+version: "{build}"
 init:
   - cmd: echo ===== INIT & %PYTHON%\python -m pip install poetry
 build_script:

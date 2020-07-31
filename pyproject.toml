@@ -1,17 +1,17 @@
 [tool.poetry]
 name = "remarshal"
-version = "0.13.0"
+version = "0.14.0"
 description = "Convert between CBOR, JSON, MessagePack, TOML, and YAML"
 authors = ["D. Bohdan"]
 license = "MIT"
 
 [tool.poetry.dependencies]
 python = "^2.7 || ^3.5"
-python-dateutil = "^2.8"
-pytoml = "^0.1.12"
-PyYAML = "^5.3"
-u-msgpack-python = "^2.6"
 cbor2 = "^5.1"
+python-dateutil = "^2.8"
+PyYAML = "^5.3"
+tomlkit = "^0.7"
+u-msgpack-python = "^2.6"
 
 [tool.poetry.dev-dependencies]
 pytest = "^4.0"
