@@ -7,12 +7,14 @@ can be used for format conversion, reformatting, and error detection.
 
 ## Known limitations
 
-* Remarshal currently only supports TOML 0.4.0.
-* Binary fields (i.e., from CBOR, MessagePack, or YAML) can't be converted
-to JSON or TOML
-with the Python 3 version of remarshal.  They can be converted between each
-other.  With Python 2 binary fields are coerced to strings.  This means that
-with Python 2 `{cbor,msgpack,yaml}2*` is lossy.
+* CBOR, MessagePack, and YAML with binary fields can not be converted to JSON
+or TOML.  Binary fields are converted between CBOR, MessagePack, and YAML.
+* TOML containing values of the
+[Local Date-Time](https://toml.io/en/v1.0.0-rc.1#local-date-time), Local Date,
+or Local Time type can not be converted to CBOR, MessagePack, TOML, or YAML.
+Only Offset Date-Time can be converted to these formats.
+* Date and time types are converted to JSON strings.  They can't be safely
+roundtripped through JSON.
 
 ## Installation
 
