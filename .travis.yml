@@ -1,12 +1,9 @@
 language: python
 python:
   - 3.6
-matrix:
-  include:
-    - python: 3.7
-      dist: xenial  # required for Python >= 3.7 (travis-ci/travis-ci#9069)
-    - python: 3.8
-      dist: xenial
+  - 3.7
+  - 3.8
+  - 3.9-dev
 install:
   - pip install poetry
   - poetry install
