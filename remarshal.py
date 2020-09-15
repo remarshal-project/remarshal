@@ -449,11 +449,8 @@ def encode_toml(data, ordered):
             )
         else:
             raise e
-    except TypeError as e:
-        if str(e) == "'in <string>' requires string as left operand, not int":
-            raise ValueError('Cannot convert binary to TOML')
-        else:
-            raise ValueError('Cannot convert data to TOML ({0})'.format(e))
+    except (TypeError, ValueError) as e:
+        raise ValueError('Cannot convert data to TOML ({0})'.format(e))
 
 
 def encode_yaml(data, ordered, yaml_options):
