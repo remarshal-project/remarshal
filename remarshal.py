@@ -458,15 +458,18 @@ def encode_toml(data, ordered):
 
 def encode_yaml(data, ordered, yaml_options):
     dumper = OrderedDumper if ordered else yaml.SafeDumper
-    return yaml.dump(
-        data,
-        None,
-        dumper,
-        allow_unicode=True,
-        default_flow_style=False,
-        encoding=None,
-        **yaml_options
-    )
+    try:
+        return yaml.dump(
+            data,
+            None,
+            dumper,
+            allow_unicode=True,
+            default_flow_style=False,
+            encoding=None,
+            **yaml_options
+        )
+    except yaml.representer.RepresenterError as e:
+        raise ValueError('Cannot convert data to YAML ({0})'.format(e))
 
 
 # === Main ===
