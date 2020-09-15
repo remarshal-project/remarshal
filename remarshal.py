@@ -78,20 +78,6 @@ for loader in loaders:
     )
 
 
-# Construct YAML strs as Unicode in Python 2.
-# We are shamelessly using an exception for flow control here.
-try:
-    unicode
-
-    for loader in loaders:
-        loader.add_constructor(
-            u'tag:yaml.org,2002:str',
-            lambda self, node: self.construct_scalar(node)
-        )
-except NameError:
-    pass
-
-
 # === JSON ===
 
 if hasattr(json, 'JSONDecodeError'):
