@@ -16,8 +16,8 @@ with Python 2 `{cbor,msgpack,yaml}2*` is lossy.
 
 ## Installation
 
-You will need Python 2.7 or Python 3.5 or later.  Earlier versions of Python 3
-may work but are not supported.
+You will need Python 3.6 or later.  Earlier versions of Python 3 may work but
+are not supported.
 
 You can install the latest release from PyPI using pip.
 

@@ -19,12 +19,6 @@ import cbor2
 import pytest
 
 TEST_PATH = os.path.dirname(os.path.realpath(__file__))
-PYTHON_3 = True
-try:
-    unicode
-    PYTHON_3 = False
-except NameError:
-    pass
 
 
 def data_file_path(filename):
@@ -171,7 +165,6 @@ class TestRemarshal(unittest.TestCase):
         reference = read_file('example.msgpack', binary=True)
         assert output == reference
 
-    @unittest.skipUnless(PYTHON_3, 'requires Python 3')
     def test_json2cbor(self):
         def patch(x):
             x['owner']['dob'] = datetime.datetime(
@@ -361,29 +354,24 @@ class TestRemarshal(unittest.TestCase):
         with pytest.raises(ValueError) as context:
             self.convert_and_read('garbage', 'yaml', 'json')
 
-    @unittest.skipUnless(PYTHON_3, 'requires Python 3')
     def test_binary_to_json(self):
         with pytest.raises(ValueError) as context:
             self.convert_and_read('bin.msgpack', 'msgpack', 'json')
         with pytest.raises(ValueError) as context:
             self.convert_and_read('bin.yml', 'yaml', 'json')
 
-    @unittest.skipUnless(PYTHON_3, 'requires Python 3')
     def test_binary_to_msgpack(self):
         self.convert_and_read('bin.yml', 'yaml', 'msgpack', binary=True)
 
-    @unittest.skipUnless(PYTHON_3, 'requires Python 3')
     def test_binary_to_toml(self):
         with pytest.raises(ValueError) as context:
             self.convert_and_read('bin.msgpack', 'msgpack', 'toml')
         with pytest.raises(ValueError) as context:
             self.convert_and_read('bin.yml', 'yaml', 'toml')
 
-    @unittest.skipUnless(PYTHON_3, 'requires Python 3')
     def test_binary_to_yaml(self):
         self.convert_and_read('bin.msgpack', 'msgpack', 'yaml')
 
-    @unittest.skipUnless(PYTHON_3, 'requires Python 3')
     def test_binary_to_cbor(self):
         self.convert_and_read('bin.msgpack', 'msgpack', 'cbor', binary=True)
 
