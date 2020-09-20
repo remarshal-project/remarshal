@@ -346,7 +346,6 @@ def decode_toml(input_data, ordered):
                 )),
                 (tomlkit.items.Float, float),
                 (tomlkit.items.Integer, int),
-                (tomlkit.items.Null, lambda _: null),
                 (tomlkit.items.String, str),
                 (tomlkit.items.Time, lambda x: datetime.time(
                     x.hour,
