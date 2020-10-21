@@ -10,11 +10,14 @@ can be used for format conversion, reformatting, and error detection.
 * CBOR, MessagePack, and YAML with binary fields can not be converted to JSON
 or TOML.  Binary fields are converted between CBOR, MessagePack, and YAML.
 * TOML containing values of the
-[Local Date-Time](https://toml.io/en/v1.0.0-rc.1#local-date-time), Local Date,
-or Local Time type can not be converted to CBOR, MessagePack, TOML, or YAML.
-Only Offset Date-Time can be converted to these formats.
+[Local Date-Time](https://toml.io/en/v1.0.0-rc.1#local-date-time) type can not
+be converted to CBOR.  The Local Date type can only be converted to JSON and
+YAML.  The Local Time type can not be converted to any other format.  Offset
+Date-Time can be converted between CBOR, MessagePack, TOML, and YAML.
 * Date and time types are converted to JSON strings.  They can't be safely
 roundtripped through JSON.
+* A YAML timestamp with only a date becomes a TOML Local Date-Time for the
+midnight of that date.
 
 ## Installation
 
