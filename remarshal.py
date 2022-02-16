@@ -363,7 +363,7 @@ def decode_toml(input_data, ordered):
 def decode_yaml(input_data, ordered):
     try:
         loader = OrderedLoader if ordered else TimezoneLoader
-        return yaml.load(
+        return yaml.safe_load(
             input_data,
             loader
         )
