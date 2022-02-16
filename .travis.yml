@@ -7,7 +7,7 @@ python:
   - "3.9"
   - "3.10"
   - "3.11-dev"
-matrix:
+jobs:
   allow_failures:
     python: "3.11-dev"  # pytest will need to be upgraded to pass
 install:
