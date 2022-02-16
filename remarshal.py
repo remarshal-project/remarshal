@@ -9,11 +9,9 @@ import argparse
 import cbor2
 import datetime
 import dateutil.parser
-import io
 import json
 import os.path
 import re
-import string
 import sys
 import tomlkit
 import umsgpack
@@ -257,9 +255,10 @@ def traverse(
     dict_callback=lambda x: dict(x),
     list_callback=lambda x: x,
     key_callback=lambda x: x,
-    instance_callbacks=[],
+    instance_callbacks=None,
     default_callback=lambda x: x,
 ):
+    instance_callbacks = instance_callbacks or []
     if isinstance(col, dict):
         res = dict_callback([
             (key_callback(k), traverse(
@@ -363,7 +362,7 @@ def decode_toml(input_data, ordered):
 def decode_yaml(input_data, ordered):
     try:
         loader = OrderedLoader if ordered else TimezoneLoader
-        return loader.safe_load(input_data)
+        return loader().safe_load(input_data)
     except (yaml.scanner.ScannerError, yaml.parser.ParserError) as e:
         raise ValueError('Cannot parse as YAML ({0})'.format(e))
 
@@ -476,10 +475,11 @@ def remarshal(
     wrap=None,
     unwrap=None,
     indent_json=None,
-    yaml_options={},
+    yaml_options=None,
     ordered=False,
     transform=None,
 ):
+    yaml_options = yaml_options or {}
     try:
         if input == '-':
             input_file = getattr(sys.stdin, 'buffer', sys.stdin)
@@ -537,7 +537,7 @@ def remarshal(
 def main():
     try:
         run(sys.argv)
-    except KeyboardInterrupt as e:
+    except KeyboardInterrupt:
         pass
     except (IOError, ValueError) as e:
         print('Error: {0}'.format(e), file=sys.stderr)
