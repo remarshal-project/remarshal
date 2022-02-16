@@ -363,10 +363,7 @@ def decode_toml(input_data, ordered):
 def decode_yaml(input_data, ordered):
     try:
         loader = OrderedLoader if ordered else TimezoneLoader
-        return yaml.safe_load(
-            input_data,
-            loader
-        )
+        return loader.safe_load(input_data)
     except (yaml.scanner.ScannerError, yaml.parser.ParserError) as e:
         raise ValueError('Cannot parse as YAML ({0})'.format(e))
 
