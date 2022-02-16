@@ -364,7 +364,7 @@ def decode_yaml(input_data, ordered):
         loader = OrderedLoader if ordered else TimezoneLoader
         return yaml.load(
             input_data,
-            Loader=loader
+            loader
         )
     except (yaml.scanner.ScannerError, yaml.parser.ParserError) as e:
         raise ValueError('Cannot parse as YAML ({0})'.format(e))
