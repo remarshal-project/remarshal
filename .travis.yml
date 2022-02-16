@@ -1,9 +1,15 @@
+os: linux
+dist: focal
 language: python
 python:
-  - 3.6
-  - 3.7
-  - 3.8
-  - 3.9-dev
+  - "3.7"
+  - "3.8"
+  - "3.9"
+  - "3.10"
+  - "3.11-dev"
+jobs:
+  allow_failures:
+    python: "3.11-dev"  # pytest will need to be upgraded to pass
 install:
   - pip install poetry
   - poetry install
