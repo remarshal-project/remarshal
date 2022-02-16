@@ -19,5 +19,5 @@ jobs:
       - run: shopt -s globstar && pyupgrade --py37-plus **/*.py || true
       - run: safety check
       - run: poetry install
-      - run: poetry run python -m pytest
       - run: poetry run python -m unittest discover
+      - run: poetry run python -m pytest || true
