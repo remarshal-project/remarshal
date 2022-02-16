@@ -14,7 +14,7 @@ tomlkit = "^0.7"
 u-msgpack-python = "^2.6"
 
 [tool.poetry.dev-dependencies]
-pytest = "^4.0"
+pytest = "^7.0.1"
 
 [build-system]
 requires = ["poetry>=0.12"]
