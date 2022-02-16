@@ -85,11 +85,12 @@ class TestRemarshal(unittest.TestCase):
         wrap=None,
         unwrap=None,
         indent_json=True,
-        yaml_options={},
+        yaml_options=None,
         ordered=False,
         binary=False,
         transform=None,
     ):
+        yaml_options = yaml_options or {}
         output_filename = self.temp_filename()
         remarshal.remarshal(
             data_file_path(input),
@@ -326,8 +327,8 @@ class TestRemarshal(unittest.TestCase):
         assert output == reference
 
     def test_missing_wrap(self):
-        with pytest.raises(ValueError) as context:
-            output = self.convert_and_read('array.json', 'json', 'toml')
+        with pytest.raises(ValueError):
+            _ = self.convert_and_read('array.json', 'json', 'toml')
 
     def test_wrap(self):
         output = self.convert_and_read('array.json', 'json', 'toml',
@@ -343,21 +344,21 @@ class TestRemarshal(unittest.TestCase):
         assert output == reference
 
     def test_malformed_json(self):
-        with pytest.raises(ValueError) as context:
+        with pytest.raises(ValueError):
             self.convert_and_read('garbage', 'json', 'yaml')
 
     def test_malformed_toml(self):
-        with pytest.raises(ValueError) as context:
+        with pytest.raises(ValueError):
             self.convert_and_read('garbage', 'toml', 'yaml')
 
     def test_malformed_yaml(self):
-        with pytest.raises(ValueError) as context:
+        with pytest.raises(ValueError):
             self.convert_and_read('garbage', 'yaml', 'json')
 
     def test_binary_to_json(self):
-        with pytest.raises(ValueError) as context:
+        with pytest.raises(ValueError):
             self.convert_and_read('bin.msgpack', 'msgpack', 'json')
-        with pytest.raises(ValueError) as context:
+        with pytest.raises(ValueError):
             self.convert_and_read('bin.yml', 'yaml', 'json')
 
     def test_binary_to_msgpack(self):
