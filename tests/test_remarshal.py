@@ -365,9 +365,9 @@ class TestRemarshal(unittest.TestCase):
         self.convert_and_read('bin.yml', 'yaml', 'msgpack', binary=True)
 
     def test_binary_to_toml(self):
-        with pytest.raises(ValueError) as context:
+        with pytest.raises(ValueError):
             self.convert_and_read('bin.msgpack', 'msgpack', 'toml')
-        with pytest.raises(ValueError) as context:
+        with pytest.raises(ValueError):
             self.convert_and_read('bin.yml', 'yaml', 'toml')
 
     def test_binary_to_yaml(self):
