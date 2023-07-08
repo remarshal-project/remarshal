@@ -7,14 +7,15 @@ license = "MIT"
 
 [tool.poetry.dependencies]
 python = "^3.8"
-cbor2 = "^5.1"
+cbor2 = "^5.4"
 python-dateutil = "^2.8"
-PyYAML = "^5.3"
-tomlkit = "^0.7"
-u-msgpack-python = "^2.6"
+PyYAML = "^6.0"
+tomlkit = "^0.11"
+u-msgpack-python = "^2.8"
+pytest = "^7.4.0"
 
 [tool.poetry.dev-dependencies]
-pytest = "^4.0"
+pytest = "^7.4"
 
 [build-system]
 requires = ["poetry-core>=1.0"]
