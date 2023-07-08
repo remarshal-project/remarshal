@@ -50,8 +50,7 @@ def toml_signature(data):
         def q(line):
             return (
                 line.startswith('#') or
-                line == '' or
-                line == ']' or
+                line in ('', ']') or
                 re.match(r'^".*",?$', line) or
                 re.match(r'^hosts', line)
             )
