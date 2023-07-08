@@ -3,8 +3,6 @@
 # Copyright (c) 2014-2020, 2023 D. Bohdan
 # License: MIT
 
-from .context import remarshal
-
 import datetime
 import errno
 import os
@@ -16,6 +14,8 @@ import unittest
 
 import cbor2  # type: ignore
 import pytest
+
+from .context import remarshal
 
 TEST_PATH = os.path.dirname(os.path.realpath(__file__))
 
@@ -143,7 +143,7 @@ class TestRemarshal(unittest.TestCase):
 
     def test_json2msgpack(self):
         def patch(x):
-            x["owner"]["dob"] = datetime.datetime(1979, 5, 27, 7, 32)
+            x["owner"]["dob"] = datetime.datetime(1979, 5, 27, 7, 32)  # noqa: DTZ001
             return x
 
         output = self.convert_and_read(
@@ -414,8 +414,8 @@ class TestRemarshal(unittest.TestCase):
             "yml": "yaml",
         }
 
-        for from_ext in ext_to_fmt.keys():
-            for to_ext in ext_to_fmt.keys():
+        for from_ext in ext_to_fmt:
+            for to_ext in ext_to_fmt:
                 args = remarshal.parse_command_line(
                     [sys.argv[0], "input." + from_ext, "output." + to_ext]
                 )
@@ -449,30 +449,30 @@ class TestRemarshal(unittest.TestCase):
         assert cm.value.code == 0
 
     def test_run_no_input_file(self):
+        args = [
+            sys.argv[0],
+            "-if",
+            "json",
+            "-of",
+            "json",
+            "fake-input-file-that-almost-certainly-doesnt-exist-2382",
+        ]
         with pytest.raises(IOError) as cm:
-            args = [
-                sys.argv[0],
-                "-if",
-                "json",
-                "-of",
-                "json",
-                "fake-input-file-that-almost-certainly-doesnt-exist-2382",
-            ]
             remarshal.run(args)
         assert cm.value.errno == errno.ENOENT
 
     def test_run_no_output_dir(self):
+        args = [
+            sys.argv[0],
+            "-if",
+            "json",
+            "-of",
+            "json",
+            "-o",
+            "this_path/almost-certainly/doesnt-exist-5836",
+            data_file_path("example.json"),
+        ]
         with pytest.raises(IOError) as cm:
-            args = [
-                sys.argv[0],
-                "-if",
-                "json",
-                "-of",
-                "json",
-                "-o",
-                "this_path/almost-certainly/doesnt-exist-5836",
-                data_file_path("example.json"),
-            ]
             remarshal.run(args)
         assert cm.value.errno == errno.ENOENT
 
@@ -482,8 +482,9 @@ class TestRemarshal(unittest.TestCase):
         assert cm.value.code == 2
 
     def test_ordered_simple(self):
-        for from_ in "json", "toml", "yaml":
-            for to in "json", "toml", "yaml":
+        formats = ("json", "toml", "yaml")
+        for from_ in formats:
+            for to in formats:
                 output = self.convert_and_read(
                     "order." + from_, from_, to, ordered=True
                 )

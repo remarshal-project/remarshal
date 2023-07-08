@@ -5,17 +5,17 @@
 
 
 import argparse
-import cbor2  # type: ignore
 import datetime
-import dateutil.parser
 import json
 import os.path
 import re
 import sys
+
+import cbor2
+import dateutil.parser
 import tomlkit
 import umsgpack  # type: ignore
 import yaml
-
 
 __version__ = "0.15.0"
 
@@ -60,7 +60,8 @@ for loader in loaders:
 def json_default(obj):
     if isinstance(obj, datetime.datetime):
         return obj.isoformat()
-    raise TypeError(f"{repr(obj)} is not JSON-serializable")
+    msg = f"{obj!r} is not JSON serializable"
+    raise TypeError(msg)
 
 
 # === CLI ===
@@ -69,11 +70,8 @@ def json_default(obj):
 def argv0_to_format(argv0):
     possible_format = "(" + "|".join(FORMATS) + ")"
     match = re.search("^" + possible_format + "2" + possible_format, argv0)
-    if match:
-        from_, to = match.groups()
-        return True, from_, to
-    else:
-        return False, None, None
+    from_, to = match.groups() if match else (None, None)
+    return bool(match), from_, to
 
 
 def extension_to_format(path):
@@ -275,21 +273,24 @@ def decode_json(input_data):
             input_data.decode("utf-8"),
         )
     except json.JSONDecodeError as e:
-        raise ValueError(f"Cannot parse as JSON ({e})")
+        msg = f"Cannot parse as JSON ({e})"
+        raise ValueError(msg)
 
 
 def decode_msgpack(input_data):
     try:
         return umsgpack.unpackb(input_data)
     except umsgpack.UnpackException as e:
-        raise ValueError(f"Cannot parse as MessagePack ({e})")
+        msg = f"Cannot parse as MessagePack ({e})"
+        raise ValueError(msg)
 
 
 def decode_cbor(input_data):
     try:
         return cbor2.loads(input_data)
     except cbor2.CBORDecodeError as e:
-        raise ValueError(f"Cannot parse as CBOR ({e})")
+        msg = f"Cannot parse as CBOR ({e})"
+        raise ValueError(msg)
 
 
 def decode_toml(input_data):
@@ -337,7 +338,8 @@ def decode_toml(input_data):
             },
         )
     except tomlkit.exceptions.ParseError as e:
-        raise ValueError(f"Cannot parse as TOML ({e})")
+        msg = f"Cannot parse as TOML ({e})"
+        raise ValueError(msg)
 
 
 def decode_yaml(input_data):
@@ -345,7 +347,8 @@ def decode_yaml(input_data):
         loader = TimezoneLoader
         return yaml.load(input_data, loader)
     except (yaml.scanner.ScannerError, yaml.parser.ParserError) as e:
-        raise ValueError(f"Cannot parse as YAML ({e})")
+        msg = f"Cannot parse as YAML ({e})"
+        raise ValueError(msg)
 
 
 def decode(input_format, input_data):
@@ -358,7 +361,8 @@ def decode(input_format, input_data):
     }
 
     if input_format not in decoder:
-        raise ValueError(f"Unknown input format: {input_format}")
+        msg = f"Unknown input format: {input_format}"
+        raise ValueError(msg)
 
     return decoder[input_format](input_data)
 
@@ -367,18 +371,12 @@ def encode_json(data, ordered, indent):
     if indent is True:
         indent = 2
 
-    if indent:
-        separators = (",", ": ")
-    else:
-        separators = (",", ":")
+    separators = (",", ": " if indent else ":")
 
     def stringify_key(key):
         if isinstance(key, bool):
             return "true" if key else "false"
-        elif key is None:
-            return "null"
-        else:
-            return key
+        return "null" if key is None else key
 
     try:
         return (
@@ -396,21 +394,24 @@ def encode_json(data, ordered, indent):
             + "\n"
         )
     except TypeError as e:
-        raise ValueError(f"Cannot convert data to JSON ({e})")
+        msg = f"Cannot convert data to JSON ({e})"
+        raise ValueError(msg)
 
 
 def encode_msgpack(data):
     try:
         return umsgpack.packb(data)
     except umsgpack.UnsupportedTypeException as e:
-        raise ValueError(f"Cannot convert data to MessagePack ({e})")
+        msg = f"Cannot convert data to MessagePack ({e})"
+        raise ValueError(msg)
 
 
 def encode_cbor(data):
     try:
         return cbor2.dumps(data)
     except cbor2.CBOREncodeError as e:
-        raise ValueError(f"Cannot convert data to CBOR ({e})")
+        msg = f"Cannot convert data to CBOR ({e})"
+        raise ValueError(msg)
 
 
 def encode_toml(data, ordered):
@@ -418,15 +419,16 @@ def encode_toml(data, ordered):
         return tomlkit.dumps(data, sort_keys=not ordered)
     except AttributeError as e:
         if str(e) == "'list' object has no attribute 'as_string'":
-            raise ValueError(
-                "Cannot convert non-dictionary data to "
-                'TOML; use "wrap" to wrap it in a '
-                "dictionary"
+            msg = (
+                "Cannot convert non-dictionary data to TOML; "
+                'use "wrap" to wrap it in a dictionary'
             )
+            raise ValueError(msg)
         else:
             raise e
     except (TypeError, ValueError) as e:
-        raise ValueError(f"Cannot convert data to TOML ({e})")
+        msg = f"Cannot convert data to TOML ({e})"
+        raise ValueError(msg)
 
 
 def encode_yaml(data, ordered, yaml_options):
@@ -439,10 +441,11 @@ def encode_yaml(data, ordered, yaml_options):
             allow_unicode=True,
             default_flow_style=False,
             encoding=None,
-            **yaml_options
+            **yaml_options,
         )
     except yaml.representer.RepresenterError as e:
-        raise ValueError(f"Cannot convert data to YAML ({e})")
+        msg = f"Cannot convert data to YAML ({e})"
+        raise ValueError(msg)
 
 
 # === Main ===
@@ -511,7 +514,8 @@ def remarshal(
         elif output_format == "cbor":
             output_data = encode_cbor(parsed)
         else:
-            raise ValueError(f"Unknown output format: {output_format}")
+            msg = f"Unknown output format: {output_format}"
+            raise ValueError(msg)
 
         if output_format == "msgpack" or output_format == "cbor":
             encoded = output_data
@@ -533,7 +537,7 @@ def main():
     except KeyboardInterrupt:
         pass
     except (OSError, ValueError) as e:
-        print(f"Error: {e}", file=sys.stderr)
+        print(f"Error: {e}", file=sys.stderr)  # noqa: T201
         sys.exit(1)
 
 

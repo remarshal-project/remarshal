@@ -55,3 +55,78 @@ yaml2json        = 'remarshal:main'
 yaml2msgpack     = 'remarshal:main'
 yaml2toml        = 'remarshal:main'
 yaml2yaml        = 'remarshal:main'
+
+[tool.ruff]
+select = [
+  "A",      # flake8-builtins
+  "AIR",    # Airflow
+  "ARG",    # flake8-unused-arguments
+  "ASYNC",  # flake8-async
+  "B",      # flake8-bugbear
+  "BLE",    # flake8-blind-except
+  "C4",     # flake8-comprehensions
+  "C90",    # McCabe cyclomatic complexity
+  "CPY",    # Copyright-related rules
+  "DTZ",    # flake8-datetimez
+  "E",      # pycodestyle
+  "EM",     # flake8-errmsg
+  "EXE",    # flake8-executable
+  "F",      # Pyflakes
+  "FA",     # flake8-future-annotations
+  "FBT",    # flake8-boolean-trap
+  "FIX",    # flake8-fixme
+  "FLY",    # flynt
+  "G",      # flake8-logging-format
+  "I",      # isort
+  "ICN",    # flake8-import-conventions
+  "INP",    # flake8-no-pep420
+  "INT",    # flake8-gettext
+  "ISC",    # flake8-implicit-str-concat
+  "N",      # pep8-naming
+  "PERF",   # Perflint
+  "PGH",    # pygrep-hooks
+  "PIE",    # flake8-pie
+  "PL",     # Pylint
+  "PT",     # flake8-pytest-style
+  "PYI",    # flake8-pyi
+  "RET",    # flake8-return
+  "RSE",    # flake8-raise
+  "RUF",    # Ruff-specific rules
+  "S",      # flake8-bandit
+  "SIM",    # flake8-simplify
+  "SLF",    # flake8-self
+  "SLOT",   # flake8-slots
+  "T10",    # flake8-debugger
+  "T20",    # flake8-print
+  "TCH",    # flake8-type-checking
+  "TD",     # flake8-todos
+  "TID",    # flake8-tidy-imports
+  "W",      # pycodestyle
+  "YTT",    # flake8-2020
+  # "ANN",  # flake8-annotations
+  # "COM",  # flake8-commas
+  # "D",    # pydocstyle
+  # "DJ",   # flake8-django
+  # "ERA",  # eradicate
+  # "NPY",  # NumPy-specific rules
+  # "PD",   # pandas-vet
+  # "PTH",  # flake8-use-pathlib
+  # "Q",    # flake8-quotes
+  # "TRY",  # tryceratops
+  # "UP",   # pyupgrade
+]
+ignore = ["A002", "B006", "FBT002", "PGH003"]
+target-version = "py37"
+
+[tool.ruff.mccabe]
+max-complexity = 14
+
+[tool.ruff.pylint]
+allow-magic-value-types = ["int", "str"]
+max-args = 11
+max-branches = 19
+
+[tool.ruff.per-file-ignores]
+"remarshal.py" = ["ARG001", "B904", "EM103", "RET506", "S506", "SIM115"]
+"tests/test_remarshal.py" = ["F841", "PT011"]
+"tests/*" = ["S101"]
