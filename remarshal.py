@@ -18,7 +18,7 @@ import umsgpack  # type: ignore
 import yaml
 
 
-__version__ = "0.14.0"
+__version__ = "0.15.0"
 
 FORMATS = ["cbor", "json", "msgpack", "toml", "yaml"]
 
