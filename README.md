@@ -1,4 +1,4 @@
-# remarshal
+# Remarshal
 
 Convert between CBOR, JSON, MessagePack, TOML, and YAML.  When installed,
 provides the command line command `remarshal` as well as the short commands
