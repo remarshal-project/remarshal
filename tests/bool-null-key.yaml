@@ -1,0 +1,4 @@
+on: foo
+off: oof
+another: bar
+NULL: "nothin'"

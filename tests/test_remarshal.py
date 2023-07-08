@@ -540,3 +540,14 @@ class TestRemarshal(unittest.TestCase):
         )
         reference = read_file('example.yaml')
         assert output == reference
+
+    def test_bool_null_key_yaml2json(self):
+        output = self.convert_and_read(
+            'bool-null-key.yaml',
+            'yaml',
+            'json',
+            indent_json=False,
+            ordered=True,
+        )
+        reference = read_file('bool-null-key.json')
+        assert output == reference

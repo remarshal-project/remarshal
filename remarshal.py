@@ -375,9 +375,20 @@ def encode_json(data, ordered, indent):
     else:
         separators = (',', ':')
 
+    def stringify_key(key):
+        if isinstance(key, bool):
+            return "true" if key else "false"
+        elif key is None:
+            return "null"
+        else:
+            return key
+
     try:
         return json.dumps(
-            data,
+            traverse(
+                data,
+                key_callback=stringify_key,
+            ),
             default=json_default,
             ensure_ascii=False,
             indent=indent,
