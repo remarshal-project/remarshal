@@ -19,8 +19,6 @@ import tomlkit
 import umsgpack
 import yaml
 
-from collections import OrderedDict
-
 
 __version__ = '0.14.0'
 
@@ -29,19 +27,9 @@ FORMATS = ['cbor', 'json', 'msgpack', 'toml', 'yaml']
 
 # === YAML ===
 
-# An OrderedDict loader and dumper for PyYAML.
-class OrderedLoader(yaml.SafeLoader):
-    pass
-
-
+# An ordered dumper for PyYAML.
 class OrderedDumper(yaml.SafeDumper):
     pass
-
-
-def mapping_constructor(loader, node):
-    loader.flatten_mapping(node)
-    return OrderedDict(loader.construct_pairs(node))
-
 
 def mapping_representer(dumper, data):
     return dumper.represent_mapping(
@@ -50,12 +38,8 @@ def mapping_representer(dumper, data):
     )
 
 
-OrderedLoader.add_constructor(
-    yaml.resolver.BaseResolver.DEFAULT_MAPPING_TAG,
-    mapping_constructor
-)
 OrderedDumper.add_representer(
-    OrderedDict,
+    dict,
     mapping_representer
 )
 
@@ -70,7 +54,7 @@ def timestamp_constructor(loader, node):
     return dateutil.parser.parse(node.value)
 
 
-loaders = [OrderedLoader, TimezoneLoader]
+loaders = [TimezoneLoader]
 for loader in loaders:
     loader.add_constructor(
         u'tag:yaml.org,2002:timestamp',
@@ -206,7 +190,7 @@ def parse_command_line(argv):
         '-p', '--preserve-key-order',
         dest='ordered',
         action='store_true',
-        help='preserve the order of dictionary/mapping keys'
+        help='preserve the order of dictionary/mapping keys when encoding'
     )
     parser.add_argument(
         '-v', '--version',
@@ -294,39 +278,35 @@ def traverse(
     return res
 
 
-def decode_json(input_data, ordered):
+def decode_json(input_data):
     try:
-        pairs_hook = OrderedDict if ordered else dict
         return json.loads(
             input_data.decode('utf-8'),
-            object_pairs_hook=pairs_hook
         )
     except JSONDecodeError as e:
         raise ValueError('Cannot parse as JSON ({0})'.format(e))
 
 
-def decode_msgpack(input_data, ordered):
+def decode_msgpack(input_data):
     try:
-        return umsgpack.unpackb(input_data, use_ordered_dict=ordered)
+        return umsgpack.unpackb(input_data)
     except umsgpack.UnpackException as e:
         raise ValueError('Cannot parse as MessagePack ({0})'.format(e))
 
 
-def decode_cbor(input_data, ordered):
+def decode_cbor(input_data):
     try:
         return cbor2.loads(input_data)
     except cbor2.CBORDecodeError as e:
         raise ValueError('Cannot parse as CBOR ({0})'.format(e))
 
 
-def decode_toml(input_data, ordered):
-    dictionary = OrderedDict if ordered else dict
+def decode_toml(input_data):
     try:
         # Remove TOML Kit's custom classes.
         # https://github.com/sdispater/tomlkit/issues/43
         return traverse(
             tomlkit.loads(input_data),
-            dict_callback=dictionary,
             instance_callbacks={
                 (tomlkit.items.Bool, bool),
                 (tomlkit.items.Date, lambda x: datetime.date(
@@ -360,9 +340,9 @@ def decode_toml(input_data, ordered):
         raise ValueError('Cannot parse as TOML ({0})'.format(e))
 
 
-def decode_yaml(input_data, ordered):
+def decode_yaml(input_data):
     try:
-        loader = OrderedLoader if ordered else TimezoneLoader
+        loader = TimezoneLoader
         return yaml.load(
             input_data,
             loader
@@ -371,7 +351,7 @@ def decode_yaml(input_data, ordered):
         raise ValueError('Cannot parse as YAML ({0})'.format(e))
 
 
-def decode(input_format, input_data, ordered):
+def decode(input_format, input_data):
     decoder = {
         'cbor': decode_cbor,
         'json': decode_json,
@@ -383,7 +363,7 @@ def decode(input_format, input_data, ordered):
     if input_format not in decoder:
         raise ValueError('Unknown input format: {0}'.format(input_format))
 
-    return decoder[input_format](input_data, ordered)
+    return decoder[input_format](input_data)
 
 
 def encode_json(data, ordered, indent):
@@ -496,7 +476,7 @@ def remarshal(
 
         input_data = input_file.read()
 
-        parsed = decode(input_format, input_data, ordered)
+        parsed = decode(input_format, input_data)
 
         if unwrap is not None:
             parsed = parsed[unwrap]

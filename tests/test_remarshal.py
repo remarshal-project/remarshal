@@ -38,7 +38,7 @@ def read_file(filename, binary=False):
 
 
 def sorted_dict(pairs):
-    return collections.OrderedDict(sorted(pairs))
+    return dict(sorted(pairs))
 
 
 def toml_signature(data):
