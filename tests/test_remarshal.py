@@ -1,6 +1,6 @@
 #! /usr/bin/env python
 # remarshal, a utility to convert between serialization formats.
-# Copyright (c) 2014, 2015, 2016, 2017, 2018, 2019, 2020 D. Bohdan
+# Copyright (c) 2014-2020, 2023 D. Bohdan
 # License: MIT
 
 from .context import remarshal
