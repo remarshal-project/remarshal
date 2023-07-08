@@ -3,7 +3,6 @@
 # Copyright (c) 2014-2020, 2023 D. Bohdan
 # License: MIT
 
-from __future__ import print_function
 
 import argparse
 import cbor2
@@ -57,7 +56,7 @@ def timestamp_constructor(loader, node):
 loaders = [TimezoneLoader]
 for loader in loaders:
     loader.add_constructor(
-        u'tag:yaml.org,2002:timestamp',
+        'tag:yaml.org,2002:timestamp',
         timestamp_constructor
     )
 
@@ -73,7 +72,7 @@ else:
 def json_default(obj):
     if isinstance(obj, datetime.datetime):
         return obj.isoformat()
-    raise TypeError("{0} is not JSON-serializable".format(repr(obj)))
+    raise TypeError(f"{repr(obj)} is not JSON-serializable")
 
 
 # === CLI ===
@@ -284,21 +283,21 @@ def decode_json(input_data):
             input_data.decode('utf-8'),
         )
     except JSONDecodeError as e:
-        raise ValueError('Cannot parse as JSON ({0})'.format(e))
+        raise ValueError(f'Cannot parse as JSON ({e})')
 
 
 def decode_msgpack(input_data):
     try:
         return umsgpack.unpackb(input_data)
     except umsgpack.UnpackException as e:
-        raise ValueError('Cannot parse as MessagePack ({0})'.format(e))
+        raise ValueError(f'Cannot parse as MessagePack ({e})')
 
 
 def decode_cbor(input_data):
     try:
         return cbor2.loads(input_data)
     except cbor2.CBORDecodeError as e:
-        raise ValueError('Cannot parse as CBOR ({0})'.format(e))
+        raise ValueError(f'Cannot parse as CBOR ({e})')
 
 
 def decode_toml(input_data):
@@ -337,7 +336,7 @@ def decode_toml(input_data):
             }
         )
     except tomlkit.exceptions.ParseError as e:
-        raise ValueError('Cannot parse as TOML ({0})'.format(e))
+        raise ValueError(f'Cannot parse as TOML ({e})')
 
 
 def decode_yaml(input_data):
@@ -348,7 +347,7 @@ def decode_yaml(input_data):
             loader
         )
     except (yaml.scanner.ScannerError, yaml.parser.ParserError) as e:
-        raise ValueError('Cannot parse as YAML ({0})'.format(e))
+        raise ValueError(f'Cannot parse as YAML ({e})')
 
 
 def decode(input_format, input_data):
@@ -361,7 +360,7 @@ def decode(input_format, input_data):
     }
 
     if input_format not in decoder:
-        raise ValueError('Unknown input format: {0}'.format(input_format))
+        raise ValueError(f'Unknown input format: {input_format}')
 
     return decoder[input_format](input_data)
 
@@ -396,21 +395,21 @@ def encode_json(data, ordered, indent):
             sort_keys=not ordered
         ) + "\n"
     except TypeError as e:
-        raise ValueError('Cannot convert data to JSON ({0})'.format(e))
+        raise ValueError(f'Cannot convert data to JSON ({e})')
 
 
 def encode_msgpack(data):
     try:
         return umsgpack.packb(data)
     except umsgpack.UnsupportedTypeException as e:
-        raise ValueError('Cannot convert data to MessagePack ({0})'.format(e))
+        raise ValueError(f'Cannot convert data to MessagePack ({e})')
 
 
 def encode_cbor(data):
     try:
         return cbor2.dumps(data)
     except cbor2.CBOREncodeError as e:
-        raise ValueError('Cannot convert data to CBOR ({0})'.format(e))
+        raise ValueError(f'Cannot convert data to CBOR ({e})')
 
 
 def encode_toml(data, ordered):
@@ -426,7 +425,7 @@ def encode_toml(data, ordered):
         else:
             raise e
     except (TypeError, ValueError) as e:
-        raise ValueError('Cannot convert data to TOML ({0})'.format(e))
+        raise ValueError(f'Cannot convert data to TOML ({e})')
 
 
 def encode_yaml(data, ordered, yaml_options):
@@ -442,7 +441,7 @@ def encode_yaml(data, ordered, yaml_options):
             **yaml_options
         )
     except yaml.representer.RepresenterError as e:
-        raise ValueError('Cannot convert data to YAML ({0})'.format(e))
+        raise ValueError(f'Cannot convert data to YAML ({e})')
 
 
 # === Main ===
@@ -511,7 +510,7 @@ def remarshal(
             output_data = encode_cbor(parsed)
         else:
             raise ValueError(
-                'Unknown output format: {0}'.format(output_format)
+                f'Unknown output format: {output_format}'
             )
 
         if output_format == 'msgpack' or output_format == 'cbor':
@@ -533,8 +532,8 @@ def main():
         run(sys.argv)
     except KeyboardInterrupt as e:
         pass
-    except (IOError, ValueError) as e:
-        print('Error: {0}'.format(e), file=sys.stderr)
+    except (OSError, ValueError) as e:
+        print(f'Error: {e}', file=sys.stderr)
         sys.exit(1)
 
 

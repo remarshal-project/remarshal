@@ -50,8 +50,8 @@ def toml_signature(data):
         def q(line):
             return (
                 line.startswith('#') or
-                line == u'' or
-                line == u']' or
+                line == '' or
+                line == ']' or
                 re.match(r'^".*",?$', line) or
                 re.match(r'^hosts', line)
             )
@@ -526,7 +526,7 @@ class TestRemarshal(unittest.TestCase):
                 )
                 reference = read_file('order.' + to)
 
-                message = 'failed for %s to %s (%r instead of %r)' % (
+                message = 'failed for {} to {} ({!r} instead of {!r})'.format(
                     from_, to, output, reference
                 )
                 assert output == reference, message
