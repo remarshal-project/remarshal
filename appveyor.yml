@@ -2,14 +2,6 @@ image:
   - Visual Studio 2022
 environment:
   matrix:
-    - PYTHON: "C:\\Python37"
-      PYTHON_VERSION: "3.7.x"
-      PYTHON_ARCH: "32"
-
-    - PYTHON: "C:\\Python37-x64"
-      PYTHON_VERSION: "3.7.x"
-      PYTHON_ARCH: "64"
-
     - PYTHON: "C:\\Python38"
       PYTHON_VERSION: "3.8.x"
       PYTHON_ARCH: "32"
@@ -32,6 +24,13 @@ environment:
 
     - PYTHON: "C:\\Python310-x64"
       PYTHON_VERSION: "3.10.x"
+      PYTHON_ARCH: "64"
+    - PYTHON: "C:\\Python311"
+      PYTHON_VERSION: "3.11.x"
+      PYTHON_ARCH: "32"
+
+    - PYTHON: "C:\\Python311-x64"
+      PYTHON_VERSION: "3.11.x"
       PYTHON_ARCH: "64"
 version: "{build}"
 init:
