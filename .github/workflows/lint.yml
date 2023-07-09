@@ -1,13 +1,9 @@
 # https://github.com/codespell-project/codespell#readme
 # https://beta.ruff.rs
-name: codespell_and_ruff
-on:
-  push:
-    branches: [master]
-  pull_request:
-    branches: [master]
+name: lint
+on: [push, pull_request]
 jobs:
-  codespell_and_ruff:
+  codespell-and-ruff:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
