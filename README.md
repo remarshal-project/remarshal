@@ -22,7 +22,7 @@ midnight of that date.
 
 ## Installation
 
-You will need Python 3.6 or later. Earlier versions of Python 3 may work but
+You will need Python 3.8 or later. Earlier versions of Python 3 may work but
 are not supported.
 
 You can install the latest release from PyPI using pip.
