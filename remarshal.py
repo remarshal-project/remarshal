@@ -11,7 +11,7 @@ import os.path
 import re
 import sys
 
-import cbor2
+import cbor2  # type: ignore
 import dateutil.parser
 import tomlkit
 import umsgpack  # type: ignore
