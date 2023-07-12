@@ -254,14 +254,11 @@ def traverse(
             ]
         )
     else:
-        matched = False
         for t, callback in instance_callbacks:
             if isinstance(col, t):
-                matched = True
                 res = callback(col)
                 break
-
-        if not matched:
+        else:
             res = default_callback(col)
 
     return res
