@@ -2,8 +2,9 @@
 
 Convert between CBOR, JSON, MessagePack, TOML, and YAML. When installed,
 provides the command line command `remarshal` as well as the short commands
-`{cbor,json,msgpack,toml,yaml}2{cbor,json,msgpack,toml,yaml}`. These commands
-can be used for format conversion, reformatting, and error detection.
+`{cbor,json,msgpack,toml,yaml}2`&#x200B;`{cbor,json,msgpack,toml,yaml}`. With
+these commands, you can perform format conversion, reformatting, and error
+detection.
 
 ## Known limitations
 
@@ -13,25 +14,26 @@ or TOML. Binary fields are converted between CBOR, MessagePack, and YAML.
 [Local Date-Time](https://toml.io/en/v1.0.0-rc.1#local-date-time) type can not
 be converted to CBOR. The Local Date type can only be converted to JSON and
 YAML. The Local Time type can not be converted to any other format. Offset
-Date-Time and its equivalents can be converted between CBOR, MessagePack, TOML,
-and YAML.
-* Date and time types are converted to JSON strings. They can't be safely
+Date-Time and its equivalents can be converted between CBOR, MessagePack,
+TOML, and YAML.
+* Date and time types are converted to JSON strings. They can not be safely
 roundtripped through JSON.
 * A YAML timestamp with only a date becomes a TOML Local Date-Time for the
 midnight of that date.
 
 ## Installation
 
-You will need Python 3.8 or later. Earlier versions of Python 3 may work but
-are not supported.
+You will need Python 3.8 or later. Earlier versions of Python 3 are not
+supported.
 
-The quickest way to run Remarshal is with [pipx](https://github.com/pypa/pipx).
+The quickest way to run Remarshal is with
+ [pipx](https://github.com/pypa/pipx).
 
 ```sh
 pipx run remarshall
 ```
 
-You can install the latest release from PyPI using pip.
+You can install the latest release of Remarshal from PyPI using pip.
 
 ```sh
 python3 -m pip install --user remarshal
@@ -44,7 +46,7 @@ Install [Poetry](https://github.com/python-poetry/poetry), then run
 git clone https://github.com/dbohdan/remarshal
 cd remarshal
 poetry build
-python3 -m pip install --user dist/remarshal-*-py3-none-any.whl
+python3 -m pip install --user dist/remarshal-"$(poetry version --short)"-py3-none-any.whl
 ```
 
 ## Usage
@@ -97,30 +99,29 @@ usage: {cbor,json,msgpack,toml,yaml}2cbor [-h] [-i input] [-o output]
                                           [input] [output]
 ```
 
-
 All of the commands above exit with status 0 on success, 1 on operational
 failure, and 2 when they fail to parse the command line.
 
 If no input argument `input`/ `-i input` is given or its value is `-` or
-a blank string the data to convert is read from the standard input. Similarly,
+a blank string, Remarshal reads input data from standard input. Similarly,
 with no `output`/`-o output` or an output argument that is `-` or a blank
-string the result of the conversion is written to the standard output.
+string, it writes the result to standard output.
 
 ### Wrappers
 
-The arguments `--wrap` and `--unwrap` are there to solve the problem of
+The arguments `--wrap` and `--unwrap` are available to solve the problem of
 converting CBOR, JSON, MessagePack, and YAML data to TOML if the top-level
-element of that data is not of a dictionary type (i.e., not a map in CBOR and
+element of the data is not of a dictionary type (i.e., not a map in CBOR and
 MessagePack, an object in JSON, or an associative array in YAML).
-Such data can not be represented as TOML directly; it must be wrapped in a
+You can not represent such data as TOML directly; the data must be wrapped in a
 dictionary first. Passing the flag `--wrap someKey` to `remarshal` or one of
 its short commands wraps the input data in a "wrapper" dictionary with one key,
 "someKey", with the input data as its value. The flag `--unwrap someKey` does
-the opposite: if it is specified only the value stored under the key "someKey"
-in the top-level dictionary element of the input data is converted to the
-target format and output; all other data is ignored. If the top-level element
-is not a dictionary or does not have the key "someKey" then `--unwrap someKey`
-returns an error.
+the opposite: only the value stored under the key "someKey" in the top-level
+dictionary element of the input data is converted to the target format and
+output; the rest of the input is ignored. If the top-level element is not a
+dictionary or does not have the key "someKey", `--unwrap someKey` causes an
+error.
 
 The following shell transcript demonstrates the problem and how `--wrap` and
 `--unwrap` solve it:
@@ -237,5 +238,4 @@ speed = 2
 MIT. See the file `LICENSE`.
 
 `example.toml` from <https://github.com/toml-lang/toml>. `example.json`,
-`example.msgpack`, `example.cbor`, `example.yml`, `tests/bin.msgpack`,
-and `tests/bin.yml` are derived from it.
+`example.msgpack`, `example.cbor`, `example.yml`, `tests/bin.msgpack`, and `tests/bin.yml` are derived from it.
