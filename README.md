@@ -39,14 +39,10 @@ You can install the latest release of Remarshal from PyPI using pip.
 python3 -m pip install --user remarshal
 ```
 
-Alternatively, clone the `master` branch to install the development version.
-Install [Poetry](https://github.com/python-poetry/poetry), then run
+Alternatively, you can install the development version. Prefer releases unless you have a reason to run the development version.
 
 ```sh
-git clone https://github.com/dbohdan/remarshal
-cd remarshal
-poetry build
-python3 -m pip install --user dist/remarshal-"$(poetry version --short)"-py3-none-any.whl
+python3 -m pip install --user git+https://github.com/remarshal-project/remarshal
 ```
 
 ## Usage
