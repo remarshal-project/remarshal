@@ -25,6 +25,12 @@ midnight of that date.
 You will need Python 3.8 or later. Earlier versions of Python 3 may work but
 are not supported.
 
+The quickest way to run Remarshal is with [pipx](https://github.com/pypa/pipx).
+
+```sh
+pipx run remarshall
+```
+
 You can install the latest release from PyPI using pip.
 
 ```sh
@@ -32,13 +38,13 @@ python3 -m pip install --user remarshal
 ```
 
 Alternatively, clone the `master` branch to install the development version.
-Install [Poetry](https://github.com/python-poetry/poetry) then run
+Install [Poetry](https://github.com/python-poetry/poetry), then run
 
 ```sh
 git clone https://github.com/dbohdan/remarshal
 cd remarshal
 poetry build
-python3 -m pip install --user dist/remarshal-0.??.?-py2.py3-none-any.whl
+python3 -m pip install --user dist/remarshal-*-py3-none-any.whl
 ```
 
 ## Usage
