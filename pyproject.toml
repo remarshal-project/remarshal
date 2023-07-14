@@ -5,7 +5,6 @@ description = "Convert between CBOR, JSON, MessagePack, TOML, and YAML"
 authors = ["D. Bohdan <dbohdan@dbohdan.com>"]
 license = "MIT"
 readme = "README.md"
-homepage = "https://github.com/remarshal-project/remarshal"
 repository = "https://github.com/remarshal-project/remarshal"
 keywords = ["converter", "cbor", "json", "messagepack", "msgpack", "toml", "yaml"]
 classifiers = [
