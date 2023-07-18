@@ -61,6 +61,13 @@ usage: remarshal.py [-h] [-i input] [-o output]
 ```
 
 ```
+usage: {cbor,json,msgpack,toml,yaml}2cbor [-h] [-i input] [-o output]
+                                          [--wrap key] [--unwrap key]
+                                          [-v]
+                                          [input] [output]
+```
+
+```
 usage: {cbor,json,msgpack,toml,yaml}2json [-h] [-i input] [-o output]
                                           [--json-indent n]
                                           [--wrap key] [--unwrap key]
@@ -89,13 +96,6 @@ usage: {cbor,json,msgpack,toml,yaml}2yaml [-h] [-i input] [-o output]
                                           [--yaml-width n]
                                           [--wrap key] [--unwrap key]
                                           [--sort-keys] [-v]
-                                          [input] [output]
-```
-
-```
-usage: {cbor,json,msgpack,toml,yaml}2cbor [-h] [-i input] [-o output]
-                                          [--wrap key] [--unwrap key]
-                                          [-v]
                                           [input] [output]
 ```
 
