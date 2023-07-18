@@ -81,7 +81,7 @@ class TestRemarshal(unittest.TestCase):
         output_format,
         wrap=None,
         unwrap=None,
-        indent_json=True,
+        json_indent=True,
         yaml_options={},
         ordered=False,
         binary=False,
@@ -95,7 +95,7 @@ class TestRemarshal(unittest.TestCase):
             output_format,
             wrap=wrap,
             unwrap=unwrap,
-            indent_json=indent_json,
+            json_indent=json_indent,
             yaml_options=yaml_options,
             ordered=ordered,
             transform=transform,
@@ -322,7 +322,7 @@ class TestRemarshal(unittest.TestCase):
 
     def test_unwrap(self):
         output = self.convert_and_read(
-            "array.toml", "toml", "json", unwrap="data", indent_json=None
+            "array.toml", "toml", "json", unwrap="data", json_indent=None
         )
         reference = read_file("array.json")
         assert output == reference
@@ -508,8 +508,34 @@ class TestRemarshal(unittest.TestCase):
             "bool-null-key.yaml",
             "yaml",
             "json",
-            indent_json=False,
+            json_indent=False,
             ordered=True,
         )
         reference = read_file("bool-null-key.json")
         assert output == reference
+
+    def test_yaml_width_default(self):
+        output = self.convert_and_read(
+            "long-line.json",
+            "json",
+            "yaml",
+        )
+        assert len([char for char in output if char == "\n"]) == 4
+
+    def test_yaml_width_30(self):
+        output = self.convert_and_read(
+            "long-line.json", "json", "yaml", yaml_options={"width": 5}
+        )
+        assert len([char for char in output if char == "\n"]) == 21
+
+    def test_yaml_width_120(self):
+        output = self.convert_and_read(
+            "long-line.json", "json", "yaml", yaml_options={"width": 120}
+        )
+        assert len([char for char in output if char == "\n"]) == 3
+
+    def test_yaml_ident_5(self):
+        output = self.convert_and_read(
+            "long-line.json", "json", "yaml", yaml_options={"indent": 5}
+        )
+        assert set(re.findall(r"\n +", output)) == {"\n     ", "\n          "}

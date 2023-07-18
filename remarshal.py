@@ -17,7 +17,7 @@ import tomlkit
 import umsgpack  # type: ignore
 import yaml
 
-__version__ = "0.15.1"
+__version__ = "0.16.0"
 
 FORMATS = ["cbor", "json", "msgpack", "toml", "yaml"]
 
@@ -135,21 +135,43 @@ def parse_command_line(argv):
 
     if not format_from_argv0 or argv0_to == "json":
         parser.add_argument(
+            "--json-indent",
             "--indent-json",
-            dest="indent_json",
+            dest="json_indent",
             metavar="n",
             type=int,
             default=None,
-            help="indent JSON output",
+            help="JSON indentation",
         )
 
     if not format_from_argv0 or argv0_to == "yaml":
+        parser.add_argument(
+            "--yaml-indent",
+            dest="yaml_indent",
+            metavar="n",
+            type=int,
+            default=2,
+            help="YAML indentation",
+        )
         parser.add_argument(
             "--yaml-style",
             dest="yaml_style",
             default=None,
             help="YAML formatting style",
             choices=["", "'", '"', "|", ">"],
+        )
+
+        def yaml_width(value: str) -> int:
+            # This is theoretically compatible with LibYAML.
+            return (1 << 32) - 1 if value.lower() == "inf" else int(value)
+
+        parser.add_argument(
+            "--yaml-width",
+            dest="yaml_width",
+            metavar="n",
+            type=yaml_width,  # Allow "inf".
+            default=80,
+            help="YAML line width for long strings",
         )
 
     parser.add_argument(
@@ -188,11 +210,6 @@ def parse_command_line(argv):
     if format_from_argv0:
         args.input_format = argv0_from
         args.output_format = argv0_to
-
-        if argv0_to != "json":
-            args.__dict__["indent_json"] = None
-        if argv0_to != "yaml":
-            args.__dict__["yaml_style"] = None
     else:
         if args.input_format is None:
             args.input_format = extension_to_format(args.input)
@@ -204,9 +221,14 @@ def parse_command_line(argv):
             if args.output_format is None:
                 parser.error("Need an explicit output format")
 
-    # Wrap yaml_style.
-    args.__dict__["yaml_options"] = {"default_style": args.yaml_style}
-    del args.__dict__["yaml_style"]
+    # Wrap the yaml_* option.
+    args.__dict__["yaml_options"] = {
+        "default_style": args.yaml_style,
+        "indent": args.yaml_indent,
+        "width": args.yaml_width,
+    }
+    for key in ["yaml_indent", "yaml_style", "yaml_width"]:
+        del args.__dict__[key]
 
     return args
 
@@ -457,7 +479,7 @@ def run(argv):
         args.output_format,
         args.wrap,
         args.unwrap,
-        args.indent_json,
+        args.json_indent,
         args.yaml_options,
         args.ordered,
     )
@@ -470,7 +492,7 @@ def remarshal(
     output_format,
     wrap=None,
     unwrap=None,
-    indent_json=None,
+    json_indent=None,
     yaml_options={},
     ordered=False,
     transform=None,
@@ -501,7 +523,7 @@ def remarshal(
             parsed = transform(parsed)
 
         if output_format == "json":
-            output_data = encode_json(parsed, ordered, indent_json)
+            output_data = encode_json(parsed, ordered, json_indent)
         elif output_format == "msgpack":
             output_data = encode_msgpack(parsed)
         elif output_format == "toml":
