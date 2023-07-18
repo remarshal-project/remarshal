@@ -191,10 +191,16 @@ def parse_command_line(argv):
     parser.add_argument(
         "-p",
         "--preserve-key-order",
-        dest="ordered",
-        action="store_true",
-        help="preserve the order of dictionary/mapping keys when encoding",
+        help=argparse.SUPPRESS,
     )
+    if not format_from_argv0 or argv0_to in {"json", "toml", "yaml"}:
+        parser.add_argument(
+            "-s",
+            "--sort-keys",
+            dest="ordered",
+            action="store_false",
+            help="sort JSON, TOML, YAML keys instead of preserving key order",
+        )
     parser.add_argument("-v", "--version", action="version", version=__version__)
 
     args = parser.parse_args(args=argv[1:])
@@ -494,7 +500,7 @@ def remarshal(
     unwrap=None,
     json_indent=None,
     yaml_options={},
-    ordered=False,
+    ordered=True,
     transform=None,
 ):
     try:

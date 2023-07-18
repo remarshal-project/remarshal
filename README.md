@@ -56,7 +56,7 @@ usage: remarshal.py [-h] [-i input] [-o output]
                     [--yaml-style {,',",|,>}]
                     [--yaml-width n]
                     [--wrap key] [--unwrap key]
-                    [--preserve-key-order] [-v]
+                    [--sort-keys] [-v]
                     [input] [output]
 ```
 
@@ -64,21 +64,21 @@ usage: remarshal.py [-h] [-i input] [-o output]
 usage: {cbor,json,msgpack,toml,yaml}2json [-h] [-i input] [-o output]
                                           [--json-indent n]
                                           [--wrap key] [--unwrap key]
-                                          [--preserve-key-order] [-v]
+                                          [--sort-keys] [-v]
                                           [input] [output]
 ```
 
 ```
 usage: {cbor,json,msgpack,toml,yaml}2msgpack [-h] [-i input] [-o output]
                                              [--wrap key] [--unwrap key]
-                                             [--preserve-key-order] [-v]
+                                             [-v]
                                              [input] [output]
 ```
 
 ```
 usage: {cbor,json,msgpack,toml,yaml}2toml [-h] [-i input] [-o output]
                                           [--wrap key] [--unwrap key]
-                                          [--preserve-key-order] [-v]
+                                          [--sort-keys] [-v]
                                           [input] [output]
 ```
 
@@ -88,14 +88,14 @@ usage: {cbor,json,msgpack,toml,yaml}2yaml [-h] [-i input] [-o output]
                                           [--yaml-style {,',",|,>}]
                                           [--yaml-width n]
                                           [--wrap key] [--unwrap key]
-                                          [--preserve-key-order] [-v]
+                                          [--sort-keys] [-v]
                                           [input] [output]
 ```
 
 ```
 usage: {cbor,json,msgpack,toml,yaml}2cbor [-h] [-i input] [-o output]
                                           [--wrap key] [--unwrap key]
-                                          [--preserve-key-order] [-v]
+                                          [-v]
                                           [input] [output]
 ```
 
