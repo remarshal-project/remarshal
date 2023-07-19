@@ -85,7 +85,13 @@ def extension_to_format(path):
     return ext if ext in FORMATS else None
 
 
-def parse_command_line(argv):
+def parse_command_line(argv):  # noqa: C901.
+    defaults = {
+        "json_indent": 0,
+        "ordered": True,
+        "yaml_options": {},
+    }
+
     me = os.path.basename(argv[0])
     format_from_argv0, argv0_from, argv0_to = argv0_to_format(me)
 
@@ -140,7 +146,7 @@ def parse_command_line(argv):
             dest="json_indent",
             metavar="n",
             type=int,
-            default=None,
+            default=defaults["json_indent"],
             help="JSON indentation",
         )
 
@@ -227,14 +233,18 @@ def parse_command_line(argv):
             if args.output_format is None:
                 parser.error("Need an explicit output format")
 
+    for key, value in defaults.items():
+        vars(args).setdefault(key, value)
+
     # Wrap the yaml_* option.
-    args.__dict__["yaml_options"] = {
-        "default_style": args.yaml_style,
-        "indent": args.yaml_indent,
-        "width": args.yaml_width,
-    }
-    for key in ["yaml_indent", "yaml_style", "yaml_width"]:
-        del args.__dict__[key]
+    if "yaml_indent" in vars(args):
+        vars(args)["yaml_options"] = {
+            "default_style": args.yaml_style,
+            "indent": args.yaml_indent,
+            "width": args.yaml_width,
+        }
+        for key in ["yaml_indent", "yaml_style", "yaml_width"]:
+            del vars(args)[key]
 
     return args
 
@@ -498,7 +508,7 @@ def remarshal(
     output_format,
     wrap=None,
     unwrap=None,
-    json_indent=None,
+    json_indent=0,
     yaml_options={},
     ordered=True,
     transform=None,

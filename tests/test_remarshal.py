@@ -481,6 +481,12 @@ class TestRemarshal(unittest.TestCase):
             remarshal.run([sys.argv[0], data_file_path("array.toml")])
         assert cm.value.code == 2
 
+    def test_run_short_commands(self):
+        for output_format in ["cbor", "json", "msgpack", "toml", "yaml"]:
+            remarshal.run(
+                [f"json2{output_format}", "-i", data_file_path("example.json")]
+            )
+
     def test_ordered_simple(self):
         formats = ("json", "toml", "yaml")
         for from_ in formats:
