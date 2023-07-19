@@ -102,10 +102,8 @@ usage: {cbor,json,msgpack,toml,yaml}2yaml [-h] [-i input] [-o output]
 All of the commands above exit with status 0 on success, 1 on operational
 failure, and 2 when they fail to parse the command line.
 
-If no input argument `input`/ `-i input` is given or its value is `-` or
-a blank string, Remarshal reads input data from standard input. Similarly,
-with no `output`/`-o output` or an output argument that is `-` or a blank
-string, it writes the result to standard output.
+If no input argument `input`/`-i input` is given or its value is `-`, Remarshal reads input data from standard input. Similarly,
+with no `output`/`-o output` or an output argument that is `-`, it writes the result to standard output.
 
 ### Wrappers
 
