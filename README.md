@@ -31,6 +31,9 @@ The quickest way to run Remarshal is with
 
 ```sh
 pipx run remarshal
+# or
+pipx install remarshal
+remarshal
 ```
 
 You can install the latest release of Remarshal from PyPI using pip.
