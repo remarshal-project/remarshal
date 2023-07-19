@@ -547,12 +547,10 @@ def remarshal(
         else:
             encoded = output_data.encode("utf-8")
         output_file.write(encoded)
-
-        output_file.close()
     finally:
         if "input_file" in locals():
             input_file.close()
-        if "output_file" in locals():
+        if output != "-" and "output_file" in locals():
             output_file.close()
 
 
