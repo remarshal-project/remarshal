@@ -312,7 +312,7 @@ class TestRemarshal(unittest.TestCase):
         assert output == reference
 
     def test_missing_wrap(self):
-        with pytest.raises(ValueError):
+        with pytest.raises(TypeError):
             self.convert_and_read("array.json", "json", "toml")
 
     def test_wrap(self):
@@ -397,10 +397,10 @@ class TestRemarshal(unittest.TestCase):
         def test_format_string(s):
             for from_str in "json", "toml", "yaml":
                 for to_str in "json", "toml", "yaml":
-                    found, from_parsed, to_parsed = remarshal.argv0_to_format(
+                    from_parsed, to_parsed = remarshal.argv0_to_format(
                         s.format(from_str, to_str)
                     )
-                    assert (found, from_parsed, to_parsed) == (found, from_str, to_str)
+                    assert (from_parsed, to_parsed) == (from_str, to_str)
 
         test_format_string("{0}2{1}")
         test_format_string("{0}2{1}.exe")
