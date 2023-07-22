@@ -1,5 +1,5 @@
 #! /bin/sh
 
-for cmd in black ruff mypy; do
-    poetry run "$cmd" remarshal.py tests/*.py
-done
+poetry run black remarshal.py tests/*.py
+poetry run ruff remarshal.py tests/*.py
+poetry run mypy --strict remarshal.py tests/*.py
