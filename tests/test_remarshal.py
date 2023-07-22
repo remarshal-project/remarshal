@@ -3,6 +3,8 @@
 # Copyright (c) 2014-2020, 2023 D. Bohdan
 # License: MIT
 
+from __future__ import annotations
+
 import datetime
 import errno
 import os
@@ -11,6 +13,7 @@ import re
 import sys
 import tempfile
 import unittest
+from typing import Any, Callable, Dict, List, Tuple, Union
 
 import cbor2  # type: ignore
 import pytest
@@ -20,7 +23,7 @@ from .context import remarshal
 TEST_PATH = os.path.dirname(os.path.realpath(__file__))
 
 
-def data_file_path(filename):
+def data_file_path(filename: str) -> str:
     path_list = [TEST_PATH]
     if re.match(r"example\.(json|msgpack|toml|yaml|cbor)$", filename):
         path_list.append("..")
@@ -28,46 +31,47 @@ def data_file_path(filename):
     return os.path.join(*path_list)
 
 
-def read_file(filename, binary=False):
+def read_file(filename: str) -> bytes:
     with open(data_file_path(filename), "rb") as f:
-        content = f.read()
-        if not binary:
-            content = content.decode("utf-8")
-    return content
+        return f.read()
 
 
-def sorted_dict(pairs):
+def sorted_dict(pairs: List[Tuple[Any, Any]]) -> Dict[Any, Any]:
     return dict(sorted(pairs))
 
 
-def toml_signature(data):
-    """A lossy representation for TOML example data for comparison."""
+def toml_signature(data: bytes | str) -> List[str]:
+    """Return a lossy representation of TOML example data for comparison."""
 
-    def strip_more(line):
+    def strip_more(line: str) -> str:
         return re.sub(r" *#.*$", "", line.strip()).replace(" ", "")
 
-    def f(lst):
-        def q(line):
+    def sig_lines(lst: List[str]) -> List[str]:
+        def should_drop(line: str) -> bool:
             return (
                 line.startswith("#")
                 or line in ("", "]")
-                or re.match(r'^".*",?$', line)
-                or re.match(r"^hosts", line)
+                or bool(re.match(r'^".*",?$', line))
+                or bool(re.match(r"^hosts", line))
             )
 
-        return sorted([strip_more(line) for line in lst if not q(strip_more(line))])
+        return sorted(
+            [strip_more(line) for line in lst if not should_drop(strip_more(line))]
+        )
 
-    return f(data.split("\n"))
+    str_data = data if isinstance(data, str) else data.decode("utf-8")
+
+    return sig_lines(str_data.split("\n"))
 
 
 class TestRemarshal(unittest.TestCase):
-    def temp_filename(self):
+    def temp_filename(self) -> str:
         fd, temp_filename = tempfile.mkstemp()
         os.close(fd)
         self.temp_files.append(temp_filename)
         return temp_filename
 
-    def assert_cbor_same(self, output, reference):
+    def assert_cbor_same(self, output: bytes, reference: bytes) -> None:
         # To date, Python's CBOR libraries don't support encoding to
         # canonical-form CBOR, so we have to parse and deep-compare.
         output_dec = cbor2.loads(output)
@@ -76,17 +80,18 @@ class TestRemarshal(unittest.TestCase):
 
     def convert_and_read(
         self,
-        input,
-        input_format,
-        output_format,
-        wrap=None,
-        unwrap=None,
-        json_indent=True,
-        yaml_options={},
-        ordered=False,
-        binary=False,
-        transform=None,
-    ):
+        input: str,
+        input_format: str,
+        output_format: str,
+        wrap: Union[str, None] = None,
+        unwrap: Union[str, None] = None,
+        json_indent: Union[int, None] = 2,
+        yaml_options: Dict[Any, Any] = {},
+        ordered: bool = False,  # noqa: FBT001
+        transform: Union[
+            Callable[[remarshal.Document], remarshal.Document], None
+        ] = None,
+    ) -> bytes:
         output_filename = self.temp_filename()
         remarshal.remarshal(
             data_file_path(input),
@@ -100,49 +105,49 @@ class TestRemarshal(unittest.TestCase):
             ordered=ordered,
             transform=transform,
         )
-        return read_file(output_filename, binary)
 
-    def setUp(self):
+        return read_file(output_filename)
+
+    def setUp(self) -> None:
         self.maxDiff = None
-        self.temp_files = []
+        self.temp_files: List[str] = []
 
-    def tearDown(self):
+    def tearDown(self) -> None:
         for filename in self.temp_files:
             os.remove(filename)
 
-    def test_json2json(self):
+    def test_json2json(self) -> None:
         output = self.convert_and_read("example.json", "json", "json")
         reference = read_file("example.json")
         assert output == reference
 
-    def test_msgpack2msgpack(self):
+    def test_msgpack2msgpack(self) -> None:
         output = self.convert_and_read(
             "example.msgpack",
             "msgpack",
             "msgpack",
-            binary=True,
             ordered=True,
         )
-        reference = read_file("example.msgpack", binary=True)
+        reference = read_file("example.msgpack")
         assert output == reference
 
-    def test_toml2toml(self):
+    def test_toml2toml(self) -> None:
         output = self.convert_and_read("example.toml", "toml", "toml")
         reference = read_file("example.toml")
         assert toml_signature(output) == toml_signature(reference)
 
-    def test_yaml2yaml(self):
+    def test_yaml2yaml(self) -> None:
         output = self.convert_and_read("example.yaml", "yaml", "yaml")
         reference = read_file("example.yaml")
         assert output == reference
 
-    def test_cbor2cbor(self):
-        output = self.convert_and_read("example.cbor", "cbor", "cbor", binary=True)
-        reference = read_file("example.cbor", binary=True)
+    def test_cbor2cbor(self) -> None:
+        output = self.convert_and_read("example.cbor", "cbor", "cbor")
+        reference = read_file("example.cbor")
         self.assert_cbor_same(output, reference)
 
-    def test_json2msgpack(self):
-        def patch(x):
+    def test_json2msgpack(self) -> None:
+        def patch(x: Any) -> Any:
             x["owner"]["dob"] = datetime.datetime(1979, 5, 27, 7, 32)  # noqa: DTZ001
             return x
 
@@ -150,15 +155,14 @@ class TestRemarshal(unittest.TestCase):
             "example.json",
             "json",
             "msgpack",
-            binary=True,
             ordered=True,
             transform=patch,
         )
-        reference = read_file("example.msgpack", binary=True)
+        reference = read_file("example.msgpack")
         assert output == reference
 
-    def test_json2cbor(self):
-        def patch(x):
+    def test_json2cbor(self) -> None:
+        def patch(x: Any) -> Any:
             x["owner"]["dob"] = datetime.datetime(
                 1979, 5, 27, 7, 32, 0, 0, datetime.timezone.utc
             )
@@ -168,17 +172,16 @@ class TestRemarshal(unittest.TestCase):
             "example.json",
             "json",
             "cbor",
-            binary=True,
             ordered=True,
             transform=patch,
         )
 
-        reference = read_file("example.cbor", binary=True)
+        reference = read_file("example.cbor")
         self.assert_cbor_same(output, reference)
 
-    def test_json2toml(self):
-        output = self.convert_and_read("example.json", "json", "toml")
-        reference = read_file("example.toml")
+    def test_json2toml(self) -> None:
+        output = self.convert_and_read("example.json", "json", "toml").decode("utf-8")
+        reference = read_file("example.toml").decode("utf-8")
         output_sig = toml_signature(output)
         # The date in 'example.json' is a string.
         reference_sig = toml_signature(
@@ -186,215 +189,209 @@ class TestRemarshal(unittest.TestCase):
         )
         assert output_sig == reference_sig
 
-    def test_json2yaml(self):
-        output = self.convert_and_read("example.json", "json", "yaml")
-        reference = read_file("example.yaml")
+    def test_json2yaml(self) -> None:
+        output = self.convert_and_read("example.json", "json", "yaml").decode("utf-8")
+        reference = read_file("example.yaml").decode("utf-8")
         # The date in 'example.json' is a string.
         reference_patched = reference.replace(
             "1979-05-27 07:32:00+00:00", "'1979-05-27T07:32:00+00:00'"
         )
         assert output == reference_patched
 
-    def test_msgpack2json(self):
+    def test_msgpack2json(self) -> None:
         output = self.convert_and_read("example.msgpack", "msgpack", "json")
         reference = read_file("example.json")
         assert output == reference
 
-    def test_msgpack2toml(self):
+    def test_msgpack2toml(self) -> None:
         output = self.convert_and_read("example.msgpack", "msgpack", "toml")
         reference = read_file("example.toml")
         assert toml_signature(output) == toml_signature(reference)
 
-    def test_msgpack2yaml(self):
+    def test_msgpack2yaml(self) -> None:
         output = self.convert_and_read("example.msgpack", "msgpack", "yaml")
         reference = read_file("example.yaml")
         assert output == reference
 
-    def test_msgpack2cbor(self):
+    def test_msgpack2cbor(self) -> None:
         output = self.convert_and_read(
             "example.msgpack",
             "msgpack",
             "cbor",
-            binary=True,
         )
-        reference = read_file("example.cbor", binary=True)
+        reference = read_file("example.cbor")
         self.assert_cbor_same(output, reference)
 
-    def test_toml2json(self):
+    def test_toml2json(self) -> None:
         output = self.convert_and_read("example.toml", "toml", "json")
         reference = read_file("example.json")
         assert output == reference
 
-    def test_toml2msgpack(self):
+    def test_toml2msgpack(self) -> None:
         output = self.convert_and_read(
             "example.toml",
             "toml",
             "msgpack",
-            binary=True,
             transform=lambda col: remarshal.traverse(col, dict_callback=sorted_dict),
         )
-        reference = read_file("example.msgpack", binary=True)
+        reference = read_file("example.msgpack")
         assert output == reference
 
-    def test_toml2yaml(self):
+    def test_toml2yaml(self) -> None:
         output = self.convert_and_read("example.toml", "toml", "yaml")
         reference = read_file("example.yaml")
         assert output == reference
 
-    def test_toml2cbor(self):
+    def test_toml2cbor(self) -> None:
         output = self.convert_and_read(
             "example.toml",
             "toml",
             "cbor",
-            binary=True,
         )
-        reference = read_file("example.cbor", binary=True)
+        reference = read_file("example.cbor")
         self.assert_cbor_same(output, reference)
 
-    def test_yaml2json(self):
+    def test_yaml2json(self) -> None:
         output = self.convert_and_read("example.yaml", "yaml", "json")
         reference = read_file("example.json")
         assert output == reference
 
-    def test_yaml2msgpack(self):
+    def test_yaml2msgpack(self) -> None:
         output = self.convert_and_read(
             "example.yaml",
             "yaml",
             "msgpack",
             ordered=True,
-            binary=True,
         )
-        reference = read_file("example.msgpack", binary=True)
+        reference = read_file("example.msgpack")
         assert output == reference
 
-    def test_yaml2toml(self):
+    def test_yaml2toml(self) -> None:
         output = self.convert_and_read("example.yaml", "yaml", "toml")
         reference = read_file("example.toml")
         assert toml_signature(output) == toml_signature(reference)
 
-    def test_yaml2cbor(self):
+    def test_yaml2cbor(self) -> None:
         output = self.convert_and_read(
             "example.yaml",
             "yaml",
             "cbor",
-            binary=True,
         )
-        reference = read_file("example.cbor", binary=True)
+        reference = read_file("example.cbor")
         self.assert_cbor_same(output, reference)
 
-    def test_cbor2json(self):
+    def test_cbor2json(self) -> None:
         output = self.convert_and_read("example.cbor", "cbor", "json")
         reference = read_file("example.json")
         assert output == reference
 
-    def test_cbor2toml(self):
+    def test_cbor2toml(self) -> None:
         output = self.convert_and_read("example.cbor", "cbor", "toml")
         reference = read_file("example.toml")
         output_sig = toml_signature(output)
         reference_sig = toml_signature(reference)
         assert output_sig == reference_sig
 
-    def test_cbor2yaml(self):
+    def test_cbor2yaml(self) -> None:
         output = self.convert_and_read("example.cbor", "cbor", "yaml")
         reference = read_file("example.yaml")
         assert output == reference
 
-    def test_cbor2msgpack(self):
+    def test_cbor2msgpack(self) -> None:
         output = self.convert_and_read(
             "example.cbor",
             "cbor",
             "msgpack",
-            binary=True,
             ordered=True,
             transform=lambda col: remarshal.traverse(col, dict_callback=sorted_dict),
         )
-        reference = read_file("example.msgpack", binary=True)
+        reference = read_file("example.msgpack")
         assert output == reference
 
-    def test_missing_wrap(self):
+    def test_missing_wrap(self) -> None:
         with pytest.raises(TypeError):
             self.convert_and_read("array.json", "json", "toml")
 
-    def test_wrap(self):
+    def test_wrap(self) -> None:
         output = self.convert_and_read("array.json", "json", "toml", wrap="data")
         reference = read_file("array.toml")
         assert output == reference
 
-    def test_unwrap(self):
+    def test_unwrap(self) -> None:
         output = self.convert_and_read(
-            "array.toml", "toml", "json", unwrap="data", json_indent=None
+            "array.toml", "toml", "json", json_indent=None, unwrap="data"
         )
         reference = read_file("array.json")
         assert output == reference
 
-    def test_malformed_json(self):
+    def test_malformed_json(self) -> None:
         with pytest.raises(ValueError):
             self.convert_and_read("garbage", "json", "yaml")
 
-    def test_malformed_toml(self):
+    def test_malformed_toml(self) -> None:
         with pytest.raises(ValueError):
             self.convert_and_read("garbage", "toml", "yaml")
 
-    def test_malformed_yaml(self):
+    def test_malformed_yaml(self) -> None:
         with pytest.raises(ValueError):
             self.convert_and_read("garbage", "yaml", "json")
 
-    def test_binary_to_json(self):
+    def test_binary_to_json(self) -> None:
         with pytest.raises(ValueError):
             self.convert_and_read("bin.msgpack", "msgpack", "json")
         with pytest.raises(ValueError):
             self.convert_and_read("bin.yml", "yaml", "json")
 
-    def test_binary_to_msgpack(self):
-        self.convert_and_read("bin.yml", "yaml", "msgpack", binary=True)
+    def test_binary_to_msgpack(self) -> None:
+        self.convert_and_read("bin.yml", "yaml", "msgpack")
 
-    def test_binary_to_toml(self):
+    def test_binary_to_toml(self) -> None:
         with pytest.raises(ValueError):
             self.convert_and_read("bin.msgpack", "msgpack", "toml")
         with pytest.raises(ValueError):
             self.convert_and_read("bin.yml", "yaml", "toml")
 
-    def test_binary_to_yaml(self):
+    def test_binary_to_yaml(self) -> None:
         self.convert_and_read("bin.msgpack", "msgpack", "yaml")
 
-    def test_binary_to_cbor(self):
-        self.convert_and_read("bin.msgpack", "msgpack", "cbor", binary=True)
+    def test_binary_to_cbor(self) -> None:
+        self.convert_and_read("bin.msgpack", "msgpack", "cbor")
 
-    def test_yaml_style_default(self):
+    def test_yaml_style_default(self) -> None:
         output = self.convert_and_read("long-line.json", "json", "yaml")
         reference = read_file("long-line-default.yaml")
         assert output == reference
 
-    def test_yaml_style_single_quote(self):
+    def test_yaml_style_single_quote(self) -> None:
         output = self.convert_and_read(
             "long-line.json", "json", "yaml", yaml_options={"default_style": "'"}
         )
         reference = read_file("long-line-single-quote.yaml")
         assert output == reference
 
-    def test_yaml_style_double_quote(self):
+    def test_yaml_style_double_quote(self) -> None:
         output = self.convert_and_read(
             "long-line.json", "json", "yaml", yaml_options={"default_style": '"'}
         )
         reference = read_file("long-line-double-quote.yaml")
         assert output == reference
 
-    def test_yaml_style_pipe(self):
+    def test_yaml_style_pipe(self) -> None:
         output = self.convert_and_read(
             "long-line.json", "json", "yaml", yaml_options={"default_style": "|"}
         )
         reference = read_file("long-line-pipe.yaml")
         assert output == reference
 
-    def test_yaml_style_gt(self):
+    def test_yaml_style_gt(self) -> None:
         output = self.convert_and_read(
             "long-line.json", "json", "yaml", yaml_options={"default_style": ">"}
         )
         reference = read_file("long-line-gt.yaml")
         assert output == reference
 
-    def test_argv0_to_format(self):
-        def test_format_string(s):
+    def test_argv0_to_format(self) -> None:
+        def test_format_string(s: str) -> None:
             for from_str in "json", "toml", "yaml":
                 for to_str in "json", "toml", "yaml":
                     from_parsed, to_parsed = remarshal.argv0_to_format(
@@ -406,7 +403,7 @@ class TestRemarshal(unittest.TestCase):
         test_format_string("{0}2{1}.exe")
         test_format_string("{0}2{1}-script.py")
 
-    def test_format_detection(self):
+    def test_format_detection(self) -> None:
         ext_to_fmt = {
             "json": "json",
             "toml": "toml",
@@ -423,32 +420,32 @@ class TestRemarshal(unittest.TestCase):
                 assert args.input_format == ext_to_fmt[from_ext]
                 assert args.output_format == ext_to_fmt[to_ext]
 
-    def test_format_detection_failure_input_stdin(self):
+    def test_format_detection_failure_input_stdin(self) -> None:
         with pytest.raises(SystemExit) as cm:
             remarshal.parse_command_line([sys.argv[0], "-"])
         assert cm.value.code == 2
 
-    def test_format_detection_failure_input_txt(self):
+    def test_format_detection_failure_input_txt(self) -> None:
         with pytest.raises(SystemExit) as cm:
             remarshal.parse_command_line([sys.argv[0], "input.txt"])
         assert cm.value.code == 2
 
-    def test_format_detection_failure_output_txt(self):
+    def test_format_detection_failure_output_txt(self) -> None:
         with pytest.raises(SystemExit) as cm:
             remarshal.parse_command_line([sys.argv[0], "input.json", "output.txt"])
         assert cm.value.code == 2
 
-    def test_run_no_args(self):
+    def test_run_no_args(self) -> None:
         with pytest.raises(SystemExit) as cm:
             remarshal.run([sys.argv[0]])
         assert cm.value.code == 2
 
-    def test_run_help(self):
+    def test_run_help(self) -> None:
         with pytest.raises(SystemExit) as cm:
             remarshal.run([sys.argv[0], "--help"])
         assert cm.value.code == 0
 
-    def test_run_no_input_file(self):
+    def test_run_no_input_file(self) -> None:
         args = [
             sys.argv[0],
             "-if",
@@ -461,7 +458,7 @@ class TestRemarshal(unittest.TestCase):
             remarshal.run(args)
         assert cm.value.errno == errno.ENOENT
 
-    def test_run_no_output_dir(self):
+    def test_run_no_output_dir(self) -> None:
         args = [
             sys.argv[0],
             "-if",
@@ -476,18 +473,18 @@ class TestRemarshal(unittest.TestCase):
             remarshal.run(args)
         assert cm.value.errno == errno.ENOENT
 
-    def test_run_no_output_format(self):
+    def test_run_no_output_format(self) -> None:
         with pytest.raises(SystemExit) as cm:
             remarshal.run([sys.argv[0], data_file_path("array.toml")])
         assert cm.value.code == 2
 
-    def test_run_short_commands(self):
+    def test_run_short_commands(self) -> None:
         for output_format in ["cbor", "json", "msgpack", "toml", "yaml"]:
             remarshal.run(
                 [f"json2{output_format}", "-i", data_file_path("example.json")]
             )
 
-    def test_ordered_simple(self):
+    def test_ordered_simple(self) -> None:
         formats = ("json", "toml", "yaml")
         for from_ in formats:
             for to in formats:
@@ -504,44 +501,44 @@ class TestRemarshal(unittest.TestCase):
                 )
                 assert output == reference, message
 
-    def test_ordered_yaml2yaml(self):
+    def test_ordered_yaml2yaml(self) -> None:
         output = self.convert_and_read("example.yaml", "yaml", "yaml", ordered=True)
         reference = read_file("example.yaml")
         assert output == reference
 
-    def test_bool_null_key_yaml2json(self):
+    def test_bool_null_key_yaml2json(self) -> None:
         output = self.convert_and_read(
             "bool-null-key.yaml",
             "yaml",
             "json",
-            json_indent=False,
+            json_indent=0,
             ordered=True,
         )
         reference = read_file("bool-null-key.json")
         assert output == reference
 
-    def test_yaml_width_default(self):
+    def test_yaml_width_default(self) -> None:
         output = self.convert_and_read(
             "long-line.json",
             "json",
             "yaml",
-        )
+        ).decode("utf-8")
         assert len([char for char in output if char == "\n"]) == 4
 
-    def test_yaml_width_30(self):
+    def test_yaml_width_30(self) -> None:
         output = self.convert_and_read(
             "long-line.json", "json", "yaml", yaml_options={"width": 5}
-        )
+        ).decode("utf-8")
         assert len([char for char in output if char == "\n"]) == 21
 
-    def test_yaml_width_120(self):
+    def test_yaml_width_120(self) -> None:
         output = self.convert_and_read(
             "long-line.json", "json", "yaml", yaml_options={"width": 120}
-        )
+        ).decode("utf-8")
         assert len([char for char in output if char == "\n"]) == 3
 
-    def test_yaml_ident_5(self):
+    def test_yaml_ident_5(self) -> None:
         output = self.convert_and_read(
             "long-line.json", "json", "yaml", yaml_options={"indent": 5}
-        )
+        ).decode("utf-8")
         assert set(re.findall(r"\n +", output)) == {"\n     ", "\n          "}

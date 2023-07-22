@@ -12,7 +12,7 @@ import json
 import os.path
 import re
 import sys
-from typing import Any, Callable, Dict, List, Mapping, Sequence, Set, Tuple, Union
+from typing import Any, Callable, Dict, List, Mapping, Sequence, Set, Tuple, Union, cast
 
 import cbor2  # type: ignore
 import dateutil.parser
@@ -33,7 +33,7 @@ class OrderedDumper(yaml.SafeDumper):
     pass
 
 
-def mapping_representer(dumper, data):
+def mapping_representer(dumper: Any, data: Any) -> Any:
     return dumper.represent_mapping(
         yaml.resolver.BaseResolver.DEFAULT_MAPPING_TAG, data.items()
     )
@@ -48,7 +48,7 @@ class TimezoneLoader(yaml.SafeLoader):
     pass
 
 
-def timestamp_constructor(loader, node):
+def timestamp_constructor(loader: Any, node: Any) -> datetime.datetime:
     return dateutil.parser.parse(node.value)
 
 
@@ -60,7 +60,7 @@ for loader in loaders:
 # === JSON ===
 
 
-def json_default(obj) -> str:
+def json_default(obj: Any) -> str:
     if isinstance(obj, datetime.datetime):
         return obj.isoformat()
     msg = f"{obj!r} is not JSON serializable"
@@ -89,7 +89,7 @@ def extension_to_format(path: str) -> str:
 
 
 def parse_command_line(argv: List[str]) -> argparse.Namespace:  # noqa: C901.
-    defaults = {
+    defaults: Dict[str, Any] = {
         "json_indent": 0,
         "ordered": True,
         "yaml_options": {},
@@ -259,13 +259,13 @@ def parse_command_line(argv: List[str]) -> argparse.Namespace:  # noqa: C901.
 
 
 def traverse(
-    col,
-    dict_callback: Callable = lambda x: dict(x),
-    list_callback: Callable = lambda x: x,
-    key_callback: Callable = lambda x: x,
+    col: Any,
+    dict_callback: Callable[[List[Tuple[Any, Any]]], Any] = lambda x: dict(x),
+    list_callback: Callable[[List[Tuple[Any, Any]]], Any] = lambda x: x,
+    key_callback: Callable[[Any], Any] = lambda x: x,
     instance_callbacks: Set[Tuple[type, Any]] = set(),
-    default_callback: Callable = lambda x: x,
-):
+    default_callback: Callable[[Any], Any] = lambda x: x,
+) -> Any:
     if isinstance(col, dict):
         res = dict_callback(
             [
@@ -313,9 +313,11 @@ Document = Union[bool, bytes, datetime.datetime, Mapping, None, Sequence, str]
 
 def decode_json(input_data: bytes) -> Document:
     try:
-        return json.loads(
+        doc = json.loads(
             input_data.decode("utf-8"),
         )
+
+        return cast(Document, doc)
     except json.JSONDecodeError as e:
         msg = f"Cannot parse as JSON ({e})"
         raise ValueError(msg)
@@ -323,7 +325,8 @@ def decode_json(input_data: bytes) -> Document:
 
 def decode_msgpack(input_data: bytes) -> Document:
     try:
-        return umsgpack.unpackb(input_data)
+        doc = umsgpack.unpackb(input_data)
+        return cast(Document, doc)
     except umsgpack.UnpackException as e:
         msg = f"Cannot parse as MessagePack ({e})"
         raise ValueError(msg)
@@ -331,7 +334,8 @@ def decode_msgpack(input_data: bytes) -> Document:
 
 def decode_cbor(input_data: bytes) -> Document:
     try:
-        return cbor2.loads(input_data)
+        doc = cbor2.loads(input_data)
+        return cast(Document, doc)
     except cbor2.CBORDecodeError as e:
         msg = f"Cannot parse as CBOR ({e})"
         raise ValueError(msg)
@@ -341,7 +345,7 @@ def decode_toml(input_data: bytes) -> Document:
     try:
         # Remove TOML Kit's custom classes.
         # https://github.com/sdispater/tomlkit/issues/43
-        return traverse(
+        doc = traverse(
             tomlkit.loads(input_data),
             instance_callbacks={
                 (tomlkit.items.Bool, bool),
@@ -381,6 +385,8 @@ def decode_toml(input_data: bytes) -> Document:
                 ),
             },
         )
+
+        return cast(Document, doc)
     except tomlkit.exceptions.ParseError as e:
         msg = f"Cannot parse as TOML ({e})"
         raise ValueError(msg)
@@ -389,7 +395,8 @@ def decode_toml(input_data: bytes) -> Document:
 def decode_yaml(input_data: bytes) -> Document:
     try:
         loader = TimezoneLoader
-        return yaml.load(input_data, loader)
+        doc = yaml.load(input_data, loader)
+        return cast(Document, doc)
     except (yaml.scanner.ScannerError, yaml.parser.ParserError) as e:
         msg = f"Cannot parse as YAML ({e})"
         raise ValueError(msg)
@@ -412,14 +419,14 @@ def decode(input_format: str, input_data: bytes) -> Document:
 
 
 def encode_json(
-    data: Document, ordered: bool, indent: Union[bool, int]  # noqa: FBT001
+    data: Document, ordered: bool, indent: Union[bool, int, None]  # noqa: FBT001
 ) -> str:
     if indent is True:
         indent = 2
 
     separators = (",", ": " if indent else ":")
 
-    def stringify_key(key):
+    def stringify_key(key: Any) -> Any:
         if isinstance(key, bool):
             return "true" if key else "false"
         return "null" if key is None else key
@@ -446,7 +453,7 @@ def encode_json(
 
 def encode_msgpack(data: Document) -> bytes:
     try:
-        return umsgpack.packb(data)
+        return bytes(umsgpack.packb(data))
     except umsgpack.UnsupportedTypeException as e:
         msg = f"Cannot convert data to MessagePack ({e})"
         raise ValueError(msg)
@@ -454,13 +461,13 @@ def encode_msgpack(data: Document) -> bytes:
 
 def encode_cbor(data: Document) -> bytes:
     try:
-        return cbor2.dumps(data)
+        return bytes(cbor2.dumps(data))
     except cbor2.CBOREncodeError as e:
         msg = f"Cannot convert data to CBOR ({e})"
         raise ValueError(msg)
 
 
-def encode_toml(data: Mapping, ordered: bool) -> str:  # noqa: FBT001
+def encode_toml(data: Mapping[Any, Any], ordered: bool) -> str:  # noqa: FBT001
     try:
         return tomlkit.dumps(data, sort_keys=not ordered)
     except AttributeError as e:
@@ -478,7 +485,7 @@ def encode_toml(data: Mapping, ordered: bool) -> str:  # noqa: FBT001
 
 
 def encode_yaml(
-    data: Document, ordered: bool, yaml_options: Dict  # noqa: FBT001
+    data: Document, ordered: bool, yaml_options: Dict[Any, Any]  # noqa: FBT001
 ) -> str:
     dumper = OrderedDumper if ordered else yaml.SafeDumper
     try:
@@ -500,9 +507,9 @@ def encode(
     output_format: str,
     data: Document,
     *,
-    json_indent: int,
+    json_indent: Union[int, None],
     ordered: bool,
-    yaml_options: Dict,
+    yaml_options: Dict[Any, Any],
 ) -> bytes:
     if output_format == "json":
         encoded = encode_json(data, ordered, json_indent).encode("utf-8")
@@ -552,8 +559,8 @@ def remarshal(
     output_format: str,
     wrap: Union[str, None] = None,
     unwrap: Union[str, None] = None,
-    json_indent: int = 0,
-    yaml_options: Dict = {},
+    json_indent: Union[int, None] = 0,
+    yaml_options: Dict[Any, Any] = {},
     ordered: bool = True,  # noqa: FBT001
     transform: Union[Callable[[Document], Document], None] = None,
 ) -> None:
