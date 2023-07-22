@@ -90,7 +90,7 @@ def extension_to_format(path: str) -> str:
 
 def parse_command_line(argv: List[str]) -> argparse.Namespace:  # noqa: C901.
     defaults: Dict[str, Any] = {
-        "json_indent": 0,
+        "json_indent": None,
         "ordered": True,
         "yaml_options": {},
     }
@@ -559,7 +559,7 @@ def remarshal(
     output_format: str,
     wrap: Union[str, None] = None,
     unwrap: Union[str, None] = None,
-    json_indent: Union[int, None] = 0,
+    json_indent: Union[int, None] = None,
     yaml_options: Dict[Any, Any] = {},
     ordered: bool = True,  # noqa: FBT001
     transform: Union[Callable[[Document], Document], None] = None,
