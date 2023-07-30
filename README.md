@@ -26,23 +26,32 @@ midnight of that date.
 You will need Python 3.8 or later. Earlier versions of Python 3 are not
 supported.
 
-The quickest way to run Remarshal is with
- [pipx](https://github.com/pypa/pipx).
+The recommended way to run Remarshal is to install the latest release from
+[PyPI](https://pypi.org/project/remarshal/) with
+[pipx](https://github.com/pypa/pipx).
 
 ```sh
-pipx run remarshal
-# or
 pipx install remarshal
-remarshal
 ```
 
-You can install the latest release of Remarshal from PyPI using pip.
+Regular installation is not mandatory. The command
+
+```sh
+pipx run remarshal [arg ...]
+```
+
+will download Remarshal and run it from a temporary location.
+It will cache the downloaded version for up to 14 days. Remarshal will not be
+automatically updated during that time.
+
+You can install Remarshal using pip.
 
 ```sh
 python3 -m pip install --user remarshal
 ```
 
-Alternatively, you can install the development version. Prefer releases unless you have a reason to run the development version.
+Instead of a release, you can install the development version. Prefer
+releases unless you have a reason to run the development version.
 
 ```sh
 python3 -m pip install --user git+https://github.com/remarshal-project/remarshal
@@ -105,8 +114,10 @@ usage: {cbor,json,msgpack,toml,yaml}2yaml [-h] [-i input] [-o output]
 All of the commands above exit with status 0 on success, 1 on operational
 failure, and 2 when they fail to parse the command line.
 
-If no input argument `input`/`-i input` is given or its value is `-`, Remarshal reads input data from standard input. Similarly,
-with no `output`/`-o output` or an output argument that is `-`, it writes the result to standard output.
+If no input argument `input`/`-i input` is given or its value is `-`,
+Remarshal reads input data from standard input. Similarly, with no
+`output`/`-o output` or an output argument that is `-`, it writes the result
+to standard output.
 
 ### Wrappers
 
@@ -239,4 +250,5 @@ speed = 2
 MIT. See the file `LICENSE`.
 
 `example.toml` from <https://github.com/toml-lang/toml>. `example.json`,
-`example.msgpack`, `example.cbor`, `example.yml`, `tests/bin.msgpack`, and `tests/bin.yml` are derived from it.
+`example.msgpack`, `example.cbor`, `example.yml`, `tests/bin.msgpack`, and
+`tests/bin.yml` are derived from it.
