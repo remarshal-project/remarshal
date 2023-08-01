@@ -17,8 +17,12 @@ from typing import Any, Callable, Dict, List, Mapping, Sequence, Set, Tuple, Uni
 import cbor2  # type: ignore
 import dateutil.parser
 import tomlkit
+import tomlkit.exceptions
+import tomlkit.items
 import umsgpack  # type: ignore
 import yaml
+import yaml.parser
+import yaml.scanner
 
 __version__ = "0.16.1"
 
