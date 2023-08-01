@@ -1,7 +1,7 @@
-name: lint
+name: type
 on: [push, pull_request]
 jobs:
-  lint:
+  type:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -9,6 +9,6 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install poetry tox
-      - name: Lint (via tox)
+      - name: Typecheck (via tox)
         run: |
-          tox run -e lint
+          tox run -e type
