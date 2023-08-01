@@ -568,6 +568,9 @@ def remarshal(
     ordered: bool = True,  # noqa: FBT001
     transform: Union[Callable[[Document], Document], None] = None,
 ) -> None:
+    input_file = None
+    output_file = None
+
     try:
         input_file = sys.stdin.buffer if input == "-" else open(input, "rb")
         output_file = sys.stdout.buffer if output == "-" else open(output, "wb")
@@ -605,9 +608,9 @@ def remarshal(
 
         output_file.write(encoded)
     finally:
-        if "input_file" in locals():
+        if input_file is not None:
             input_file.close()
-        if output != "-" and "output_file" in locals():
+        if output != "-" and output_file is not None:
             output_file.close()
 
 
