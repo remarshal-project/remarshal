@@ -264,14 +264,17 @@ def parse_command_line(argv: List[str]) -> argparse.Namespace:  # noqa: C901.
 
 # === Parser/serializer wrappers ===
 
+def identity(x: Any) -> Any:
+    return x
+
 
 def traverse(
     col: Any,
     dict_callback: Callable[[List[Tuple[Any, Any]]], Any] = lambda x: dict(x),
-    list_callback: Callable[[List[Tuple[Any, Any]]], Any] = lambda x: x,
-    key_callback: Callable[[Any], Any] = lambda x: x,
+    list_callback: Callable[[List[Tuple[Any, Any]]], Any] = identity,
+    key_callback: Callable[[Any], Any] = identity,
     instance_callbacks: Set[Tuple[type, Any]] = set(),
-    default_callback: Callable[[Any], Any] = lambda x: x,
+    default_callback: Callable[[Any], Any] = identity,
 ) -> Any:
     if isinstance(col, dict):
         res = dict_callback(
@@ -447,7 +450,7 @@ def stringify_special_keys(key: Any) -> Any:
     if key is None:
         return "null"
 
-    return key
+    return str(key)
 
 
 def json_default(obj: Any) -> str:
@@ -514,11 +517,26 @@ def encode_toml(
 ) -> str:
     key_callback = stringify_special_keys if stringify_keys else reject_special_keys
 
+    def reject_null(x: Any) -> Any:
+        if x is None:
+            raise TypeError("null values are not supported")
+
+        return x
+
+    def stringify_null(x: Any) -> Any:
+        if x is None:
+            return "null"
+
+        return x
+
+    default_callback = stringify_null if stringify_keys else reject_null
+
     try:
         return tomlkit.dumps(
             traverse(
                 data,
                 key_callback=key_callback,
+                default_callback=default_callback,
             ),
             sort_keys=not ordered,
         )

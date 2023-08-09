@@ -572,3 +572,23 @@ class TestRemarshal(unittest.TestCase):
     def test_yaml2toml_empty_mapping(self) -> None:
         with pytest.raises(ValueError):
             self.convert_and_read("empty-mapping.yaml", "yaml", "toml")
+
+    def test_yaml2toml_empty_mapping_stringify(self) -> None:
+        output = self.convert_and_read(
+            "empty-mapping.yaml",
+            "yaml",
+            "toml",
+            stringify_keys=True,
+        )
+        reference = read_file("empty-mapping.toml")
+        assert output == reference
+
+    def test_yaml2toml_empty_mapping_stringify(self) -> None:
+        output = self.convert_and_read(
+            "numeric-key-null-value.yaml",
+            "yaml",
+            "toml",
+            stringify_keys=True,
+        )
+        reference = read_file("numeric-key-null-value.toml")
+        assert output == reference
