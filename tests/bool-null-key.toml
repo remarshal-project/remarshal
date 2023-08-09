@@ -1,0 +1,4 @@
+true = "foo"
+false = "oof"
+another = "bar"
+null = "nothin'"

@@ -24,7 +24,7 @@ import yaml
 import yaml.parser
 import yaml.scanner
 
-__version__ = "0.16.1"
+__version__ = "0.17.0"
 
 FORMATS = ["cbor", "json", "msgpack", "toml", "yaml"]
 
@@ -61,16 +61,6 @@ for loader in loaders:
     loader.add_constructor("tag:yaml.org,2002:timestamp", timestamp_constructor)
 
 
-# === JSON ===
-
-
-def json_default(obj: Any) -> str:
-    if isinstance(obj, datetime.datetime):
-        return obj.isoformat()
-    msg = f"{obj!r} is not JSON serializable"
-    raise TypeError(msg)
-
-
 # === CLI ===
 
 
@@ -96,6 +86,7 @@ def parse_command_line(argv: List[str]) -> argparse.Namespace:  # noqa: C901.
     defaults: Dict[str, Any] = {
         "json_indent": None,
         "ordered": True,
+        "stringify_keys": False,
         "yaml_options": {},
     }
 
@@ -158,6 +149,18 @@ def parse_command_line(argv: List[str]) -> argparse.Namespace:  # noqa: C901.
             type=int,
             default=defaults["json_indent"],
             help="JSON indentation",
+        )
+
+    if not format_from_argv0 or argv0_to in {"json", "toml"}:
+        parser.add_argument(
+            "-k",
+            "--stringify-keys",
+            dest="stringify_keys",
+            action="store_true",
+            help=(
+                "stringify boolean, datetime, null keys when converting to "
+                "JSON and TOML"
+            ),
         )
 
     if not format_from_argv0 or argv0_to == "yaml":
@@ -422,25 +425,57 @@ def decode(input_format: str, input_data: bytes) -> Document:
     return decoder[input_format](input_data)
 
 
+def reject_special_keys(key: Any) -> Any:
+    if isinstance(key, bool):
+        msg = "boolean key"
+        raise TypeError(msg)
+    if isinstance(key, datetime.datetime):
+        msg = "datetime key"
+        raise TypeError(msg)
+    if key is None:
+        msg = "null key"
+        raise TypeError(msg)
+
+    return key
+
+
+def stringify_special_keys(key: Any) -> Any:
+    if isinstance(key, bool):
+        return "true" if key else "false"
+    if isinstance(key, datetime.datetime):
+        return key.isoformat()
+    if key is None:
+        return "null"
+
+    return key
+
+
+def json_default(obj: Any) -> str:
+    if isinstance(obj, datetime.datetime):
+        return obj.isoformat()
+    msg = f"{obj!r} is not JSON-serializable"
+    raise TypeError(msg)
+
+
 def encode_json(
-    data: Document, ordered: bool, indent: Union[bool, int, None]  # noqa: FBT001
+    data: Document,
+    *,
+    ordered: bool,
+    indent: Union[bool, int, None],
+    stringify_keys: bool,
 ) -> str:
     if indent is True:
         indent = 2
 
     separators = (",", ": " if indent else ":")
-
-    def stringify_key(key: Any) -> Any:
-        if isinstance(key, bool):
-            return "true" if key else "false"
-        return "null" if key is None else key
+    key_callback = stringify_special_keys if stringify_keys else reject_special_keys
 
     try:
         return (
             json.dumps(
                 traverse(
                     data,
-                    key_callback=stringify_key,
+                    key_callback=key_callback,
                 ),
                 default=json_default,
                 ensure_ascii=False,
@@ -450,7 +485,7 @@ def encode_json(
             )
             + "\n"
         )
-    except TypeError as e:
+    except (TypeError, ValueError) as e:
         msg = f"Cannot convert data to JSON ({e})"
         raise ValueError(msg)
 
@@ -471,9 +506,22 @@ def encode_cbor(data: Document) -> bytes:
         raise ValueError(msg)
 
 
-def encode_toml(data: Mapping[Any, Any], ordered: bool) -> str:  # noqa: FBT001
+def encode_toml(
+    data: Mapping[Any, Any],
+    *,
+    ordered: bool,
+    stringify_keys: bool,
+) -> str:
+    key_callback = stringify_special_keys if stringify_keys else reject_special_keys
+
     try:
-        return tomlkit.dumps(data, sort_keys=not ordered)
+        return tomlkit.dumps(
+            traverse(
+                data,
+                key_callback=key_callback,
+            ),
+            sort_keys=not ordered,
+        )
     except AttributeError as e:
         if str(e) == "'list' object has no attribute 'as_string'":
             msg = (
@@ -488,9 +536,7 @@ def encode_toml(data: Mapping[Any, Any], ordered: bool) -> str:  # noqa: FBT001
         raise ValueError(msg)
 
 
-def encode_yaml(
-    data: Document, ordered: bool, yaml_options: Dict[Any, Any]  # noqa: FBT001
-) -> str:
+def encode_yaml(data: Document, *, ordered: bool, yaml_options: Dict[Any, Any]) -> str:
     dumper = OrderedDumper if ordered else yaml.SafeDumper
     try:
         return yaml.dump(
@@ -513,10 +559,16 @@ def encode(
     *,
     json_indent: Union[int, None],
     ordered: bool,
+    stringify_keys: bool,
     yaml_options: Dict[Any, Any],
 ) -> bytes:
     if output_format == "json":
-        encoded = encode_json(data, ordered, json_indent).encode("utf-8")
+        encoded = encode_json(
+            data,
+            indent=json_indent,
+            ordered=ordered,
+            stringify_keys=stringify_keys,
+        ).encode("utf-8")
     elif output_format == "msgpack":
         encoded = encode_msgpack(data)
     elif output_format == "toml":
@@ -526,9 +578,13 @@ def encode(
                 "be encoded as TOML"
             )
             raise TypeError(msg)
-        encoded = encode_toml(data, ordered).encode("utf-8")
+        encoded = encode_toml(
+            data, ordered=ordered, stringify_keys=stringify_keys
+        ).encode("utf-8")
     elif output_format == "yaml":
-        encoded = encode_yaml(data, ordered, yaml_options).encode("utf-8")
+        encoded = encode_yaml(data, ordered=ordered, yaml_options=yaml_options).encode(
+            "utf-8"
+        )
     elif output_format == "cbor":
         encoded = encode_cbor(data)
     else:
@@ -548,11 +604,12 @@ def run(argv: List[str]) -> None:
         args.output,
         args.input_format,
         args.output_format,
-        args.wrap,
-        args.unwrap,
-        args.json_indent,
-        args.yaml_options,
-        args.ordered,
+        json_indent=args.json_indent,
+        ordered=args.ordered,
+        stringify_keys=args.stringify_keys,
+        unwrap=args.unwrap,
+        wrap=args.wrap,
+        yaml_options=args.yaml_options,
     )
 
 
@@ -561,12 +618,14 @@ def remarshal(
     output: str,
     input_format: str,
     output_format: str,
-    wrap: Union[str, None] = None,
-    unwrap: Union[str, None] = None,
+    *,
     json_indent: Union[int, None] = None,
-    yaml_options: Dict[Any, Any] = {},
-    ordered: bool = True,  # noqa: FBT001
+    ordered: bool = True,
+    stringify_keys: bool = False,
     transform: Union[Callable[[Document], Document], None] = None,
+    unwrap: Union[str, None] = None,
+    wrap: Union[str, None] = None,
+    yaml_options: Dict[Any, Any] = {},
 ) -> None:
     input_file = None
     output_file = None
@@ -603,6 +662,7 @@ def remarshal(
             parsed,
             json_indent=json_indent,
             ordered=ordered,
+            stringify_keys=stringify_keys,
             yaml_options=yaml_options,
         )
 

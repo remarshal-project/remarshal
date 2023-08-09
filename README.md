@@ -15,11 +15,13 @@ or TOML. Binary fields are converted between CBOR, MessagePack, and YAML.
 be converted to CBOR. The Local Date type can only be converted to JSON and
 YAML. The Local Time type can not be converted to any other format. Offset
 Date-Time and its equivalents can be converted between CBOR, MessagePack,
-TOML, and YAML.
+TOML, and YAML. Keys of any date-time type are converted to string TOML
+keys.
 * Date and time types are converted to JSON strings. They can not be safely
 roundtripped through JSON.
-* A YAML timestamp with only a date becomes a TOML Local Date-Time for the
-midnight of that date.
+* A YAML timestamp with only a date becomes a YAML timestamp or a TOML Local
+Date-Time for the midnight of that date. This means you can not roundtrip
+every YAML document through Remarshal.
 
 ## Installation
 

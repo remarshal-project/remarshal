@@ -83,14 +83,16 @@ class TestRemarshal(unittest.TestCase):
         input: str,
         input_format: str,
         output_format: str,
-        wrap: Union[str, None] = None,
-        unwrap: Union[str, None] = None,
+        *,
         json_indent: Union[int, None] = 2,
-        yaml_options: Dict[Any, Any] = {},
-        ordered: bool = False,  # noqa: FBT001
+        ordered: bool = False,
+        stringify_keys: bool = False,
         transform: Union[
             Callable[[remarshal.Document], remarshal.Document], None
         ] = None,
+        unwrap: Union[str, None] = None,
+        wrap: Union[str, None] = None,
+        yaml_options: Dict[Any, Any] = {},
     ) -> bytes:
         output_filename = self.temp_filename()
         remarshal.remarshal(
@@ -98,12 +100,13 @@ class TestRemarshal(unittest.TestCase):
             output_filename,
             input_format,
             output_format,
-            wrap=wrap,
-            unwrap=unwrap,
             json_indent=json_indent,
-            yaml_options=yaml_options,
             ordered=ordered,
+            stringify_keys=stringify_keys,
             transform=transform,
+            unwrap=unwrap,
+            wrap=wrap,
+            yaml_options=yaml_options,
         )
 
         return read_file(output_filename)
@@ -506,15 +509,38 @@ class TestRemarshal(unittest.TestCase):
         reference = read_file("example.yaml")
         assert output == reference
 
-    def test_bool_null_key_yaml2json(self) -> None:
+    def test_yaml2json_bool_null_key(self) -> None:
         output = self.convert_and_read(
             "bool-null-key.yaml",
             "yaml",
             "json",
             json_indent=0,
             ordered=True,
+            stringify_keys=True,
         )
         reference = read_file("bool-null-key.json")
+        assert output == reference
+
+    def test_yaml2toml_bool_null_key(self) -> None:
+        output = self.convert_and_read(
+            "bool-null-key.yaml",
+            "yaml",
+            "toml",
+            ordered=True,
+            stringify_keys=True,
+        )
+        reference = read_file("bool-null-key.toml")
+        assert output == reference
+
+    def test_yaml2toml_timestamp_key(self) -> None:
+        output = self.convert_and_read(
+            "timestamp-key.yaml",
+            "yaml",
+            "toml",
+            ordered=True,
+            stringify_keys=True,
+        )
+        reference = read_file("timestamp-key.toml")
         assert output == reference
 
     def test_yaml_width_default(self) -> None:
@@ -542,3 +568,7 @@ class TestRemarshal(unittest.TestCase):
             "long-line.json", "json", "yaml", yaml_options={"indent": 5}
         ).decode("utf-8")
         assert set(re.findall(r"\n +", output)) == {"\n     ", "\n          "}
+
+    def test_yaml2toml_empty_mapping(self) -> None:
+        with pytest.raises(ValueError):
+            self.convert_and_read("empty-mapping.yaml", "yaml", "toml")
