@@ -62,59 +62,49 @@ python3 -m pip install --user git+https://github.com/remarshal-project/remarshal
 ## Usage
 
 ```
-usage: remarshal.py [-h] [-i input] [-o output]
-                    [--if {cbor,json,msgpack,toml,yaml}]
-                    [--of {cbor,json,msgpack,toml,yaml}]
-                    [--json-indent n]
-                    [--yaml-indent n]
-                    [--yaml-style {,',",|,>}]
-                    [--yaml-width n]
-                    [--wrap key] [--unwrap key]
-                    [--sort-keys] [-v]
-                    [input] [output]
+usage: remarshal [-h] [-i input] [-o output]
+                 [--if {cbor,json,msgpack,toml,yaml}]
+                 [--of {cbor,json,msgpack,toml,yaml}] [--json-indent n] [-k]
+                 [--yaml-indent n] [--yaml-style {,',",|,>}] [--yaml-width n]
+                 [--wrap key] [--unwrap key] [-s] [-v]
+                 [input] [output]
+
+Convert between CBOR, JSON, MessagePack, TOML, and YAML.
+
+positional arguments:
+  input                 input file
+  output                output file
+
+options:
+  -h, --help            show this help message and exit
+  -i input, --input input
+                        input file
+  -o output, --output output
+                        output file
+  --if {cbor,json,msgpack,toml,yaml}, -if {cbor,json,msgpack,toml,yaml}, --input-format {cbor,json,msgpack,toml,yaml}
+                        input format
+  --of {cbor,json,msgpack,toml,yaml}, -of {cbor,json,msgpack,toml,yaml}, --output-format {cbor,json,msgpack,toml,yaml}
+                        output format
+  --json-indent n, --indent-json n
+                        JSON indentation
+  -k, --stringify-keys  stringify boolean, datetime, null keys when converting
+                        to JSON and TOML
+  --yaml-indent n       YAML indentation
+  --yaml-style {,',",|,>}
+                        YAML formatting style
+  --yaml-width n        YAML line width for long strings
+  --wrap key            wrap the data in a map type with the given key
+  --unwrap key          only output the data stored under the given key
+  -s, --sort-keys       sort JSON, TOML, YAML keys instead of preserving key
+                        order
+  -v, --version         show program's version number and exit
 ```
 
-```
-usage: {cbor,json,msgpack,toml,yaml}2cbor [-h] [-i input] [-o output]
-                                          [--wrap key] [--unwrap key]
-                                          [-v]
-                                          [input] [output]
-```
-
-```
-usage: {cbor,json,msgpack,toml,yaml}2json [-h] [-i input] [-o output]
-                                          [--json-indent n]
-                                          [--wrap key] [--unwrap key]
-                                          [--sort-keys] [-v]
-                                          [input] [output]
-```
-
-```
-usage: {cbor,json,msgpack,toml,yaml}2msgpack [-h] [-i input] [-o output]
-                                             [--wrap key] [--unwrap key]
-                                             [-v]
-                                             [input] [output]
-```
-
-```
-usage: {cbor,json,msgpack,toml,yaml}2toml [-h] [-i input] [-o output]
-                                          [--wrap key] [--unwrap key]
-                                          [--sort-keys] [-v]
-                                          [input] [output]
-```
-
-```
-usage: {cbor,json,msgpack,toml,yaml}2yaml [-h] [-i input] [-o output]
-                                          [--yaml-indent n]
-                                          [--yaml-style {,',",|,>}]
-                                          [--yaml-width n]
-                                          [--wrap key] [--unwrap key]
-                                          [--sort-keys] [-v]
-                                          [input] [output]
-```
-
-All of the commands above exit with status 0 on success, 1 on operational
-failure, and 2 when they fail to parse the command line.
+You can use a short command
+`{cbor,json,msgpack,toml,yaml}2`&#x200B;`{cbor,json,msgpack,toml,yaml}`
+instead of `remarshal` with format arguments. The `remarshal` command as well
+as the short commands exit with status 0 on success, 1 on operational failure,
+and 2 when they fail to parse the command line.
 
 If no input argument `input`/`-i input` is given or its value is `-`,
 Remarshal reads input data from standard input. Similarly, with no
