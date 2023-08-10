@@ -86,7 +86,7 @@ class TestRemarshal(unittest.TestCase):
         *,
         json_indent: Union[int, None] = 2,
         ordered: bool = False,
-        stringify_keys: bool = False,
+        stringify: bool = False,
         transform: Union[
             Callable[[remarshal.Document], remarshal.Document], None
         ] = None,
@@ -102,7 +102,7 @@ class TestRemarshal(unittest.TestCase):
             output_format,
             json_indent=json_indent,
             ordered=ordered,
-            stringify_keys=stringify_keys,
+            stringify=stringify,
             transform=transform,
             unwrap=unwrap,
             wrap=wrap,
@@ -516,7 +516,7 @@ class TestRemarshal(unittest.TestCase):
             "json",
             json_indent=0,
             ordered=True,
-            stringify_keys=True,
+            stringify=True,
         )
         reference = read_file("bool-null-key.json")
         assert output == reference
@@ -527,7 +527,7 @@ class TestRemarshal(unittest.TestCase):
             "yaml",
             "toml",
             ordered=True,
-            stringify_keys=True,
+            stringify=True,
         )
         reference = read_file("bool-null-key.toml")
         assert output == reference
@@ -538,7 +538,7 @@ class TestRemarshal(unittest.TestCase):
             "yaml",
             "toml",
             ordered=True,
-            stringify_keys=True,
+            stringify=True,
         )
         reference = read_file("timestamp-key.toml")
         assert output == reference
@@ -578,7 +578,7 @@ class TestRemarshal(unittest.TestCase):
             "empty-mapping.yaml",
             "yaml",
             "toml",
-            stringify_keys=True,
+            stringify=True,
         )
         reference = read_file("empty-mapping.toml")
         assert output == reference
@@ -588,7 +588,7 @@ class TestRemarshal(unittest.TestCase):
             "numeric-key-null-value.yaml",
             "yaml",
             "toml",
-            stringify_keys=True,
+            stringify=True,
         )
         reference = read_file("numeric-key-null-value.toml")
         assert output == reference

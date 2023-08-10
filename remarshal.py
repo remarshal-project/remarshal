@@ -86,7 +86,7 @@ def parse_command_line(argv: List[str]) -> argparse.Namespace:  # noqa: C901.
     defaults: Dict[str, Any] = {
         "json_indent": None,
         "ordered": True,
-        "stringify_keys": False,
+        "stringify": False,
         "yaml_options": {},
     }
 
@@ -97,6 +97,7 @@ def parse_command_line(argv: List[str]) -> argparse.Namespace:  # noqa: C901.
     parser = argparse.ArgumentParser(
         description="Convert between CBOR, JSON, MessagePack, TOML, and YAML."
     )
+    parser.add_argument("-v", "--version", action="version", version=__version__)
 
     input_group = parser.add_mutually_exclusive_group()
     input_group.add_argument("input", nargs="?", default="-", help="input file")
@@ -109,17 +110,6 @@ def parse_command_line(argv: List[str]) -> argparse.Namespace:  # noqa: C901.
         help="input file",
     )
 
-    output_group = parser.add_mutually_exclusive_group()
-    output_group.add_argument("output", nargs="?", default="-", help="output file")
-    output_group.add_argument(
-        "-o",
-        "--output",
-        dest="output_flag",
-        metavar="output",
-        default=None,
-        help="output file",
-    )
-
     if not format_from_argv0:
         parser.add_argument(
             "--if",
@@ -128,15 +118,6 @@ def parse_command_line(argv: List[str]) -> argparse.Namespace:  # noqa: C901.
             dest="input_format",
             default="",
             help="input format",
-            choices=FORMATS,
-        )
-        parser.add_argument(
-            "--of",
-            "-of",
-            "--output-format",
-            dest="output_format",
-            default="",
-            help="output format",
             choices=FORMATS,
         )
 
@@ -154,14 +135,66 @@ def parse_command_line(argv: List[str]) -> argparse.Namespace:  # noqa: C901.
     if not format_from_argv0 or argv0_to in {"json", "toml"}:
         parser.add_argument(
             "-k",
-            "--stringify-keys",
-            dest="stringify_keys",
+            "--stringify",
+            dest="stringify",
             action="store_true",
             help=(
-                "stringify boolean, datetime, null keys when converting to "
-                "JSON and TOML"
+                "stringify boolean, datetime, and null keys for JSON and TOML "
+                "and null values for TOML"
             ),
         )
+
+    output_group = parser.add_mutually_exclusive_group()
+    output_group.add_argument("output", nargs="?", default="-", help="output file")
+    output_group.add_argument(
+        "-o",
+        "--output",
+        dest="output_flag",
+        metavar="output",
+        default=None,
+        help="output file",
+    )
+
+    if not format_from_argv0:
+        parser.add_argument(
+            "--of",
+            "-of",
+            "--output-format",
+            dest="output_format",
+            default="",
+            help="output format",
+            choices=FORMATS,
+        )
+
+    parser.add_argument(
+        "-p",
+        "--preserve-key-order",
+        help=argparse.SUPPRESS,
+    )
+
+    if not format_from_argv0 or argv0_to in {"json", "toml", "yaml"}:
+        parser.add_argument(
+            "-s",
+            "--sort-keys",
+            dest="ordered",
+            action="store_false",
+            help="sort JSON, TOML, YAML keys instead of preserving key order",
+        )
+
+    parser.add_argument(
+        "--unwrap",
+        dest="unwrap",
+        metavar="key",
+        default=None,
+        help="only output the data stored under the given key",
+    )
+    parser.add_argument(
+        "--wrap",
+        dest="wrap",
+        metavar="key",
+        default=None,
+        help="wrap the data in a map type with the given key",
+    )
 
     if not format_from_argv0 or argv0_to == "yaml":
         parser.add_argument(
@@ -192,35 +225,6 @@ def parse_command_line(argv: List[str]) -> argparse.Namespace:  # noqa: C901.
             default=80,
             help="YAML line width for long strings",
         )
-
-    parser.add_argument(
-        "--wrap",
-        dest="wrap",
-        metavar="key",
-        default=None,
-        help="wrap the data in a map type with the given key",
-    )
-    parser.add_argument(
-        "--unwrap",
-        dest="unwrap",
-        metavar="key",
-        default=None,
-        help="only output the data stored under the given key",
-    )
-    parser.add_argument(
-        "-p",
-        "--preserve-key-order",
-        help=argparse.SUPPRESS,
-    )
-    if not format_from_argv0 or argv0_to in {"json", "toml", "yaml"}:
-        parser.add_argument(
-            "-s",
-            "--sort-keys",
-            dest="ordered",
-            action="store_false",
-            help="sort JSON, TOML, YAML keys instead of preserving key order",
-        )
-    parser.add_argument("-v", "--version", action="version", version=__version__)
 
     args = parser.parse_args(args=argv[1:])
 
@@ -263,6 +267,7 @@ def parse_command_line(argv: List[str]) -> argparse.Namespace:  # noqa: C901.
 
 
 # === Parser/serializer wrappers ===
+
 
 def identity(x: Any) -> Any:
     return x
@@ -465,13 +470,13 @@ def encode_json(
     *,
     ordered: bool,
     indent: Union[bool, int, None],
-    stringify_keys: bool,
+    stringify: bool,
 ) -> str:
     if indent is True:
         indent = 2
 
     separators = (",", ": " if indent else ":")
-    key_callback = stringify_special_keys if stringify_keys else reject_special_keys
+    key_callback = stringify_special_keys if stringify else reject_special_keys
 
     try:
         return (
@@ -513,13 +518,14 @@ def encode_toml(
     data: Mapping[Any, Any],
     *,
     ordered: bool,
-    stringify_keys: bool,
+    stringify: bool,
 ) -> str:
-    key_callback = stringify_special_keys if stringify_keys else reject_special_keys
+    key_callback = stringify_special_keys if stringify else reject_special_keys
 
     def reject_null(x: Any) -> Any:
         if x is None:
-            raise TypeError("null values are not supported")
+            msg = "null values are not supported"
+            raise TypeError(msg)
 
         return x
 
@@ -529,7 +535,7 @@ def encode_toml(
 
         return x
 
-    default_callback = stringify_null if stringify_keys else reject_null
+    default_callback = stringify_null if stringify else reject_null
 
     try:
         return tomlkit.dumps(
@@ -577,7 +583,7 @@ def encode(
     *,
     json_indent: Union[int, None],
     ordered: bool,
-    stringify_keys: bool,
+    stringify: bool,
     yaml_options: Dict[Any, Any],
 ) -> bytes:
     if output_format == "json":
@@ -585,7 +591,7 @@ def encode(
             data,
             indent=json_indent,
             ordered=ordered,
-            stringify_keys=stringify_keys,
+            stringify=stringify,
         ).encode("utf-8")
     elif output_format == "msgpack":
         encoded = encode_msgpack(data)
@@ -596,9 +602,9 @@ def encode(
                 "be encoded as TOML"
             )
             raise TypeError(msg)
-        encoded = encode_toml(
-            data, ordered=ordered, stringify_keys=stringify_keys
-        ).encode("utf-8")
+        encoded = encode_toml(data, ordered=ordered, stringify=stringify).encode(
+            "utf-8"
+        )
     elif output_format == "yaml":
         encoded = encode_yaml(data, ordered=ordered, yaml_options=yaml_options).encode(
             "utf-8"
@@ -624,7 +630,7 @@ def run(argv: List[str]) -> None:
         args.output_format,
         json_indent=args.json_indent,
         ordered=args.ordered,
-        stringify_keys=args.stringify_keys,
+        stringify=args.stringify,
         unwrap=args.unwrap,
         wrap=args.wrap,
         yaml_options=args.yaml_options,
@@ -639,7 +645,7 @@ def remarshal(
     *,
     json_indent: Union[int, None] = None,
     ordered: bool = True,
-    stringify_keys: bool = False,
+    stringify: bool = False,
     transform: Union[Callable[[Document], Document], None] = None,
     unwrap: Union[str, None] = None,
     wrap: Union[str, None] = None,
@@ -680,7 +686,7 @@ def remarshal(
             parsed,
             json_indent=json_indent,
             ordered=ordered,
-            stringify_keys=stringify_keys,
+            stringify=stringify,
             yaml_options=yaml_options,
         )
 
