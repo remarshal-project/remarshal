@@ -84,8 +84,8 @@ options:
                         input format
   --json-indent n, --indent-json n
                         JSON indentation
-  -k, --stringify       Turn into strings boolean, datetime, and null keys for
-                        JSON and TOML and null values for TOML
+  -k, --stringify       Turn into strings boolean, date-time, and null keys
+                        for JSON and TOML and null values for TOML
   -o output, --output output
                         output file
   --of {cbor,json,msgpack,toml,yaml}, -of {cbor,json,msgpack,toml,yaml}, --output-format {cbor,json,msgpack,toml,yaml}

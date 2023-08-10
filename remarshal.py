@@ -139,7 +139,7 @@ def parse_command_line(argv: List[str]) -> argparse.Namespace:  # noqa: C901.
             dest="stringify",
             action="store_true",
             help=(
-                "Turn into strings boolean, datetime, and null keys for JSON "
+                "Turn into strings boolean, date-time, and null keys for JSON "
                 "and TOML and null values for TOML"
             ),
         )
@@ -438,7 +438,7 @@ def reject_special_keys(key: Any) -> Any:
         msg = "boolean key"
         raise TypeError(msg)
     if isinstance(key, datetime.datetime):
-        msg = "datetime key"
+        msg = "date-time key"
         raise TypeError(msg)
     if key is None:
         msg = "null key"
