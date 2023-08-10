@@ -139,8 +139,8 @@ def parse_command_line(argv: List[str]) -> argparse.Namespace:  # noqa: C901.
             dest="stringify",
             action="store_true",
             help=(
-                "stringify boolean, datetime, and null keys for JSON and TOML "
-                "and null values for TOML"
+                "Turn into strings boolean, datetime, and null keys for JSON "
+                "and TOML and null values for TOML"
             ),
         )
 
