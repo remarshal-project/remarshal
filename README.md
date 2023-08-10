@@ -44,7 +44,7 @@ pipx run remarshal [arg ...]
 
 will download Remarshal and run it from a temporary location.
 It will cache the downloaded version for up to 14 days. Remarshal will not be
-automatically updated during that time.
+automatically updated during this time.
 
 You can install Remarshal using pip.
 
@@ -62,12 +62,12 @@ python3 -m pip install --user git+https://github.com/remarshal-project/remarshal
 ## Usage
 
 ```
-usage: remarshal [-h] [-i input] [-o output]
-                 [--if {cbor,json,msgpack,toml,yaml}]
-                 [--of {cbor,json,msgpack,toml,yaml}] [--json-indent n] [-k]
-                 [--yaml-indent n] [--yaml-style {,',",|,>}] [--yaml-width n]
-                 [--wrap key] [--unwrap key] [-s] [-v]
-                 [input] [output]
+usage: remarshal.py [-h] [-v] [-i input] [--if {cbor,json,msgpack,toml,yaml}]
+                    [--json-indent n] [-k] [-o output]
+                    [--of {cbor,json,msgpack,toml,yaml}] [-s] [--unwrap key]
+                    [--wrap key] [--yaml-indent n] [--yaml-style {,',",|,>}]
+                    [--yaml-width n]
+                    [input] [output]
 
 Convert between CBOR, JSON, MessagePack, TOML, and YAML.
 
@@ -77,27 +77,27 @@ positional arguments:
 
 options:
   -h, --help            show this help message and exit
+  -v, --version         show program's version number and exit
   -i input, --input input
                         input file
-  -o output, --output output
-                        output file
   --if {cbor,json,msgpack,toml,yaml}, -if {cbor,json,msgpack,toml,yaml}, --input-format {cbor,json,msgpack,toml,yaml}
                         input format
-  --of {cbor,json,msgpack,toml,yaml}, -of {cbor,json,msgpack,toml,yaml}, --output-format {cbor,json,msgpack,toml,yaml}
-                        output format
   --json-indent n, --indent-json n
                         JSON indentation
-  -k, --stringify-keys  stringify boolean, datetime, null keys when converting
-                        to JSON and TOML
+  -k, --stringify       stringify boolean, datetime, and null keys for JSON
+                        and TOML and null values for TOML
+  -o output, --output output
+                        output file
+  --of {cbor,json,msgpack,toml,yaml}, -of {cbor,json,msgpack,toml,yaml}, --output-format {cbor,json,msgpack,toml,yaml}
+                        output format
+  -s, --sort-keys       sort JSON, TOML, YAML keys instead of preserving key
+                        order
+  --unwrap key          only output the data stored under the given key
+  --wrap key            wrap the data in a map type with the given key
   --yaml-indent n       YAML indentation
   --yaml-style {,',",|,>}
                         YAML formatting style
   --yaml-width n        YAML line width for long strings
-  --wrap key            wrap the data in a map type with the given key
-  --unwrap key          only output the data stored under the given key
-  -s, --sort-keys       sort JSON, TOML, YAML keys instead of preserving key
-                        order
-  -v, --version         show program's version number and exit
 ```
 
 You can use a short command
