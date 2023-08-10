@@ -583,7 +583,16 @@ class TestRemarshal(unittest.TestCase):
         reference = read_file("empty-mapping.toml")
         assert output == reference
 
-    def test_yaml2toml_empty_mapping_stringify(self) -> None:
+    def test_yaml2toml_numeric_key_null_value(self) -> None:
+        with pytest.raises(ValueError) as exc_info:
+            self.convert_and_read(
+                "numeric-key-null-value.yaml",
+                "yaml",
+                "toml",
+            )
+        exc_info.match("null value")
+
+    def test_yaml2toml_numeric_key_null_value_stringify(self) -> None:
         output = self.convert_and_read(
             "numeric-key-null-value.yaml",
             "yaml",
