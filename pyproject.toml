@@ -123,7 +123,7 @@ select = [
   # "ERA",  # eradicate
   # "NPY",  # NumPy-specific rules
   # "PD",   # pandas-vet
-  # "PTH",  # flake8-use-pathlib
+  "PTH",    # flake8-use-pathlib
   # "Q",    # flake8-quotes
   # "TRY",  # tryceratops
   # "UP",   # pyupgrade

@@ -9,9 +9,9 @@ from __future__ import annotations
 import argparse
 import datetime
 import json
-import os.path
 import re
 import sys
+from pathlib import Path
 from typing import Any, Callable, Dict, List, Mapping, Sequence, Set, Tuple, Union, cast
 
 import cbor2  # type: ignore
@@ -72,9 +72,7 @@ def argv0_to_format(argv0: str) -> Tuple[str, str]:
 
 
 def extension_to_format(path: str) -> str:
-    _, ext = os.path.splitext(path)
-
-    ext = ext[1:]
+    ext = Path(path).suffix[1:]
 
     if ext == "yml":
         ext = "yaml"
@@ -90,7 +88,7 @@ def parse_command_line(argv: List[str]) -> argparse.Namespace:  # noqa: C901.
         "yaml_options": {},
     }
 
-    me = os.path.basename(argv[0])
+    me = Path(argv[0]).name
     argv0_from, argv0_to = argv0_to_format(me)
     format_from_argv0 = argv0_to != ""
 
@@ -638,8 +636,8 @@ def run(argv: List[str]) -> None:
 
 
 def remarshal(
-    input: str,
-    output: str,
+    input: Path | str,
+    output: Path | str,
     input_format: str,
     output_format: str,
     *,
@@ -655,8 +653,8 @@ def remarshal(
     output_file = None
 
     try:
-        input_file = sys.stdin.buffer if input == "-" else open(input, "rb")
-        output_file = sys.stdout.buffer if output == "-" else open(output, "wb")
+        input_file = sys.stdin.buffer if input == "-" else Path(input).open("rb")
+        output_file = sys.stdout.buffer if output == "-" else Path(output).open("wb")
 
         input_data = input_file.read()
         if not isinstance(input_data, bytes):

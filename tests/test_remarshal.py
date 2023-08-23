@@ -8,11 +8,11 @@ from __future__ import annotations
 import datetime
 import errno
 import os
-import os.path
 import re
 import sys
 import tempfile
 import unittest
+from pathlib import Path
 from typing import Any, Callable, Dict, List, Tuple, Union
 
 import cbor2  # type: ignore
@@ -20,19 +20,19 @@ import pytest
 
 from .context import remarshal
 
-TEST_PATH = os.path.dirname(os.path.realpath(__file__))
+TEST_PATH = Path(__file__).resolve().parent
 
 
 def data_file_path(filename: str) -> str:
-    path_list = [TEST_PATH]
+    path_list = []
     if re.match(r"example\.(json|msgpack|toml|yaml|cbor)$", filename):
         path_list.append("..")
     path_list.append(filename)
-    return os.path.join(*path_list)
+    return str(TEST_PATH.joinpath(*path_list))
 
 
 def read_file(filename: str) -> bytes:
-    with open(data_file_path(filename), "rb") as f:
+    with Path(data_file_path(filename)).open("rb") as f:
         return f.read()
 
 
@@ -117,7 +117,7 @@ class TestRemarshal(unittest.TestCase):
 
     def tearDown(self) -> None:
         for filename in self.temp_files:
-            os.remove(filename)
+            Path(filename).unlink()
 
     def test_json2json(self) -> None:
         output = self.convert_and_read("example.json", "json", "json")
