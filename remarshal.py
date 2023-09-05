@@ -149,7 +149,10 @@ def parse_command_line(argv: List[str]) -> argparse.Namespace:  # noqa: C901.
         metavar="n",
         type=int,
         default=DEFAULT_MAX_VALUES,
-        help="maximum number of values in input data (default %(default)s)",
+        help=(
+            "maximum number of values in input data (default %(default)s, "
+            "negative for unlimited)"
+        ),
     )
 
     output_group = parser.add_mutually_exclusive_group()
@@ -442,11 +445,13 @@ def decode(input_format: str, input_data: bytes) -> Document:
 
 
 class TooManyValuesError(BaseException):
-    def __init__(self, msg: str = "document contains too many values", *args, **kwargs):
-        super().__init__(msg, *args, **kwargs)
+    pass
 
 
 def validate_value_count(doc: Document, *, maximum: int) -> None:
+    if maximum < 0:
+        return
+
     count = 0
 
     def count_callback(x: Any) -> Any:
@@ -455,7 +460,8 @@ def validate_value_count(doc: Document, *, maximum: int) -> None:
 
         count += 1
         if count > maximum:
-            raise TooManyValuesError
+            msg = f"document contains too many values (over {maximum})"
+            raise TooManyValuesError(msg)
 
         return x
 
