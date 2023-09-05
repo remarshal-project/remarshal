@@ -24,8 +24,9 @@ import yaml
 import yaml.parser
 import yaml.scanner
 
-__version__ = "0.17.0"
+__version__ = "0.17.1"
 
+DEFAULT_MAX_NODES = 100000
 FORMATS = ["cbor", "json", "msgpack", "toml", "yaml"]
 
 
@@ -141,6 +142,15 @@ def parse_command_line(argv: List[str]) -> argparse.Namespace:  # noqa: C901.
                 "and TOML and null values for TOML"
             ),
         )
+
+    parser.add_argument(
+        "--max-nodes",
+        dest="max_nodes",
+        metavar="n",
+        type=int,
+        default=DEFAULT_MAX_NODES,
+        help="maximum number of nodes in input data (default %(default)s)",
+    )
 
     output_group = parser.add_mutually_exclusive_group()
     output_group.add_argument("output", nargs="?", default="-", help="output file")
@@ -431,6 +441,27 @@ def decode(input_format: str, input_data: bytes) -> Document:
     return decoder[input_format](input_data)
 
 
+class TooManyNodesError(BaseException):
+    def __init__(self, msg: str = "document has too many nodes", *args, **kwargs):
+        super().__init__(msg, *args, **kwargs)
+
+
+def validate_node_count(doc: Document, *, limit: int) -> None:
+    count = 0
+
+    def count_callback(x: Any) -> Any:
+        nonlocal count
+        nonlocal limit
+
+        count += 1
+        if count > limit:
+            raise TooManyNodesError
+
+        return x
+
+    traverse(doc, instance_callbacks={(object, count_callback)})
+
+
 def reject_special_keys(key: Any) -> Any:
     if isinstance(key, bool):
         msg = "boolean key"
@@ -627,6 +658,7 @@ def run(argv: List[str]) -> None:
         args.input_format,
         args.output_format,
         json_indent=args.json_indent,
+        max_nodes=args.max_nodes,
         ordered=args.ordered,
         stringify=args.stringify,
         unwrap=args.unwrap,
@@ -642,6 +674,7 @@ def remarshal(
     output_format: str,
     *,
     json_indent: Union[int, None] = None,
+    max_nodes: int = DEFAULT_MAX_NODES,
     ordered: bool = True,
     stringify: bool = False,
     transform: Union[Callable[[Document], Document], None] = None,
@@ -662,6 +695,8 @@ def remarshal(
             raise TypeError(msg)
 
         parsed = decode(input_format, input_data)
+
+        validate_node_count(parsed, limit=max_nodes)
 
         if unwrap is not None:
             if not isinstance(parsed, Mapping):
@@ -701,7 +736,7 @@ def main() -> None:
         run(sys.argv)
     except KeyboardInterrupt:
         pass
-    except (OSError, TypeError, ValueError) as e:
+    except (OSError, TooManyNodesError, TypeError, ValueError) as e:
         print(f"Error: {e}", file=sys.stderr)  # noqa: T201
         sys.exit(1)
 
