@@ -17,6 +17,16 @@ classifiers = [
     "Topic :: Utilities"
 ]
 
+include = [
+    { path = "example.cbor", format = "sdist" },
+    { path = "example.json", format = "sdist" },
+    { path = "example.msgpack", format = "sdist" },
+    { path = "example.toml", format = "sdist" },
+    { path = "example.yaml", format = "sdist" },
+    { path = "tests/", format = "sdist" },
+    { path = "tox.ini", format = "sdist" },
+]
+
 [tool.poetry.dependencies]
 python = "^3.8"
 cbor2 = "^5.4"
