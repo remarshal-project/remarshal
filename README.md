@@ -87,7 +87,7 @@ options:
   -k, --stringify       Turn into strings boolean, date-time, and null keys
                         for JSON and TOML and null values for TOML
   --max-values n        maximum number of values in input data (default
-                        100000, negative for unlimited)
+                        1000000, negative for unlimited)
   -o output, --output output
                         output file
   --of {cbor,json,msgpack,toml,yaml}, -of {cbor,json,msgpack,toml,yaml}, --output-format {cbor,json,msgpack,toml,yaml}
