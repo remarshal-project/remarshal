@@ -1,6 +1,8 @@
+/attic
 /build
 /dist
-/venv*
 *.egg-info
 *.pyc
 __pycache__
+/.tox
+/venv*
