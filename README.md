@@ -63,7 +63,7 @@ python3 -m pip install --user git+https://github.com/remarshal-project/remarshal
 
 ```
 usage: remarshal.py [-h] [-v] [-i input] [--if {cbor,json,msgpack,toml,yaml}]
-                    [--json-indent n] [-k] [-o output]
+                    [--json-indent n] [-k] [--max-values n] [-o output]
                     [--of {cbor,json,msgpack,toml,yaml}] [-s] [--unwrap key]
                     [--wrap key] [--yaml-indent n] [--yaml-style {,',",|,>}]
                     [--yaml-width n]
@@ -86,6 +86,8 @@ options:
                         JSON indentation
   -k, --stringify       Turn into strings boolean, date-time, and null keys
                         for JSON and TOML and null values for TOML
+  --max-values n        maximum number of values in input data (default
+                        100000, negative for unlimited)
   -o output, --output output
                         output file
   --of {cbor,json,msgpack,toml,yaml}, -of {cbor,json,msgpack,toml,yaml}, --output-format {cbor,json,msgpack,toml,yaml}
