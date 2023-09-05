@@ -26,7 +26,7 @@ import yaml.scanner
 
 __version__ = "0.17.1"
 
-DEFAULT_MAX_NODES = 100000
+DEFAULT_MAX_VALUES = 100000
 FORMATS = ["cbor", "json", "msgpack", "toml", "yaml"]
 
 
@@ -144,12 +144,12 @@ def parse_command_line(argv: List[str]) -> argparse.Namespace:  # noqa: C901.
         )
 
     parser.add_argument(
-        "--max-nodes",
-        dest="max_nodes",
+        "--max-values",
+        dest="max_values",
         metavar="n",
         type=int,
-        default=DEFAULT_MAX_NODES,
-        help="maximum number of nodes in input data (default %(default)s)",
+        default=DEFAULT_MAX_VALUES,
+        help="maximum number of values in input data (default %(default)s)",
     )
 
     output_group = parser.add_mutually_exclusive_group()
@@ -441,21 +441,21 @@ def decode(input_format: str, input_data: bytes) -> Document:
     return decoder[input_format](input_data)
 
 
-class TooManyNodesError(BaseException):
-    def __init__(self, msg: str = "document has too many nodes", *args, **kwargs):
+class TooManyValuesError(BaseException):
+    def __init__(self, msg: str = "document contains too many values", *args, **kwargs):
         super().__init__(msg, *args, **kwargs)
 
 
-def validate_node_count(doc: Document, *, limit: int) -> None:
+def validate_value_count(doc: Document, *, maximum: int) -> None:
     count = 0
 
     def count_callback(x: Any) -> Any:
         nonlocal count
-        nonlocal limit
+        nonlocal maximum
 
         count += 1
-        if count > limit:
-            raise TooManyNodesError
+        if count > maximum:
+            raise TooManyValuesError
 
         return x
 
@@ -658,7 +658,7 @@ def run(argv: List[str]) -> None:
         args.input_format,
         args.output_format,
         json_indent=args.json_indent,
-        max_nodes=args.max_nodes,
+        max_values=args.max_values,
         ordered=args.ordered,
         stringify=args.stringify,
         unwrap=args.unwrap,
@@ -674,7 +674,7 @@ def remarshal(
     output_format: str,
     *,
     json_indent: Union[int, None] = None,
-    max_nodes: int = DEFAULT_MAX_NODES,
+    max_values: int = DEFAULT_MAX_VALUES,
     ordered: bool = True,
     stringify: bool = False,
     transform: Union[Callable[[Document], Document], None] = None,
@@ -696,7 +696,7 @@ def remarshal(
 
         parsed = decode(input_format, input_data)
 
-        validate_node_count(parsed, limit=max_nodes)
+        validate_value_count(parsed, maximum=max_values)
 
         if unwrap is not None:
             if not isinstance(parsed, Mapping):
@@ -736,7 +736,7 @@ def main() -> None:
         run(sys.argv)
     except KeyboardInterrupt:
         pass
-    except (OSError, TooManyNodesError, TypeError, ValueError) as e:
+    except (OSError, TooManyValuesError, TypeError, ValueError) as e:
         print(f"Error: {e}", file=sys.stderr)  # noqa: T201
         sys.exit(1)
 

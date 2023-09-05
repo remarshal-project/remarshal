@@ -603,5 +603,5 @@ class TestRemarshal(unittest.TestCase):
         assert output == reference
 
     def test_yaml_billion_laughs(self) -> None:
-        with pytest.raises(remarshal.TooManyNodesError):
+        with pytest.raises(remarshal.TooManyValuesError):
             self.convert_and_read("lol.yml", "yaml", "json")
