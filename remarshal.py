@@ -24,7 +24,7 @@ import yaml
 import yaml.parser
 import yaml.scanner
 
-__version__ = "0.17.1"
+__version__ = "1.0.0"
 
 DEFAULT_MAX_VALUES = 1000000
 FORMATS = ["cbor", "json", "msgpack", "toml", "yaml"]

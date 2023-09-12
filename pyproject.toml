@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "Remarshal"
-version = "0.17.1"
+version = "1.0.0"
 description = "Convert between CBOR, JSON, MessagePack, TOML, and YAML"
 authors = ["D. Bohdan <dbohdan@dbohdan.com>"]
 license = "MIT"
