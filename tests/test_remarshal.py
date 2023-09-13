@@ -397,7 +397,7 @@ class TestRemarshal(unittest.TestCase):
         def test_format_string(s: str) -> None:
             for from_str in "json", "toml", "yaml":
                 for to_str in "json", "toml", "yaml":
-                    from_parsed, to_parsed = remarshal.argv0_to_format(
+                    from_parsed, to_parsed = remarshal._argv0_to_format(
                         s.format(from_str, to_str)
                     )
                     assert (from_parsed, to_parsed) == (from_str, to_str)
@@ -416,7 +416,7 @@ class TestRemarshal(unittest.TestCase):
 
         for from_ext in ext_to_fmt:
             for to_ext in ext_to_fmt:
-                args = remarshal.parse_command_line(
+                args = remarshal._parse_command_line(
                     [sys.argv[0], "input." + from_ext, "output." + to_ext]
                 )
 
@@ -425,17 +425,17 @@ class TestRemarshal(unittest.TestCase):
 
     def test_format_detection_failure_input_stdin(self) -> None:
         with pytest.raises(SystemExit) as cm:
-            remarshal.parse_command_line([sys.argv[0], "-"])
+            remarshal._parse_command_line([sys.argv[0], "-"])
         assert cm.value.code == 2
 
     def test_format_detection_failure_input_txt(self) -> None:
         with pytest.raises(SystemExit) as cm:
-            remarshal.parse_command_line([sys.argv[0], "input.txt"])
+            remarshal._parse_command_line([sys.argv[0], "input.txt"])
         assert cm.value.code == 2
 
     def test_format_detection_failure_output_txt(self) -> None:
         with pytest.raises(SystemExit) as cm:
-            remarshal.parse_command_line([sys.argv[0], "input.json", "output.txt"])
+            remarshal._parse_command_line([sys.argv[0], "input.json", "output.txt"])
         assert cm.value.code == 2
 
     def test_run_no_args(self) -> None:

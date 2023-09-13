@@ -155,5 +155,5 @@ max-statements = 100
 
 [tool.ruff.per-file-ignores]
 "remarshal.py" = ["ARG001", "B904", "EM103", "RET506", "S506", "SIM115"]
-"tests/test_remarshal.py" = ["F841", "PT011"]
+"tests/test_remarshal.py" = ["F841", "PT011", "SLF001"]
 "tests/*" = ["S101"]

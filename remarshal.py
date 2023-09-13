@@ -34,45 +34,45 @@ FORMATS = ["cbor", "json", "msgpack", "toml", "yaml"]
 
 
 # An ordered dumper for PyYAML.
-class OrderedDumper(yaml.SafeDumper):
+class _OrderedDumper(yaml.SafeDumper):
     pass
 
 
-def mapping_representer(dumper: Any, data: Any) -> Any:
+def _mapping_representer(dumper: Any, data: Any) -> Any:
     return dumper.represent_mapping(
         yaml.resolver.BaseResolver.DEFAULT_MAPPING_TAG, data.items()
     )
 
 
-OrderedDumper.add_representer(dict, mapping_representer)
+_OrderedDumper.add_representer(dict, _mapping_representer)
 
 
 # Fix loss of time zone information in PyYAML.
 # http://stackoverflow.com/questions/13294186/can-pyyaml-parse-iso8601-dates
-class TimezoneLoader(yaml.SafeLoader):
+class _TimezoneLoader(yaml.SafeLoader):
     pass
 
 
-def timestamp_constructor(loader: Any, node: Any) -> datetime.datetime:
+def _timestamp_constructor(loader: Any, node: Any) -> datetime.datetime:
     return dateutil.parser.parse(node.value)
 
 
-loaders = [TimezoneLoader]
+loaders = [_TimezoneLoader]
 for loader in loaders:
-    loader.add_constructor("tag:yaml.org,2002:timestamp", timestamp_constructor)
+    loader.add_constructor("tag:yaml.org,2002:timestamp", _timestamp_constructor)
 
 
 # === CLI ===
 
 
-def argv0_to_format(argv0: str) -> Tuple[str, str]:
+def _argv0_to_format(argv0: str) -> Tuple[str, str]:
     possible_format = "(" + "|".join(FORMATS) + ")"
     match = re.search("^" + possible_format + "2" + possible_format, argv0)
     from_, to = match.groups() if match else ("", "")
     return from_, to
 
 
-def extension_to_format(path: str) -> str:
+def _extension_to_format(path: str) -> str:
     ext = Path(path).suffix[1:]
 
     if ext == "yml":
@@ -81,7 +81,7 @@ def extension_to_format(path: str) -> str:
     return ext if ext in FORMATS else ""
 
 
-def parse_command_line(argv: List[str]) -> argparse.Namespace:  # noqa: C901.
+def _parse_command_line(argv: List[str]) -> argparse.Namespace:  # noqa: C901.
     defaults: Dict[str, Any] = {
         "json_indent": None,
         "ordered": True,
@@ -90,7 +90,7 @@ def parse_command_line(argv: List[str]) -> argparse.Namespace:  # noqa: C901.
     }
 
     me = Path(argv[0]).name
-    argv0_from, argv0_to = argv0_to_format(me)
+    argv0_from, argv0_to = _argv0_to_format(me)
     format_from_argv0 = argv0_to != ""
 
     parser = argparse.ArgumentParser(
@@ -252,12 +252,12 @@ def parse_command_line(argv: List[str]) -> argparse.Namespace:  # noqa: C901.
         args.output_format = argv0_to
     else:
         if args.input_format == "":
-            args.input_format = extension_to_format(args.input)
+            args.input_format = _extension_to_format(args.input)
             if args.input_format == "":
                 parser.error("Need an explicit input format")
 
         if args.output_format == "":
-            args.output_format = extension_to_format(args.output)
+            args.output_format = _extension_to_format(args.output)
             if args.output_format == "":
                 parser.error("Need an explicit output format")
 
@@ -337,7 +337,7 @@ def traverse(
 Document = Union[bool, bytes, datetime.datetime, Mapping, None, Sequence, str]
 
 
-def decode_json(input_data: bytes) -> Document:
+def _decode_json(input_data: bytes) -> Document:
     try:
         doc = json.loads(
             input_data.decode("utf-8"),
@@ -349,7 +349,7 @@ def decode_json(input_data: bytes) -> Document:
         raise ValueError(msg)
 
 
-def decode_msgpack(input_data: bytes) -> Document:
+def _decode_msgpack(input_data: bytes) -> Document:
     try:
         doc = umsgpack.unpackb(input_data)
         return cast(Document, doc)
@@ -358,7 +358,7 @@ def decode_msgpack(input_data: bytes) -> Document:
         raise ValueError(msg)
 
 
-def decode_cbor(input_data: bytes) -> Document:
+def _decode_cbor(input_data: bytes) -> Document:
     try:
         doc = cbor2.loads(input_data)
         return cast(Document, doc)
@@ -367,7 +367,7 @@ def decode_cbor(input_data: bytes) -> Document:
         raise ValueError(msg)
 
 
-def decode_toml(input_data: bytes) -> Document:
+def _decode_toml(input_data: bytes) -> Document:
     try:
         # Remove TOML Kit's custom classes.
         # https://github.com/sdispater/tomlkit/issues/43
@@ -418,9 +418,9 @@ def decode_toml(input_data: bytes) -> Document:
         raise ValueError(msg)
 
 
-def decode_yaml(input_data: bytes) -> Document:
+def _decode_yaml(input_data: bytes) -> Document:
     try:
-        loader = TimezoneLoader
+        loader = _TimezoneLoader
         doc = yaml.load(input_data, loader)
         return cast(Document, doc)
     except (yaml.scanner.ScannerError, yaml.parser.ParserError) as e:
@@ -430,11 +430,11 @@ def decode_yaml(input_data: bytes) -> Document:
 
 def decode(input_format: str, input_data: bytes) -> Document:
     decoder = {
-        "cbor": decode_cbor,
-        "json": decode_json,
-        "msgpack": decode_msgpack,
-        "toml": decode_toml,
-        "yaml": decode_yaml,
+        "cbor": _decode_cbor,
+        "json": _decode_json,
+        "msgpack": _decode_msgpack,
+        "toml": _decode_toml,
+        "yaml": _decode_yaml,
     }
 
     if input_format not in decoder:
@@ -448,7 +448,7 @@ class TooManyValuesError(BaseException):
     pass
 
 
-def validate_value_count(doc: Document, *, maximum: int) -> None:
+def _validate_value_count(doc: Document, *, maximum: int) -> None:
     if maximum < 0:
         return
 
@@ -468,7 +468,7 @@ def validate_value_count(doc: Document, *, maximum: int) -> None:
     traverse(doc, instance_callbacks={(object, count_callback)})
 
 
-def reject_special_keys(key: Any) -> Any:
+def _reject_special_keys(key: Any) -> Any:
     if isinstance(key, bool):
         msg = "boolean key"
         raise TypeError(msg)
@@ -482,7 +482,7 @@ def reject_special_keys(key: Any) -> Any:
     return key
 
 
-def stringify_special_keys(key: Any) -> Any:
+def _stringify_special_keys(key: Any) -> Any:
     if isinstance(key, bool):
         return "true" if key else "false"
     if isinstance(key, datetime.datetime):
@@ -493,14 +493,14 @@ def stringify_special_keys(key: Any) -> Any:
     return str(key)
 
 
-def json_default(obj: Any) -> str:
+def _json_default(obj: Any) -> str:
     if isinstance(obj, datetime.datetime):
         return obj.isoformat()
     msg = f"{obj!r} is not JSON-serializable"
     raise TypeError(msg)
 
 
-def encode_json(
+def _encode_json(
     data: Document,
     *,
     ordered: bool,
@@ -511,7 +511,7 @@ def encode_json(
         indent = 2
 
     separators = (",", ": " if indent else ":")
-    key_callback = stringify_special_keys if stringify else reject_special_keys
+    key_callback = _stringify_special_keys if stringify else _reject_special_keys
 
     try:
         return (
@@ -520,7 +520,7 @@ def encode_json(
                     data,
                     key_callback=key_callback,
                 ),
-                default=json_default,
+                default=_json_default,
                 ensure_ascii=False,
                 indent=indent,
                 separators=separators,
@@ -533,7 +533,7 @@ def encode_json(
         raise ValueError(msg)
 
 
-def encode_msgpack(data: Document) -> bytes:
+def _encode_msgpack(data: Document) -> bytes:
     try:
         return bytes(umsgpack.packb(data))
     except umsgpack.UnsupportedTypeException as e:
@@ -541,7 +541,7 @@ def encode_msgpack(data: Document) -> bytes:
         raise ValueError(msg)
 
 
-def encode_cbor(data: Document) -> bytes:
+def _encode_cbor(data: Document) -> bytes:
     try:
         return bytes(cbor2.dumps(data))
     except cbor2.CBOREncodeError as e:
@@ -549,13 +549,13 @@ def encode_cbor(data: Document) -> bytes:
         raise ValueError(msg)
 
 
-def encode_toml(
+def _encode_toml(
     data: Mapping[Any, Any],
     *,
     ordered: bool,
     stringify: bool,
 ) -> str:
-    key_callback = stringify_special_keys if stringify else reject_special_keys
+    key_callback = _stringify_special_keys if stringify else _reject_special_keys
 
     def reject_null(x: Any) -> Any:
         if x is None:
@@ -595,8 +595,8 @@ def encode_toml(
         raise ValueError(msg)
 
 
-def encode_yaml(data: Document, *, ordered: bool, yaml_options: Dict[Any, Any]) -> str:
-    dumper = OrderedDumper if ordered else yaml.SafeDumper
+def _encode_yaml(data: Document, *, ordered: bool, yaml_options: Dict[Any, Any]) -> str:
+    dumper = _OrderedDumper if ordered else yaml.SafeDumper
     try:
         return yaml.dump(
             data,
@@ -622,14 +622,14 @@ def encode(
     yaml_options: Dict[Any, Any],
 ) -> bytes:
     if output_format == "json":
-        encoded = encode_json(
+        encoded = _encode_json(
             data,
             indent=json_indent,
             ordered=ordered,
             stringify=stringify,
         ).encode("utf-8")
     elif output_format == "msgpack":
-        encoded = encode_msgpack(data)
+        encoded = _encode_msgpack(data)
     elif output_format == "toml":
         if not isinstance(data, Mapping):
             msg = (
@@ -637,15 +637,15 @@ def encode(
                 "be encoded as TOML"
             )
             raise TypeError(msg)
-        encoded = encode_toml(data, ordered=ordered, stringify=stringify).encode(
+        encoded = _encode_toml(data, ordered=ordered, stringify=stringify).encode(
             "utf-8"
         )
     elif output_format == "yaml":
-        encoded = encode_yaml(data, ordered=ordered, yaml_options=yaml_options).encode(
+        encoded = _encode_yaml(data, ordered=ordered, yaml_options=yaml_options).encode(
             "utf-8"
         )
     elif output_format == "cbor":
-        encoded = encode_cbor(data)
+        encoded = _encode_cbor(data)
     else:
         msg = f"Unknown output format: {output_format}"
         raise ValueError(msg)
@@ -657,7 +657,7 @@ def encode(
 
 
 def run(argv: List[str]) -> None:
-    args = parse_command_line(argv)
+    args = _parse_command_line(argv)
     remarshal(
         args.input,
         args.output,
@@ -702,7 +702,7 @@ def remarshal(
 
         parsed = decode(input_format, input_data)
 
-        validate_value_count(parsed, maximum=max_values)
+        _validate_value_count(parsed, maximum=max_values)
 
         if unwrap is not None:
             if not isinstance(parsed, Mapping):
