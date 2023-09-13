@@ -12,7 +12,7 @@ import json
 import re
 import sys
 from pathlib import Path
-from typing import Any, Callable, Dict, List, Mapping, Sequence, Set, Tuple, Union, cast
+from typing import Any, Callable, Dict, List, Mapping, Sequence, Tuple, Union, cast
 
 import cbor2  # type: ignore
 import dateutil.parser
@@ -289,7 +289,7 @@ def traverse(
     dict_callback: Callable[[List[Tuple[Any, Any]]], Any] = lambda x: dict(x),
     list_callback: Callable[[List[Tuple[Any, Any]]], Any] = identity,
     key_callback: Callable[[Any], Any] = identity,
-    instance_callbacks: Set[Tuple[type, Any]] = set(),
+    instance_callbacks: List[Tuple[type, Any]] = [],
     default_callback: Callable[[Any], Any] = identity,
 ) -> Any:
     if isinstance(col, dict):
@@ -373,7 +373,7 @@ def _decode_toml(input_data: bytes) -> Document:
         # https://github.com/sdispater/tomlkit/issues/43
         doc = traverse(
             tomlkit.loads(input_data),
-            instance_callbacks={
+            instance_callbacks=[
                 (tomlkit.items.Bool, bool),
                 (
                     tomlkit.items.Date,
@@ -409,7 +409,7 @@ def _decode_toml(input_data: bytes) -> Document:
                         x.tzinfo,
                     ),
                 ),
-            },
+            ],
         )
 
         return cast(Document, doc)
@@ -465,7 +465,7 @@ def _validate_value_count(doc: Document, *, maximum: int) -> None:
 
         return x
 
-    traverse(doc, instance_callbacks={(object, count_callback)})
+    traverse(doc, instance_callbacks=[(object, count_callback)])
 
 
 def _reject_special_keys(key: Any) -> Any:
