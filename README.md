@@ -1,50 +1,44 @@
 # Remarshal
 
-Convert between CBOR, JSON, MessagePack, TOML, and YAML. When installed,
-provides the command line command `remarshal` as well as the short commands
-`{cbor,json,msgpack,toml,yaml}2`&#x200B;`{cbor,json,msgpack,toml,yaml}`. With
-these commands, you can perform format conversion, reformatting, and error
-detection.
+Convert between CBOR, JSON, MessagePack, TOML, and YAML.
+When installed, provides the command line command `remarshal` as well as the short commands `{cbor,json,msgpack,toml,yaml}2`&#x200B;`{cbor,json,msgpack,toml,yaml}`.
+With these commands, you can perform format conversion, reformatting, and error detection.
 
 ## Known limitations
 
-* CBOR, MessagePack, and YAML with binary fields can not be converted to JSON
-or TOML. Binary fields are converted between CBOR, MessagePack, and YAML.
-* TOML containing values of the
-[Local Date-Time](https://toml.io/en/v1.0.0-rc.1#local-date-time) type can not
-be converted to CBOR. The Local Date type can only be converted to JSON and
-YAML. The Local Time type can not be converted to any other format. Offset
-Date-Time and its equivalents can be converted between CBOR, MessagePack,
-TOML, and YAML. Keys of any date-time type are converted to string TOML
-keys.
-* Date and time types are converted to JSON strings. They can not be safely
-roundtripped through JSON.
-* A YAML timestamp with only a date becomes a YAML timestamp or a TOML Local
-Date-Time for the midnight of that date. This means you can not roundtrip
-every YAML document through Remarshal.
+* CBOR, MessagePack, and YAML with binary fields can not be converted to JSON or TOML.
+Binary fields are converted between CBOR, MessagePack, and YAML.
+* TOML containing values of the [Local Date-Time](https://toml.io/en/v1.0.0-rc.1#local-date-time) type can not be converted to CBOR.
+The Local Date type can only be converted to JSON and YAML.
+The Local Time type can not be converted to any other format.
+Offset Date-Time and its equivalents can be converted between CBOR, MessagePack, TOML, and YAML.
+Keys of any date-time type are converted to string TOML keys.
+* Date and time types are converted to JSON strings.
+They can not be safely roundtripped through JSON.
+* A YAML timestamp with only a date becomes a YAML timestamp or a TOML Local Date-Time for the midnight of that date.
+This means you can not roundtrip every YAML document through Remarshal.
 
 ## Installation
 
-You will need Python 3.8 or later. Earlier versions of Python 3 are not
-supported.
+You will need Python 3.8 or later.
+Earlier versions of Python 3 are not supported.
 
-The recommended way to run Remarshal is to install the latest release from
-[PyPI](https://pypi.org/project/remarshal/) with
-[pipx](https://github.com/pypa/pipx).
+The recommended way to run Remarshal is to install the latest release from [PyPI](https://pypi.org/project/remarshal/) with [pipx](https://github.com/pypa/pipx).
 
 ```sh
 pipx install remarshal
 ```
 
-Regular installation is not mandatory. The command
+Regular installation is not mandatory.
+The command
 
 ```sh
 pipx run remarshal [arg ...]
 ```
 
 will download Remarshal and run it from a temporary location.
-It will cache the downloaded version for up to 14 days. Remarshal will not be
-automatically updated during this time.
+It will cache the downloaded version for up to 14 days.
+Remarshal will not be automatically updated during this period.
 
 You can install Remarshal using pip.
 
@@ -52,8 +46,8 @@ You can install Remarshal using pip.
 python3 -m pip install --user remarshal
 ```
 
-Instead of a release, you can install the development version. Prefer
-releases unless you have a reason to run the development version.
+Instead of a release, you can install the development version.
+Prefer releases unless you have a reason to run the development version.
 
 ```sh
 python3 -m pip install --user git+https://github.com/remarshal-project/remarshal
@@ -102,35 +96,21 @@ options:
   --yaml-width n        YAML line width for long strings
 ```
 
-You can use a short command
-`{cbor,json,msgpack,toml,yaml}2`&#x200B;`{cbor,json,msgpack,toml,yaml}`
-instead of `remarshal` with format arguments. The `remarshal` command as well
-as the short commands exit with status 0 on success, 1 on operational failure,
-and 2 when they fail to parse the command line.
+You can use a short command `{cbor,json,msgpack,toml,yaml}2`&#x200B;`{cbor,json,msgpack,toml,yaml}` instead of `remarshal` with format arguments.
+The `remarshal` command as well as the short commands exit with status 0 on success, 1 on operational failure, and 2 when they fail to parse the command line.
 
-If no input argument `input`/`-i input` is given or its value is `-`,
-Remarshal reads input data from standard input. Similarly, with no
-`output`/`-o output` or an output argument that is `-`, it writes the result
-to standard output.
+If no input argument `input`/`-i input` is given or its value is `-`, Remarshal reads input data from standard input.
+Similarly, with no `output`/`-o output` or an output argument that is `-`, it writes the result to standard output.
 
 ### Wrappers
 
-The arguments `--wrap` and `--unwrap` are available to solve the problem of
-converting CBOR, JSON, MessagePack, and YAML data to TOML if the top-level
-element of the data is not of a dictionary type (i.e., not a map in CBOR and
-MessagePack, an object in JSON, or an associative array in YAML).
-You can not represent such data as TOML directly; the data must be wrapped in a
-dictionary first. Passing the flag `--wrap someKey` to `remarshal` or one of
-its short commands wraps the input data in a "wrapper" dictionary with one key,
-"someKey", with the input data as its value. The flag `--unwrap someKey` does
-the opposite: only the value stored under the key "someKey" in the top-level
-dictionary element of the input data is converted to the target format and
-output; the rest of the input is ignored. If the top-level element is not a
-dictionary or does not have the key "someKey", `--unwrap someKey` causes an
-error.
+The arguments `--wrap` and `--unwrap` are available to solve the problem of converting CBOR, JSON, MessagePack, and YAML data to TOML if the top-level element of the data is not of a dictionary type (i.e., not a map in CBOR and MessagePack, an object in JSON, or an associative array in YAML).
+You can not represent such data as TOML directly; the data must be wrapped in a dictionary first.
+Passing the flag `--wrap someKey` to `remarshal` or one of its short commands wraps the input data in a "wrapper" dictionary with one key, "someKey", with the input data as its value.
+The flag `--unwrap someKey` does the opposite: only the value stored under the key "someKey" in the top-level dictionary element of the input data is converted to the target format and output; the rest of the input is ignored.
+If the top-level element is not a dictionary or does not have the key "someKey", `--unwrap someKey` causes an error.
 
-The following shell transcript demonstrates the problem and how `--wrap` and
-`--unwrap` solve it:
+The following shell transcript demonstrates the problem and how `--wrap` and `--unwrap` solve it:
 
 ```
 $ echo '[{"a":"b"},{"c":[1,2,3]}]' | ./remarshal.py --if json --of toml
@@ -243,6 +223,4 @@ speed = 2
 
 MIT. See the file `LICENSE`.
 
-`example.toml` from <https://github.com/toml-lang/toml>. `example.json`,
-`example.msgpack`, `example.cbor`, `example.yml`, `tests/bin.msgpack`, and
-`tests/bin.yml` are derived from it.
+`example.toml` from <https://github.com/toml-lang/toml>. `example.json`, `example.msgpack`, `example.cbor`, `example.yml`, `tests/bin.msgpack`, and `tests/bin.yml` are derived from it.
