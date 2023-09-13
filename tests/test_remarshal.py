@@ -96,10 +96,10 @@ class TestRemarshal(unittest.TestCase):
     ) -> bytes:
         output_filename = self.temp_filename()
         remarshal.remarshal(
-            data_file_path(input),
-            output_filename,
             input_format,
             output_format,
+            data_file_path(input),
+            output_filename,
             json_indent=json_indent,
             ordered=ordered,
             stringify=stringify,

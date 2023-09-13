@@ -659,10 +659,10 @@ def encode(
 def run(argv: List[str]) -> None:
     args = _parse_command_line(argv)
     remarshal(
-        args.input,
-        args.output,
         args.input_format,
         args.output_format,
+        args.input,
+        args.output,
         json_indent=args.json_indent,
         max_values=args.max_values,
         ordered=args.ordered,
@@ -674,10 +674,10 @@ def run(argv: List[str]) -> None:
 
 
 def remarshal(
-    input: Path | str,
-    output: Path | str,
     input_format: str,
     output_format: str,
+    input: Path | str,
+    output: Path | str,
     *,
     json_indent: Union[int, None] = None,
     max_values: int = DEFAULT_MAX_VALUES,
