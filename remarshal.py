@@ -337,6 +337,15 @@ def traverse(
 Document = Union[bool, bytes, datetime.datetime, Mapping, None, Sequence, str]
 
 
+def _decode_cbor(input_data: bytes) -> Document:
+    try:
+        doc = cbor2.loads(input_data)
+        return cast(Document, doc)
+    except cbor2.CBORDecodeError as e:
+        msg = f"Cannot parse as CBOR ({e})"
+        raise ValueError(msg)
+
+
 def _decode_json(input_data: bytes) -> Document:
     try:
         doc = json.loads(
@@ -355,15 +364,6 @@ def _decode_msgpack(input_data: bytes) -> Document:
         return cast(Document, doc)
     except umsgpack.UnpackException as e:
         msg = f"Cannot parse as MessagePack ({e})"
-        raise ValueError(msg)
-
-
-def _decode_cbor(input_data: bytes) -> Document:
-    try:
-        doc = cbor2.loads(input_data)
-        return cast(Document, doc)
-    except cbor2.CBORDecodeError as e:
-        msg = f"Cannot parse as CBOR ({e})"
         raise ValueError(msg)
 
 
@@ -493,6 +493,14 @@ def _stringify_special_keys(key: Any) -> Any:
     return str(key)
 
 
+def _encode_cbor(data: Document) -> bytes:
+    try:
+        return bytes(cbor2.dumps(data))
+    except cbor2.CBOREncodeError as e:
+        msg = f"Cannot convert data to CBOR ({e})"
+        raise ValueError(msg)
+
+
 def _json_default(obj: Any) -> str:
     if isinstance(obj, datetime.datetime):
         return obj.isoformat()
@@ -538,14 +546,6 @@ def _encode_msgpack(data: Document) -> bytes:
         return bytes(umsgpack.packb(data))
     except umsgpack.UnsupportedTypeException as e:
         msg = f"Cannot convert data to MessagePack ({e})"
-        raise ValueError(msg)
-
-
-def _encode_cbor(data: Document) -> bytes:
-    try:
-        return bytes(cbor2.dumps(data))
-    except cbor2.CBOREncodeError as e:
-        msg = f"Cannot convert data to CBOR ({e})"
         raise ValueError(msg)
 
 
