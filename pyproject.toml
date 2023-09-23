@@ -92,7 +92,7 @@ select = [
   "BLE",    # flake8-blind-except
   "C4",     # flake8-comprehensions
   "C90",    # McCabe cyclomatic complexity
-  "CPY",    # Copyright-related rules
+  # "CPY",  # Copyright-related rules
   "DTZ",    # flake8-datetimez
   "E",      # pycodestyle
   "EM",     # flake8-errmsg
