@@ -8,7 +8,7 @@ readme = "README.md"
 repository = "https://github.com/remarshal-project/remarshal"
 keywords = ["converter", "cbor", "json", "messagepack", "msgpack", "toml", "yaml"]
 classifiers = [
-    "Development Status :: 4 - Beta",
+    "Development Status :: 5 - Production/Stable",
     "Environment :: Console",
     "License :: OSI Approved :: MIT License",
     "Programming Language :: Python :: 3",
