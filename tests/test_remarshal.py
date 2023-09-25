@@ -461,9 +461,9 @@ class TestRemarshal(unittest.TestCase):
     def test_run_no_input_file(self) -> None:
         argv = [
             sys.argv[0],
-            "-if",
+            "--from",
             "json",
-            "-of",
+            "--to",
             "json",
             "fake-input-file-that-almost-certainly-doesnt-exist-2382",
         ]

@@ -118,11 +118,19 @@ def _parse_command_line(argv: List[str]) -> argparse.Namespace:  # noqa: C901.
     if not format_from_argv0:
         parser.add_argument(
             "--if",
-            "-if",
             "--input-format",
+            "-f",
+            "--from",
             dest="input_format",
             default="",
             help="input format",
+            choices=FORMATS,
+        )
+        parser.add_argument(
+            "-if",
+            dest="input_format",
+            default="",
+            help=argparse.SUPPRESS,
             choices=FORMATS,
         )
 
@@ -175,11 +183,19 @@ def _parse_command_line(argv: List[str]) -> argparse.Namespace:  # noqa: C901.
     if not format_from_argv0:
         parser.add_argument(
             "--of",
-            "-of",
             "--output-format",
+            "-t",
+            "--to",
             dest="output_format",
             default="",
             help="output format",
+            choices=FORMATS,
+        )
+        parser.add_argument(
+            "-of",
+            dest="output_format",
+            default="",
+            help=argparse.SUPPRESS,
             choices=FORMATS,
         )
 
