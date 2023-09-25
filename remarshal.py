@@ -11,6 +11,7 @@ import datetime
 import json
 import re
 import sys
+import traceback
 from pathlib import Path
 from typing import Any, Callable, Dict, List, Mapping, Sequence, Tuple, Union, cast
 
@@ -143,7 +144,7 @@ def _parse_command_line(argv: List[str]) -> argparse.Namespace:  # noqa: C901.
             dest="stringify",
             action="store_true",
             help=(
-                "Turn into strings boolean, date-time, and null keys for JSON "
+                "turn into strings boolean, date-time, and null keys for JSON "
                 "and TOML and null values for TOML"
             ),
         )
@@ -204,6 +205,14 @@ def _parse_command_line(argv: List[str]) -> argparse.Namespace:  # noqa: C901.
         default=None,
         help="only output the data stored under the given key",
     )
+
+    parser.add_argument(
+        "--verbose",
+        action="store_true",
+        dest="verbose",
+        help="print debug information when an error occurs",
+    )
+
     parser.add_argument(
         "--wrap",
         dest="wrap",
@@ -617,23 +626,6 @@ def encode(
 # === Main ===
 
 
-def run(argv: List[str]) -> None:
-    args = _parse_command_line(argv)
-    remarshal(
-        args.input_format,
-        args.output_format,
-        args.input,
-        args.output,
-        json_indent=args.json_indent,
-        max_values=args.max_values,
-        ordered=args.ordered,
-        stringify=args.stringify,
-        unwrap=args.unwrap,
-        wrap=args.wrap,
-        yaml_options=args.yaml_options,
-    )
-
-
 def remarshal(
     input_format: str,
     output_format: str,
@@ -699,12 +691,27 @@ def remarshal(
 
 
 def main() -> None:
+    args = _parse_command_line(sys.argv)
+
     try:
-        run(sys.argv)
+        remarshal(
+            args.input_format,
+            args.output_format,
+            args.input,
+            args.output,
+            json_indent=args.json_indent,
+            max_values=args.max_values,
+            ordered=args.ordered,
+            stringify=args.stringify,
+            unwrap=args.unwrap,
+            wrap=args.wrap,
+            yaml_options=args.yaml_options,
+        )
     except KeyboardInterrupt:
         pass
     except (OSError, TooManyValuesError, TypeError, ValueError) as e:
-        print(f"Error: {e}", file=sys.stderr)  # noqa: T201
+        msg = traceback.format_exc() if args.verbose else f"Error: {e}\n"
+        print(msg, end="", file=sys.stderr)  # noqa: T201
         sys.exit(1)
 
 

@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import datetime
 import errno
+import inspect
 import os
 import re
 import sys
@@ -34,6 +35,15 @@ def data_file_path(filename: str) -> str:
 def read_file(filename: str) -> bytes:
     with Path(data_file_path(filename)).open("rb") as f:
         return f.read()
+
+
+def run(*argv: str) -> None:
+    # The `list()` call is to satisfy the type checker.
+    args_d = vars(remarshal._parse_command_line(list(argv)))
+    sig = inspect.signature(remarshal.remarshal)
+    re_args = {param: args_d[param] for param in sig.parameters if param in args_d}
+
+    remarshal.remarshal(**re_args)
 
 
 def sorted_dict(pairs: List[Tuple[Any, Any]]) -> Dict[Any, Any]:
@@ -440,16 +450,16 @@ class TestRemarshal(unittest.TestCase):
 
     def test_run_no_args(self) -> None:
         with pytest.raises(SystemExit) as cm:
-            remarshal.run([sys.argv[0]])
+            run(sys.argv[0])
         assert cm.value.code == 2
 
     def test_run_help(self) -> None:
         with pytest.raises(SystemExit) as cm:
-            remarshal.run([sys.argv[0], "--help"])
+            run(sys.argv[0], "--help")
         assert cm.value.code == 0
 
     def test_run_no_input_file(self) -> None:
-        args = [
+        argv = [
             sys.argv[0],
             "-if",
             "json",
@@ -458,11 +468,11 @@ class TestRemarshal(unittest.TestCase):
             "fake-input-file-that-almost-certainly-doesnt-exist-2382",
         ]
         with pytest.raises(IOError) as cm:
-            remarshal.run(args)
+            run(*argv)
         assert cm.value.errno == errno.ENOENT
 
     def test_run_no_output_dir(self) -> None:
-        args = [
+        argv = [
             sys.argv[0],
             "-if",
             "json",
@@ -473,18 +483,20 @@ class TestRemarshal(unittest.TestCase):
             data_file_path("example.json"),
         ]
         with pytest.raises(IOError) as cm:
-            remarshal.run(args)
+            run(*argv)
         assert cm.value.errno == errno.ENOENT
 
     def test_run_no_output_format(self) -> None:
         with pytest.raises(SystemExit) as cm:
-            remarshal.run([sys.argv[0], data_file_path("array.toml")])
+            run(sys.argv[0], data_file_path("array.toml"))
         assert cm.value.code == 2
 
     def test_run_short_commands(self) -> None:
         for output_format in ["cbor", "json", "msgpack", "toml", "yaml"]:
-            remarshal.run(
-                [f"json2{output_format}", "-i", data_file_path("example.json")]
+            run(
+                f"json2{output_format}",
+                "-i",
+                data_file_path("example.json"),
             )
 
     def test_ordered_simple(self) -> None:

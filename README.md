@@ -59,8 +59,8 @@ python3 -m pip install --user git+https://github.com/remarshal-project/remarshal
 usage: remarshal.py [-h] [-v] [-i input] [--if {cbor,json,msgpack,toml,yaml}]
                     [--json-indent n] [-k] [--max-values n] [-o output]
                     [--of {cbor,json,msgpack,toml,yaml}] [-s] [--unwrap key]
-                    [--wrap key] [--yaml-indent n] [--yaml-style {,',",|,>}]
-                    [--yaml-width n]
+                    [--verbose] [--wrap key] [--yaml-indent n]
+                    [--yaml-style {,',",|,>}] [--yaml-width n]
                     [input] [output]
 
 Convert between CBOR, JSON, MessagePack, TOML, and YAML.
@@ -78,7 +78,7 @@ options:
                         input format
   --json-indent n, --indent-json n
                         JSON indentation
-  -k, --stringify       Turn into strings boolean, date-time, and null keys
+  -k, --stringify       turn into strings boolean, date-time, and null keys
                         for JSON and TOML and null values for TOML
   --max-values n        maximum number of values in input data (default
                         1000000, negative for unlimited)
@@ -89,6 +89,7 @@ options:
   -s, --sort-keys       sort JSON, TOML, YAML keys instead of preserving key
                         order
   --unwrap key          only output the data stored under the given key
+  --verbose             print debug information when an error occurs
   --wrap key            wrap the data in a map type with the given key
   --yaml-indent n       YAML indentation
   --yaml-style {,',",|,>}
