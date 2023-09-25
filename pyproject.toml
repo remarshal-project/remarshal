@@ -32,7 +32,8 @@ python = "^3.8"
 cbor2 = "^5.4"
 python-dateutil = "^2.8"
 PyYAML = "^6.0"
-tomlkit = "^0.12"
+tomli = { version = "^2.0.1", python = "<3.11" }
+tomlkit = "^0.12.1"
 u-msgpack-python = "^2.8"
 pytest = "^7.4.0"
 

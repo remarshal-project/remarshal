@@ -17,8 +17,12 @@ from typing import Any, Callable, Dict, List, Mapping, Sequence, Tuple, Union, c
 import cbor2  # type: ignore
 import dateutil.parser
 import tomlkit
-import tomlkit.exceptions
-import tomlkit.items
+
+try:
+    import tomllib  # type: ignore
+except ModuleNotFoundError:
+    import tomli as tomllib
+
 import umsgpack  # type: ignore
 import yaml
 import yaml.parser
@@ -28,6 +32,7 @@ __version__ = "1.0.0"
 
 DEFAULT_MAX_VALUES = 1000000
 FORMATS = ["cbor", "json", "msgpack", "toml", "yaml"]
+UTF_8 = "utf-8"
 
 
 # === YAML ===
@@ -349,7 +354,7 @@ def _decode_cbor(input_data: bytes) -> Document:
 def _decode_json(input_data: bytes) -> Document:
     try:
         doc = json.loads(
-            input_data.decode("utf-8"),
+            input_data.decode(UTF_8),
         )
 
         return cast(Document, doc)
@@ -369,51 +374,9 @@ def _decode_msgpack(input_data: bytes) -> Document:
 
 def _decode_toml(input_data: bytes) -> Document:
     try:
-        # Remove TOML Kit's custom classes.
-        # https://github.com/sdispater/tomlkit/issues/43
-        doc = traverse(
-            tomlkit.loads(input_data),
-            instance_callbacks=[
-                (tomlkit.items.Bool, bool),
-                (
-                    tomlkit.items.Date,
-                    lambda x: datetime.date(
-                        x.year,
-                        x.month,
-                        x.day,
-                    ),
-                ),
-                (
-                    tomlkit.items.DateTime,
-                    lambda x: datetime.datetime(
-                        x.year,
-                        x.month,
-                        x.day,
-                        x.hour,
-                        x.minute,
-                        x.second,
-                        x.microsecond,
-                        x.tzinfo,
-                    ),
-                ),
-                (tomlkit.items.Float, float),
-                (tomlkit.items.Integer, int),
-                (tomlkit.items.String, str),
-                (
-                    tomlkit.items.Time,
-                    lambda x: datetime.time(
-                        x.hour,
-                        x.minute,
-                        x.second,
-                        x.microsecond,
-                        x.tzinfo,
-                    ),
-                ),
-            ],
-        )
-
+        doc = tomllib.loads(input_data.decode(UTF_8))
         return cast(Document, doc)
-    except tomlkit.exceptions.ParseError as e:
+    except tomllib.TOMLDecodeError as e:
         msg = f"Cannot parse as TOML ({e})"
         raise ValueError(msg)
 
@@ -627,7 +590,7 @@ def encode(
             indent=json_indent,
             ordered=ordered,
             stringify=stringify,
-        ).encode("utf-8")
+        ).encode(UTF_8)
     elif output_format == "msgpack":
         encoded = _encode_msgpack(data)
     elif output_format == "toml":
@@ -637,12 +600,10 @@ def encode(
                 "be encoded as TOML"
             )
             raise TypeError(msg)
-        encoded = _encode_toml(data, ordered=ordered, stringify=stringify).encode(
-            "utf-8"
-        )
+        encoded = _encode_toml(data, ordered=ordered, stringify=stringify).encode(UTF_8)
     elif output_format == "yaml":
         encoded = _encode_yaml(data, ordered=ordered, yaml_options=yaml_options).encode(
-            "utf-8"
+            UTF_8
         )
     elif output_format == "cbor":
         encoded = _encode_cbor(data)
