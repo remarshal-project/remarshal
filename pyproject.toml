@@ -32,7 +32,7 @@ python = "^3.8"
 cbor2 = "^5.4"
 python-dateutil = "^2.8"
 PyYAML = "^6.0"
-tomlkit = "^0.12"
+rtoml = ">=0.9.0"
 u-msgpack-python = "^2.8"
 pytest = "^7.4.0"
 

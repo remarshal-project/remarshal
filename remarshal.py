@@ -16,9 +16,7 @@ from typing import Any, Callable, Dict, List, Mapping, Sequence, Set, Tuple, Uni
 
 import cbor2  # type: ignore
 import dateutil.parser
-import tomlkit
-import tomlkit.exceptions
-import tomlkit.items
+import rtoml
 import umsgpack  # type: ignore
 import yaml
 import yaml.parser
@@ -369,51 +367,10 @@ def decode_cbor(input_data: bytes) -> Document:
 
 def decode_toml(input_data: bytes) -> Document:
     try:
-        # Remove TOML Kit's custom classes.
-        # https://github.com/sdispater/tomlkit/issues/43
-        doc = traverse(
-            tomlkit.loads(input_data),
-            instance_callbacks={
-                (tomlkit.items.Bool, bool),
-                (
-                    tomlkit.items.Date,
-                    lambda x: datetime.date(
-                        x.year,
-                        x.month,
-                        x.day,
-                    ),
-                ),
-                (
-                    tomlkit.items.DateTime,
-                    lambda x: datetime.datetime(
-                        x.year,
-                        x.month,
-                        x.day,
-                        x.hour,
-                        x.minute,
-                        x.second,
-                        x.microsecond,
-                        x.tzinfo,
-                    ),
-                ),
-                (tomlkit.items.Float, float),
-                (tomlkit.items.Integer, int),
-                (tomlkit.items.String, str),
-                (
-                    tomlkit.items.Time,
-                    lambda x: datetime.time(
-                        x.hour,
-                        x.minute,
-                        x.second,
-                        x.microsecond,
-                        x.tzinfo,
-                    ),
-                ),
-            },
-        )
-
-        return cast(Document, doc)
-    except tomlkit.exceptions.ParseError as e:
+        # HACK https://github.com/samuelcolvin/rtoml/issues/68
+        input_str = input_data.decode("utf-8")
+        return rtoml.loads(input_str)
+    except rtoml.TomlParsingError as e:
         msg = f"Cannot parse as TOML ({e})"
         raise ValueError(msg)
 
@@ -572,14 +529,17 @@ def encode_toml(
 
     default_callback = stringify_null if stringify else reject_null
 
+    if ordered:
+        data = dict(sorted(data.items()))
+
     try:
-        return tomlkit.dumps(
+        return rtoml.dumps(
             traverse(
                 data,
                 key_callback=key_callback,
                 default_callback=default_callback,
             ),
-            sort_keys=not ordered,
+            pretty=True,
         )
     except AttributeError as e:
         if str(e) == "'list' object has no attribute 'as_string'":
@@ -590,7 +550,7 @@ def encode_toml(
             raise ValueError(msg)
         else:
             raise e
-    except (TypeError, ValueError) as e:
+    except (TypeError, ValueError, rtoml.TomlParsingError) as e:
         msg = f"Cannot convert data to TOML ({e})"
         raise ValueError(msg)
 
