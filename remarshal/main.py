@@ -100,7 +100,8 @@ def _parse_command_line(argv: List[str]) -> argparse.Namespace:  # noqa: C901.
     format_from_argv0 = argv0_to != ""
 
     parser = argparse.ArgumentParser(
-        description="Convert between CBOR, JSON, MessagePack, TOML, and YAML."
+        description="Convert between CBOR, JSON, MessagePack, TOML, and YAML.",
+        prog="remarshal",
     )
     parser.add_argument("-v", "--version", action="version", version=__version__)
 

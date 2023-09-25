@@ -50,32 +50,32 @@ requires = ["poetry-core>=1.0"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry.scripts]
-remarshal        = 'remarshal:main'
-cbor2cbor        = 'remarshal:main'
-cbor2json        = 'remarshal:main'
-cbor2msgpack     = 'remarshal:main'
-cbor2toml        = 'remarshal:main'
-cbor2yaml        = 'remarshal:main'
-json2cbor        = 'remarshal:main'
-json2json        = 'remarshal:main'
-json2msgpack     = 'remarshal:main'
-json2toml        = 'remarshal:main'
-json2yaml        = 'remarshal:main'
-msgpack2cbor     = 'remarshal:main'
-msgpack2json     = 'remarshal:main'
-msgpack2msgpack  = 'remarshal:main'
-msgpack2toml     = 'remarshal:main'
-msgpack2yaml     = 'remarshal:main'
-toml2cbor        = 'remarshal:main'
-toml2json        = 'remarshal:main'
-toml2msgpack     = 'remarshal:main'
-toml2toml        = 'remarshal:main'
-toml2yaml        = 'remarshal:main'
-yaml2cbor        = 'remarshal:main'
-yaml2json        = 'remarshal:main'
-yaml2msgpack     = 'remarshal:main'
-yaml2toml        = 'remarshal:main'
-yaml2yaml        = 'remarshal:main'
+remarshal        = 'remarshal.main:main'
+cbor2cbor        = 'remarshal.main:main'
+cbor2json        = 'remarshal.main:main'
+cbor2msgpack     = 'remarshal.main:main'
+cbor2toml        = 'remarshal.main:main'
+cbor2yaml        = 'remarshal.main:main'
+json2cbor        = 'remarshal.main:main'
+json2json        = 'remarshal.main:main'
+json2msgpack     = 'remarshal.main:main'
+json2toml        = 'remarshal.main:main'
+json2yaml        = 'remarshal.main:main'
+msgpack2cbor     = 'remarshal.main:main'
+msgpack2json     = 'remarshal.main:main'
+msgpack2msgpack  = 'remarshal.main:main'
+msgpack2toml     = 'remarshal.main:main'
+msgpack2yaml     = 'remarshal.main:main'
+toml2cbor        = 'remarshal.main:main'
+toml2json        = 'remarshal.main:main'
+toml2msgpack     = 'remarshal.main:main'
+toml2toml        = 'remarshal.main:main'
+toml2yaml        = 'remarshal.main:main'
+yaml2cbor        = 'remarshal.main:main'
+yaml2json        = 'remarshal.main:main'
+yaml2msgpack     = 'remarshal.main:main'
+yaml2toml        = 'remarshal.main:main'
+yaml2yaml        = 'remarshal.main:main'
 
 [tool.pyright]
 pythonVersion = "3.8"
@@ -152,6 +152,6 @@ max-branches = 20
 max-statements = 100
 
 [tool.ruff.per-file-ignores]
-"remarshal.py" = ["ARG001", "B904", "EM103", "RET506", "S506", "SIM115"]
+"remarshal/main.py" = ["ARG001", "B904", "EM103", "RET506", "S506", "SIM115"]
 "tests/test_remarshal.py" = ["F841", "PT011", "SLF001"]
 "tests/*" = ["S101"]
