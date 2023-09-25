@@ -29,6 +29,19 @@ import yaml
 import yaml.parser
 import yaml.scanner
 
+__all__ = [
+    "__version__",
+    "DEFAULT_MAX_VALUES",
+    "FORMATS",
+    "Document",
+    "TooManyValuesError",
+    "decode",
+    "encode",
+    "identity",
+    "main",
+    "remarshal",
+    "traverse",
+]
 __version__ = "1.0.0"
 
 DEFAULT_MAX_VALUES = 1000000
