@@ -74,7 +74,9 @@ options:
   -v, --version         show program's version number and exit
   -i input, --input input
                         input file
-  --if {cbor,json,msgpack,toml,yaml}, --input-format {cbor,json,msgpack,toml,yaml}, -f {cbor,json,msgpack,toml,yaml}, --from {cbor,json,msgpack,toml,yaml}
+  --if {cbor,json,msgpack,toml,yaml}, --input-format
+{cbor,json,msgpack,toml,yaml}, -f {cbor,json,msgpack,toml,yaml},
+--from {cbor,json,msgpack,toml,yaml}
                         input format
   --json-indent n, --indent-json n
                         JSON indentation
@@ -84,7 +86,9 @@ options:
                         1000000, negative for unlimited)
   -o output, --output output
                         output file
-  --of {cbor,json,msgpack,toml,yaml}, --output-format {cbor,json,msgpack,toml,yaml}, -t {cbor,json,msgpack,toml,yaml}, --to {cbor,json,msgpack,toml,yaml}
+  --of {cbor,json,msgpack,toml,yaml}, --output-format
+{cbor,json,msgpack,toml,yaml}, -t {cbor,json,msgpack,toml,yaml},
+--to {cbor,json,msgpack,toml,yaml}
                         output format
   -s, --sort-keys       sort JSON, TOML, YAML keys instead of preserving key
                         order
