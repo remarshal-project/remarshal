@@ -1,7 +1,7 @@
-name: lint
+name: lint-and-type
 on: [push, pull_request]
 jobs:
-  lint:
+  lint-and-type:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -9,9 +9,7 @@ jobs:
         run: |
           pip install --upgrade pip
           pip install poethepoet poetry
-      - name: Lint (via `poe`)
-        run: |
           poetry install
-          poe format
-          poe codespell
-          poe lint
+      - name: Lint and typecheck (via `poe`)
+        run: |
+          poe check
