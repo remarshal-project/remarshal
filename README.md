@@ -23,7 +23,7 @@ This means you can not roundtrip every YAML document through Remarshal.
 You will need Python 3.8 or later.
 Earlier versions of Python 3 are not supported.
 
-The recommended way to run Remarshal is to install the latest release from [PyPI](https://pypi.org/project/remarshal/) with [pipx](https://github.com/pypa/pipx).
+The recommended way to run Remarshal is to install the latest release [from PyPI](https://pypi.org/project/remarshal/) with [pipx](https://github.com/pypa/pipx).
 
 ```sh
 pipx install remarshal
