@@ -10,6 +10,11 @@ jobs:
           pip install --upgrade pip
           pip install poethepoet poetry
           poetry install
-      - name: Lint and typecheck (via `poe`)
-        run: |
-          poe check
+      - name: Format
+        run: poe format
+      - name: Check spelling
+        run: poe codespell
+      - name: Lint
+        run: poe lint
+      - name: Typecheck
+        run: poe type
