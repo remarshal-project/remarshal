@@ -7,8 +7,11 @@ jobs:
       - uses: actions/checkout@v3
       - name: Install dependencies
         run: |
-          python -m pip install --upgrade pip
-          pip install poetry tox
-      - name: Lint (via tox)
+          pip install --upgrade pip
+          pip install poethepoet poetry
+      - name: Lint (via `poe`)
         run: |
-          tox run -e lint
+          poetry install
+          poe format
+          poe codespell
+          poe lint
