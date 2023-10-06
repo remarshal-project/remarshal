@@ -151,12 +151,17 @@ def _parse_command_line(argv: List[str]) -> argparse.Namespace:  # noqa: C901.
     if not format_from_argv0 or argv0_to == "json":
         parser.add_argument(
             "--json-indent",
-            "--indent-json",
             dest="json_indent",
             metavar="n",
             type=int,
             default=defaults["json_indent"],
             help="JSON indentation",
+        )
+        parser.add_argument(
+            "--indent-json",
+            dest="json_indent",
+            type=int,
+            help=argparse.SUPPRESS,
         )
 
     if not format_from_argv0 or argv0_to in {"json", "toml"}:
