@@ -56,12 +56,12 @@ python3 -m pip install --user git+https://github.com/remarshal-project/remarshal
 ## Usage
 
 ```
-usage: remarshal.py [-h] [-v] [-i input] [--if {cbor,json,msgpack,toml,yaml}]
-                    [--json-indent n] [-k] [--max-values n] [-o output]
-                    [--of {cbor,json,msgpack,toml,yaml}] [-s] [--unwrap key]
-                    [--verbose] [--wrap key] [--yaml-indent n]
-                    [--yaml-style {,',",|,>}] [--yaml-width n]
-                    [input] [output]
+usage: remarshal [-h] [-v] [-i input] [--if {cbor,json,msgpack,toml,yaml}]
+                 [--json-indent n] [-k] [--max-values n] [-o output]
+                 [--of {cbor,json,msgpack,toml,yaml}] [-s] [--unwrap key]
+                 [--verbose] [--wrap key] [--yaml-indent n]
+                 [--yaml-style {,',",|,>}] [--yaml-width n]
+                 [input] [output]
 
 Convert between CBOR, JSON, MessagePack, TOML, and YAML.
 
@@ -117,11 +117,11 @@ If the top-level element is not a dictionary or does not have the key "someKey",
 The following shell transcript demonstrates the problem and how `--wrap` and `--unwrap` solve it:
 
 ```
-$ echo '[{"a":"b"},{"c":[1,2,3]}]' | ./remarshal.py --if json --of toml
+$ echo '[{"a":"b"},{"c":[1,2,3]}]' | remarshal --if json --of toml
 Error: cannot convert non-dictionary data to TOML; use "wrap" to wrap it in a dictionary
 
 $ echo '[{"a":"b"},{"c":[1,2,3]}]' \
-  | ./remarshal.py --if json --of toml --wrap main
+  | remarshal --if json --of toml --wrap main
 [[main]]
 a = "b"
 
@@ -129,19 +129,19 @@ a = "b"
 c = [1, 2, 3]
 
 $ echo '[{"a":"b"},{"c":[1,2,3]}]' \
-  | ./remarshal.py --if json --wrap main - test.toml
+  | remarshal --if json --wrap main - test.toml
 
-$ ./remarshal.py test.toml --of json
+$ remarshal test.toml --of json
 {"main":[{"a":"b"},{"c":[1,2,3]}]}
 
-$ ./remarshal.py test.toml --of json --unwrap main
+$ remarshal test.toml --of json --unwrap main
 [{"a":"b"},{"c":[1,2,3]}]
 ```
 
 ## Examples
 
 ```
-$ ./remarshal.py example.toml --of yaml
+$ remarshal example.toml --of yaml
 clients:
   data:
   - - gamma
@@ -182,8 +182,8 @@ servers:
     ip: 10.0.0.2
 title: TOML Example
 
-$ curl -s http://api.openweathermap.org/data/2.5/weather\?q\=Kiev,ua \
-  | ./remarshal.py --if json --of toml
+$ curl -s 'http://api.openweathermap.org/data/2.5/weather?q=Kiev,ua' \
+  | remarshal --if json --of toml
 base = "cmc stations"
 cod = 200
 dt = 1412532000
