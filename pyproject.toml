@@ -101,6 +101,10 @@ help = "Run Black"
 cmd = "ruff check ${PYTHON_SOURCES}"
 help = "Run Ruff"
 
+[tool.poe.tasks.remarshal]
+cmd = "python -m remarshal"
+help = "Run Remarshal"
+
 [tool.poe.tasks.test]
 cmd = "pytest"
 help = "Run Pytest (not through tox)"
