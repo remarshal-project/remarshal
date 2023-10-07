@@ -70,7 +70,7 @@ def toml_signature(data: bytes | str) -> List[str]:
             [strip_more(line) for line in lst if not should_drop(strip_more(line))]
         )
 
-    str_data = data if isinstance(data, str) else data.decode("utf-8")
+    str_data = data if isinstance(data, str) else bytes(data).decode("utf-8")
 
     return sig_lines(str_data.split("\n"))
 
