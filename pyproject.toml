@@ -78,7 +78,7 @@ yaml2toml        = 'remarshal.main:main'
 yaml2yaml        = 'remarshal.main:main'
 
 [tool.poe.env]
-"PYTHON_SOURCES" = "remarshal/__init__.py remarshal/__main__.py remarshal/main.py tests/__init__.py tests/test_remarshal.py"
+"PYTHON_SOURCES" = "src/remarshal/__init__.py src/remarshal/__main__.py src/remarshal/main.py tests/__init__.py tests/test_remarshal.py"
 
 [tool.poe.tasks.check]
 sequence = ["format", "codespell", "lint", "type"]
@@ -172,6 +172,7 @@ select = [
   # "UP",   # pyupgrade
 ]
 ignore = ["A002", "B006", "FBT002", "PGH003"]
+src = ["src", "tests"]
 target-version = "py38"
 
 [tool.ruff.mccabe]
@@ -184,6 +185,6 @@ max-branches = 20
 max-statements = 100
 
 [tool.ruff.per-file-ignores]
-"remarshal/main.py" = ["ARG001", "B904", "EM103", "RET506", "S506", "SIM115"]
+"src/remarshal/main.py" = ["ARG001", "B904", "EM103", "RET506", "S506", "SIM115"]
 "tests/test_remarshal.py" = ["F841", "PT011", "SLF001"]
 "tests/*" = ["S101"]
