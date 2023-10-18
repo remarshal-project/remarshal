@@ -24,7 +24,7 @@ try:
 except ModuleNotFoundError:
     import tomli as tomllib
 
-import umsgpack  # type: ignore
+import umsgpack
 import yaml
 import yaml.parser
 import yaml.scanner
@@ -550,7 +550,7 @@ def _encode_json(
 
 def _encode_msgpack(data: Document) -> bytes:
     try:
-        return bytes(umsgpack.packb(data))
+        return umsgpack.packb(data)
     except umsgpack.UnsupportedTypeException as e:
         msg = f"Cannot convert data to MessagePack ({e})"
         raise ValueError(msg)
