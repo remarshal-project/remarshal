@@ -162,7 +162,9 @@ class TestRemarshal(unittest.TestCase):
 
     def test_json2msgpack(self) -> None:
         def patch(x: Any) -> Any:
-            x["owner"]["dob"] = datetime.datetime(1979, 5, 27, 7, 32)  # noqa: DTZ001
+            x["owner"]["dob"] = datetime.datetime(
+                1979, 5, 27, 7, 32, tzinfo=datetime.timezone.utc
+            )
             return x
 
         output = self.convert_and_read(
