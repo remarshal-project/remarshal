@@ -29,12 +29,17 @@ include = [
 
 [tool.poetry.dependencies]
 python = "^3.8"
-cbor2 = "^5.4"
+
 python-dateutil = "^2.8"
+
+cbor2 = "^5.4"
 PyYAML = "^6.0"
 tomli = { version = "^2.0.1", python = "<3.11" }
 tomlkit = "^0.12.1"
 u-msgpack-python = "^2.8"
+
+colorama = "^0.4.6"
+rich-argparse = "^1.3.0"
 
 [tool.poetry.group.dev.dependencies]
 black = "^23.3.0"

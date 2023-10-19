@@ -16,8 +16,10 @@ from pathlib import Path
 from typing import Any, Callable, Dict, List, Mapping, Sequence, Tuple, Union, cast
 
 import cbor2  # type: ignore
+import colorama
 import dateutil.parser
 import tomlkit
+from rich_argparse import RichHelpFormatter
 
 try:
     import tomllib  # type: ignore
@@ -112,8 +114,21 @@ def _parse_command_line(argv: List[str]) -> argparse.Namespace:  # noqa: C901.
     argv0_from, argv0_to = _argv0_to_format(me)
     format_from_argv0 = argv0_to != ""
 
+    RichHelpFormatter.styles = {
+        "argparse.args": "cyan",
+        "argparse.groups": "default",
+        "argparse.help": "default",
+        "argparse.metavar": "cyan",
+        "argparse.prog": "default",
+        "argparse.syntax": "bold",
+        "argparse.text": "default",
+        "argparse.default": "default",
+    }
+    RichHelpFormatter.group_name_formatter = lambda x: x
+
     parser = argparse.ArgumentParser(
         description="Convert between CBOR, JSON, MessagePack, TOML, and YAML.",
+        formatter_class=RichHelpFormatter,
         prog="remarshal",
     )
     parser.add_argument("-v", "--version", action="version", version=__version__)
@@ -286,6 +301,7 @@ def _parse_command_line(argv: List[str]) -> argparse.Namespace:  # noqa: C901.
             help="YAML line width for long strings",
         )
 
+    colorama.init()
     args = parser.parse_args(args=argv[1:])
 
     # Use the positional input and output arguments.
