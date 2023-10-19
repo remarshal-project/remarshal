@@ -592,7 +592,7 @@ def _encode_toml(
         if str(e) == "'list' object has no attribute 'as_string'":
             msg = (
                 "Cannot convert non-dictionary data to TOML; "
-                'use "wrap" to wrap it in a dictionary'
+                'use "--wrap" to wrap it in a dictionary'
             )
             raise ValueError(msg)
         else:

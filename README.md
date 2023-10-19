@@ -124,7 +124,7 @@ The following shell transcript demonstrates the problem and how `--wrap` and `--
 
 ```
 $ echo '[{"a":"b"},{"c":[1,2,3]}]' | remarshal --if json --of toml
-Error: cannot convert non-dictionary data to TOML; use "wrap" to wrap it in a dictionary
+Error: cannot convert non-dictionary data to TOML; use "--wrap" to wrap it in a dictionary
 
 $ echo '[{"a":"b"},{"c":[1,2,3]}]' \
   | remarshal --if json --of toml --wrap main
