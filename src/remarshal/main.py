@@ -3,7 +3,6 @@
 # Copyright (c) 2014-2020, 2023 D. Bohdan
 # License: MIT
 
-
 from __future__ import annotations
 
 import argparse
@@ -13,7 +12,18 @@ import re
 import sys
 import traceback
 from pathlib import Path
-from typing import Any, Callable, Dict, List, Mapping, Sequence, Tuple, Union, cast
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    Callable,
+    Dict,
+    List,
+    Mapping,
+    Sequence,
+    Tuple,
+    Union,
+    cast,
+)
 
 import cbor2  # type: ignore
 import colorama
@@ -31,10 +41,14 @@ import yaml
 import yaml.parser
 import yaml.scanner
 
+if TYPE_CHECKING:
+    from rich.style import StyleType
+
 __all__ = [
     "__version__",
     "DEFAULT_MAX_VALUES",
     "FORMATS",
+    "RICH_ARGPARSE_STYLES",
     "Document",
     "TooManyValuesError",
     "decode",
@@ -49,6 +63,17 @@ __version__ = "1.0.0rc1"
 DEFAULT_MAX_VALUES = 1000000
 FORMATS = ["cbor", "json", "msgpack", "toml", "yaml"]
 UTF_8 = "utf-8"
+
+RICH_ARGPARSE_STYLES: dict[str, StyleType] = {
+    "argparse.args": "cyan",
+    "argparse.groups": "default",
+    "argparse.help": "default",
+    "argparse.metavar": "cyan",
+    "argparse.prog": "default",
+    "argparse.syntax": "bold",
+    "argparse.text": "default",
+    "argparse.default": "default",
+}
 
 
 # === YAML ===
@@ -114,17 +139,8 @@ def _parse_command_line(argv: List[str]) -> argparse.Namespace:  # noqa: C901.
     argv0_from, argv0_to = _argv0_to_format(me)
     format_from_argv0 = argv0_to != ""
 
-    RichHelpFormatter.styles = {
-        "argparse.args": "cyan",
-        "argparse.groups": "default",
-        "argparse.help": "default",
-        "argparse.metavar": "cyan",
-        "argparse.prog": "default",
-        "argparse.syntax": "bold",
-        "argparse.text": "default",
-        "argparse.default": "default",
-    }
     RichHelpFormatter.group_name_formatter = lambda x: x
+    RichHelpFormatter.styles = RICH_ARGPARSE_STYLES
 
     parser = argparse.ArgumentParser(
         description="Convert between CBOR, JSON, MessagePack, TOML, and YAML.",
