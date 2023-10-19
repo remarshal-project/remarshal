@@ -42,7 +42,7 @@ __all__ = [
     "remarshal",
     "traverse",
 ]
-__version__ = "1.0.0"
+__version__ = "1.0.0rc1"
 
 DEFAULT_MAX_VALUES = 1000000
 FORMATS = ["cbor", "json", "msgpack", "toml", "yaml"]
