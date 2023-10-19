@@ -56,11 +56,11 @@ python3 -m pip install --user git+https://github.com/remarshal-project/remarshal
 ## Usage
 
 ```
-usage: remarshal [-h] [-v] [-i input] [--if {cbor,json,msgpack,toml,yaml}]
-                 [--json-indent n] [-k] [--max-values n] [-o output]
-                 [--of {cbor,json,msgpack,toml,yaml}] [-s] [--unwrap key]
-                 [--verbose] [--wrap key] [--yaml-indent n]
-                 [--yaml-style {,',",|,>}] [--yaml-width n]
+usage: remarshal [-h] [-v] [-i <input>] [--if {cbor,json,msgpack,toml,yaml}]
+                 [--json-indent <n>] [-k] [--max-values <n>] [-o <output>]
+                 [--of {cbor,json,msgpack,toml,yaml}] [-s] [--unwrap <key>]
+                 [--verbose] [--wrap <key>] [--yaml-indent <n>]
+                 [--yaml-style {,',",|,>}] [--yaml-width <n>]
                  [input] [output]
 
 Convert between CBOR, JSON, MessagePack, TOML, and YAML.
@@ -72,18 +72,18 @@ positional arguments:
 options:
   -h, --help            show this help message and exit
   -v, --version         show program's version number and exit
-  -i input, --input input
+  -i <input>, --input <input>
                         input file
   --if {cbor,json,msgpack,toml,yaml}, --input-format
 {cbor,json,msgpack,toml,yaml}, -f {cbor,json,msgpack,toml,yaml},
 --from {cbor,json,msgpack,toml,yaml}
                         input format
-  --json-indent n       JSON indentation
+  --json-indent <n>     JSON indentation
   -k, --stringify       turn into strings boolean, date-time, and null keys
                         for JSON and TOML and null values for TOML
-  --max-values n        maximum number of values in input data (default
+  --max-values <n>      maximum number of values in input data (default
                         1000000, negative for unlimited)
-  -o output, --output output
+  -o <output>, --output <output>
                         output file
   --of {cbor,json,msgpack,toml,yaml}, --output-format
 {cbor,json,msgpack,toml,yaml}, -t {cbor,json,msgpack,toml,yaml},
@@ -91,17 +91,17 @@ options:
                         output format
   -s, --sort-keys       sort JSON, TOML, YAML keys instead of preserving key
                         order
-  --unwrap key          only output the data stored under the given key
+  --unwrap <key>        only output the data stored under the given key
   --verbose             print debug information when an error occurs
-  --wrap key            wrap the data in a map type with the given key
-  --yaml-indent n       YAML indentation
+  --wrap <key>          wrap the data in a map type with the given key
+  --yaml-indent <n>     YAML indentation
   --yaml-style {,',",|,>}
                         YAML formatting style
-  --yaml-width n        YAML line width for long strings
+  --yaml-width <n>      YAML line width for long strings
 ```
 
 Instead of `remarshal` with format arguments,
-you can use a short command <code>{cbor,json,msgpack,toml,yaml}2<wbr>{cbor,json,msgpack,toml,yaml}</code>. 
+you can use a short command <code>{cbor,json,msgpack,toml,yaml}2<wbr>{cbor,json,msgpack,toml,yaml}</code>.
 The `remarshal` command as well as the short commands exit with status 0 on success, 1 on operational failure, and 2 when they fail to parse the command line.
 
 If no input argument `input`/`-i input` is given or its value is `-`, Remarshal reads input data from standard input.

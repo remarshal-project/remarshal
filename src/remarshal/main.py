@@ -124,7 +124,7 @@ def _parse_command_line(argv: List[str]) -> argparse.Namespace:  # noqa: C901.
         "-i",
         "--input",
         dest="input_flag",
-        metavar="input",
+        metavar="<input>",
         default=None,
         help="input file",
     )
@@ -152,7 +152,7 @@ def _parse_command_line(argv: List[str]) -> argparse.Namespace:  # noqa: C901.
         parser.add_argument(
             "--json-indent",
             dest="json_indent",
-            metavar="n",
+            metavar="<n>",
             type=int,
             default=defaults["json_indent"],
             help="JSON indentation",
@@ -179,7 +179,7 @@ def _parse_command_line(argv: List[str]) -> argparse.Namespace:  # noqa: C901.
     parser.add_argument(
         "--max-values",
         dest="max_values",
-        metavar="n",
+        metavar="<n>",
         type=int,
         default=DEFAULT_MAX_VALUES,
         help=(
@@ -194,7 +194,7 @@ def _parse_command_line(argv: List[str]) -> argparse.Namespace:  # noqa: C901.
         "-o",
         "--output",
         dest="output_flag",
-        metavar="output",
+        metavar="<output>",
         default=None,
         help="output file",
     )
@@ -236,7 +236,7 @@ def _parse_command_line(argv: List[str]) -> argparse.Namespace:  # noqa: C901.
     parser.add_argument(
         "--unwrap",
         dest="unwrap",
-        metavar="key",
+        metavar="<key>",
         default=None,
         help="only output the data stored under the given key",
     )
@@ -251,7 +251,7 @@ def _parse_command_line(argv: List[str]) -> argparse.Namespace:  # noqa: C901.
     parser.add_argument(
         "--wrap",
         dest="wrap",
-        metavar="key",
+        metavar="<key>",
         default=None,
         help="wrap the data in a map type with the given key",
     )
@@ -260,7 +260,7 @@ def _parse_command_line(argv: List[str]) -> argparse.Namespace:  # noqa: C901.
         parser.add_argument(
             "--yaml-indent",
             dest="yaml_indent",
-            metavar="n",
+            metavar="<n>",
             type=int,
             default=2,
             help="YAML indentation",
@@ -280,7 +280,7 @@ def _parse_command_line(argv: List[str]) -> argparse.Namespace:  # noqa: C901.
         parser.add_argument(
             "--yaml-width",
             dest="yaml_width",
-            metavar="n",
+            metavar="<n>",
             type=yaml_width,  # Allow "inf".
             default=80,
             help="YAML line width for long strings",
