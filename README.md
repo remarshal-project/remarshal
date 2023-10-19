@@ -1,7 +1,7 @@
 # Remarshal
 
 Convert between CBOR, JSON, MessagePack, TOML, and YAML.
-When installed, provides the command line command `remarshal` as well as the short commands <code>{cbor,json,msgpack,toml,yaml}2<wbr>{cbor,json,msgpack,toml,yaml}</code>.
+When installed, provides the command-line command `remarshal` as well as the short commands <code>{cbor,json,msgpack,toml,yaml}2<wbr>{cbor,json,msgpack,toml,yaml}</code>.
 You can perform format conversion, reformatting, and error detection using these commands.
 
 ## Known limitations
@@ -21,7 +21,7 @@ This means you cannot roundtrip every YAML document through Remarshal.
 ## Installation
 
 You will need Python 3.8 or later.
-Earlier versions of Python 3 are not supported.
+Earlier versions of Python 3 do not work.
 
 The recommended way to run Remarshal is to install the latest release [from PyPI](https://pypi.org/project/remarshal/) with [pipx](https://github.com/pypa/pipx).
 
@@ -46,7 +46,7 @@ You can install Remarshal using pip.
 python3 -m pip install --user remarshal
 ```
 
-Instead of a release, you can install the development version.
+You can install the current development version instead of a release.
 Prefer releases unless you have a reason to run the development version.
 
 ```sh
@@ -100,7 +100,8 @@ options:
   --yaml-width n        YAML line width for long strings
 ```
 
-You can use a short command <code>{cbor,json,msgpack,toml,yaml}2<wbr>{cbor,json,msgpack,toml,yaml}</code> instead of `remarshal` with format arguments.
+Instead of `remarshal` with format arguments,
+you can use a short command <code>{cbor,json,msgpack,toml,yaml}2<wbr>{cbor,json,msgpack,toml,yaml}</code>. 
 The `remarshal` command as well as the short commands exit with status 0 on success, 1 on operational failure, and 2 when they fail to parse the command line.
 
 If no input argument `input`/`-i input` is given or its value is `-`, Remarshal reads input data from standard input.
@@ -108,11 +109,16 @@ Similarly, with no `output`/`-o output` or an output argument that is `-`, it wr
 
 ### Wrappers
 
-The arguments `--wrap` and `--unwrap` are available to solve the problem of converting CBOR, JSON, MessagePack, and YAML data to TOML if the top-level element of the data is not of a dictionary type (i.e., not a map in CBOR and MessagePack, an object in JSON, or an associative array in YAML).
-You cannot represent such data as TOML directly; the data must be wrapped in a dictionary first.
-Passing the flag `--wrap someKey` to `remarshal` or one of its short commands wraps the input data in a "wrapper" dictionary with one key, "someKey", with the input data as its value.
-The flag `--unwrap someKey` does the opposite: only the value stored under the key "someKey" in the top-level dictionary element of the input data is converted to the target format and output; the rest of the input is ignored.
-If the top-level element is not a dictionary or does not have the key "someKey", `--unwrap someKey` causes an error.
+The arguments `--wrap` and `--unwrap` are available to solve the problem of converting CBOR, JSON, MessagePack, and YAML data to TOML if the top-level element of the data is not of a dictionary type
+(i.e., not a map in CBOR and MessagePack, an object in JSON, or an associative array in YAML).
+You cannot represent such data as TOML directly;
+the data must be wrapped in a dictionary first.
+Passing the flag `--wrap some-key` to `remarshal` or one of its short commands wraps the input data in a "wrapper" dictionary with one key, `some-key`, with the input data as its value.
+The flag `--unwrap some-key` does the opposite:
+only the value stored under the key `some-key` in the top-level dictionary element of the input data is converted to the target format and output;
+the rest of the input is ignored.
+If the top-level element is not a dictionary or does not have the key `some-key`,
+`--unwrap some-key` causes an error.
 
 The following shell transcript demonstrates the problem and how `--wrap` and `--unwrap` solve it:
 
