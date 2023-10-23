@@ -425,13 +425,13 @@ jupyter = ["ipywidgets (>=7.5.1,<9)"]
 
 [[package]]
 name = "rich-argparse"
-version = "1.3.0"
+version = "1.4.0"
 description = "Rich help formatters for argparse and optparse"
 optional = false
 python-versions = ">=3.7"
 files = [
-    {file = "rich_argparse-1.3.0-py3-none-any.whl", hash = "sha256:1a5eda1659c0a215862fe3630fcbe68d7792f18a8106baaf4e005b9896acc6f6"},
-    {file = "rich_argparse-1.3.0.tar.gz", hash = "sha256:974cc1ba0aaa0d6aabc09ab1b78f9ba928670e08590f9551121bcbc60c75b74a"},
+    {file = "rich_argparse-1.4.0-py3-none-any.whl", hash = "sha256:68b263d3628d07b1d27cfe6ad896da2f5a5583ee2ba226aeeb24459840023b38"},
+    {file = "rich_argparse-1.4.0.tar.gz", hash = "sha256:c275f34ea3afe36aec6342c2a2298893104b5650528941fb53c21067276dba19"},
 ]
 
 [package.dependencies]
@@ -559,4 +559,4 @@ files = [
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.8"
-content-hash = "f866ae238c8f130262b3295fe6c24da06222989a5aaa6574c792cce14372d7d0"
+content-hash = "af26f444be241a2220c817110ae424a5bae66507ed0b8942caca6a717c1cd28f"

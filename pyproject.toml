@@ -42,7 +42,7 @@ tomlkit = "^0.12.1"
 u-msgpack-python = "^2.8"
 
 colorama = "^0.4.6"
-rich-argparse = "^1.3.0"
+rich-argparse = "^1.4.0"
 
 [tool.poetry.group.dev.dependencies]
 black = "^23.3.0"
