@@ -103,7 +103,7 @@ class TestRemarshal(unittest.TestCase):
         ] = None,
         unwrap: Union[str, None] = None,
         wrap: Union[str, None] = None,
-        yaml_options: Dict[Any, Any] = {},
+        yaml_options: Dict[Any, Any] | None = None,
     ) -> bytes:
         output_filename = self.temp_filename()
         remarshal.remarshal(

@@ -699,14 +699,14 @@ def remarshal(
     input: Path | str,
     output: Path | str,
     *,
-    json_indent: Union[int, None] = None,
+    json_indent: int | None = None,
     max_values: int = DEFAULT_MAX_VALUES,
     ordered: bool = True,
     stringify: bool = False,
     transform: Union[Callable[[Document], Document], None] = None,
     unwrap: Union[str, None] = None,
     wrap: Union[str, None] = None,
-    yaml_options: Dict[Any, Any] = {},
+    yaml_options: Dict[Any, Any] | None = None,
 ) -> None:
     input_file = None
     output_file = None
@@ -746,7 +746,7 @@ def remarshal(
             json_indent=json_indent,
             ordered=ordered,
             stringify=stringify,
-            yaml_options=yaml_options,
+            yaml_options={} if yaml_options is None else yaml_options,
         )
 
         output_file.write(encoded)
