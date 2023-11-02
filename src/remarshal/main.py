@@ -370,7 +370,7 @@ def traverse(
     dict_callback: Callable[[List[Tuple[Any, Any]]], Any] = lambda x: dict(x),
     list_callback: Callable[[List[Tuple[Any, Any]]], Any] = identity,
     key_callback: Callable[[Any], Any] = identity,
-    instance_callbacks: List[Tuple[type, Any]] = [],
+    instance_callbacks: Sequence[Tuple[type, Any]] = (),
     default_callback: Callable[[Any], Any] = identity,
 ) -> Any:
     if isinstance(col, dict):
