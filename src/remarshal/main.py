@@ -65,10 +65,10 @@ FORMATS = ["cbor", "json", "msgpack", "toml", "yaml"]
 UTF_8 = "utf-8"
 
 RICH_ARGPARSE_STYLES: dict[str, StyleType] = {
-    "argparse.args": "cyan",
+    "argparse.args": "green",
     "argparse.groups": "default",
     "argparse.help": "default",
-    "argparse.metavar": "cyan",
+    "argparse.metavar": "green",
     "argparse.prog": "default",
     "argparse.syntax": "bold",
     "argparse.text": "default",
