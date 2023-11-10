@@ -185,8 +185,6 @@ select = [
 ]
 ignore = [
   "A002",   # builtin-argument-shadowing
-  "COM812", # missing-trailing-comma
-  "ISC001", # single-line-implicit-string-concatenation
   "PGH003", # blanket-type-ignore
 ]
 src = ["src", "tests"]
