@@ -46,11 +46,11 @@ You can install Remarshal using pip.
 python3 -m pip install --user remarshal
 ```
 
-You can install the current development version instead of a release.
+It is possible to install the current development version instead of a release.
 Prefer releases unless you have a reason to run the development version.
 
 ```sh
-python3 -m pip install --user git+https://github.com/remarshal-project/remarshal
+pipx install git+https://github.com/remarshal-project/remarshal
 ```
 
 ## Usage
