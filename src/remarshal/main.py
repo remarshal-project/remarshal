@@ -1,12 +1,13 @@
 #! /usr/bin/env python3
 # Remarshal, a utility to convert between serialization formats.
-# Copyright (c) 2014-2020, 2023 D. Bohdan
+# Copyright (c) 2014-2020, 2024 D. Bohdan
 # License: MIT
 
 from __future__ import annotations
 
 import argparse
 import datetime
+import importlib.metadata
 import json
 import re
 import sys
@@ -58,7 +59,7 @@ __all__ = [
     "remarshal",
     "traverse",
 ]
-__version__ = "1.0.0rc2"
+__version__ = importlib.metadata.version("remarshal")
 
 DEFAULT_MAX_VALUES = 1000000
 FORMATS = ["cbor", "json", "msgpack", "toml", "yaml"]
