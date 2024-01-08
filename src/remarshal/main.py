@@ -46,7 +46,6 @@ if TYPE_CHECKING:
     from rich.style import StyleType
 
 __all__ = [
-    "__version__",
     "DEFAULT_MAX_VALUES",
     "FORMATS",
     "RICH_ARGPARSE_STYLES",
@@ -59,7 +58,6 @@ __all__ = [
     "remarshal",
     "traverse",
 ]
-__version__ = importlib.metadata.version("remarshal")
 
 DEFAULT_MAX_VALUES = 1000000
 FORMATS = ["cbor", "json", "msgpack", "toml", "yaml"]
@@ -148,7 +146,12 @@ def _parse_command_line(argv: List[str]) -> argparse.Namespace:  # noqa: C901.
         formatter_class=RichHelpFormatter,
         prog="remarshal",
     )
-    parser.add_argument("-v", "--version", action="version", version=__version__)
+    parser.add_argument(
+        "-v",
+        "--version",
+        action="version",
+        version=importlib.metadata.version("remarshal"),
+    )
 
     input_group = parser.add_mutually_exclusive_group()
     input_group.add_argument("input", nargs="?", default="-", help="input file")
