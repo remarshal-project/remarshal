@@ -356,7 +356,7 @@ def _parse_command_line(argv: List[str]) -> argparse.Namespace:  # noqa: C901.
             "indent": args.yaml_indent,
             "width": args.yaml_width,
         }
-        for key in ["yaml_indent", "yaml_style", "yaml_width"]:
+        for key in ("yaml_indent", "yaml_style", "yaml_width"):
             del vars(args)[key]
 
     return args
@@ -371,7 +371,7 @@ def identity(x: Any) -> Any:
 
 def traverse(
     col: Any,
-    dict_callback: Callable[[List[Tuple[Any, Any]]], Any] = lambda x: dict(x),
+    dict_callback: Callable[[List[Tuple[Any, Any]]], Any] = dict,
     list_callback: Callable[[List[Tuple[Any, Any]]], Any] = identity,
     key_callback: Callable[[Any], Any] = identity,
     instance_callbacks: Sequence[Tuple[type, Any]] = (),
@@ -498,8 +498,7 @@ def _validate_value_count(doc: Document, *, maximum: int) -> None:
     count = 0
 
     def count_callback(x: Any) -> Any:
-        nonlocal count
-        nonlocal maximum
+        nonlocal count, maximum
 
         count += 1
         if count > maximum:
