@@ -17,11 +17,8 @@ from typing import (
     TYPE_CHECKING,
     Any,
     Callable,
-    Dict,
-    List,
     Mapping,
     Sequence,
-    Tuple,
     Union,
     cast,
 )
@@ -110,7 +107,7 @@ for loader in loaders:
 # === CLI ===
 
 
-def _argv0_to_format(argv0: str) -> Tuple[str, str]:
+def _argv0_to_format(argv0: str) -> tuple[str, str]:
     possible_format = "(" + "|".join(FORMATS) + ")"
     match = re.search("^" + possible_format + "2" + possible_format, argv0)
     from_, to = match.groups() if match else ("", "")
@@ -126,8 +123,8 @@ def _extension_to_format(path: str) -> str:
     return ext if ext in FORMATS else ""
 
 
-def _parse_command_line(argv: List[str]) -> argparse.Namespace:  # noqa: C901.
-    defaults: Dict[str, Any] = {
+def _parse_command_line(argv: Sequence[str]) -> argparse.Namespace:  # noqa: C901.
+    defaults: dict[str, Any] = {
         "json_indent": None,
         "ordered": True,
         "stringify": False,
@@ -371,10 +368,10 @@ def identity(x: Any) -> Any:
 
 def traverse(
     col: Any,
-    dict_callback: Callable[[List[Tuple[Any, Any]]], Any] = dict,
-    list_callback: Callable[[List[Tuple[Any, Any]]], Any] = identity,
+    dict_callback: Callable[[Sequence[tuple[Any, Any]]], Any] = dict,
+    list_callback: Callable[[Sequence[tuple[Any, Any]]], Any] = identity,
     key_callback: Callable[[Any], Any] = identity,
-    instance_callbacks: Sequence[Tuple[type, Any]] = (),
+    instance_callbacks: Sequence[tuple[type, Any]] = (),
     default_callback: Callable[[Any], Any] = identity,
 ) -> Any:
     if isinstance(col, dict):
@@ -554,7 +551,7 @@ def _encode_json(
     data: Document,
     *,
     ordered: bool,
-    indent: Union[bool, int, None],
+    indent: bool | int | None,
     stringify: bool,
 ) -> str:
     if indent is True:
@@ -637,7 +634,9 @@ def _encode_toml(
         raise ValueError(msg)
 
 
-def _encode_yaml(data: Document, *, ordered: bool, yaml_options: Dict[Any, Any]) -> str:
+def _encode_yaml(
+    data: Document, *, ordered: bool, yaml_options: Mapping[Any, Any]
+) -> str:
     dumper = _OrderedDumper if ordered else yaml.SafeDumper
     try:
         return yaml.dump(
@@ -658,10 +657,10 @@ def encode(
     output_format: str,
     data: Document,
     *,
-    json_indent: Union[int, None],
+    json_indent: int | None,
     ordered: bool,
     stringify: bool,
-    yaml_options: Dict[Any, Any],
+    yaml_options: Mapping[Any, Any],
 ) -> bytes:
     if output_format == "json":
         encoded = _encode_json(
@@ -706,10 +705,10 @@ def remarshal(
     max_values: int = DEFAULT_MAX_VALUES,
     ordered: bool = True,
     stringify: bool = False,
-    transform: Union[Callable[[Document], Document], None] = None,
-    unwrap: Union[str, None] = None,
-    wrap: Union[str, None] = None,
-    yaml_options: Dict[Any, Any] | None = None,
+    transform: Callable[[Document], Document] | None = None,
+    unwrap: str | None = None,
+    wrap: str | None = None,
+    yaml_options: Mapping[Any, Any] | None = None,
 ) -> None:
     input_file = None
     output_file = None

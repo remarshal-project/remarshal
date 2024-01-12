@@ -13,13 +13,16 @@ import re
 import secrets
 import sys
 from pathlib import Path
-from typing import Any, Callable, Dict, List, Tuple, Union
+from typing import TYPE_CHECKING, Any, Callable
 
 import cbor2  # type: ignore
 import pytest
 
 import remarshal
 from remarshal.main import _argv0_to_format, _parse_command_line
+
+if TYPE_CHECKING:
+    from collections.abc import Mapping, Sequence
 
 TEST_PATH = Path(__file__).resolve().parent
 
@@ -54,17 +57,17 @@ def assert_cbor_same(output: bytes, reference: bytes) -> None:
     assert output_dec == reference_dec
 
 
-def sorted_dict(pairs: List[Tuple[Any, Any]]) -> Dict[Any, Any]:
+def sorted_dict(pairs: Sequence[tuple[Any, Any]]) -> Mapping[Any, Any]:
     return dict(sorted(pairs))
 
 
-def toml_signature(data: bytes | str) -> List[str]:
+def toml_signature(data: bytes | str) -> list[str]:
     """Return a lossy representation of TOML example data for comparison."""
 
     def strip_more(line: str) -> str:
         return re.sub(r" *#.*$", "", line.strip()).replace(" ", "")
 
-    def sig_lines(lst: List[str]) -> List[str]:
+    def sig_lines(lst: Sequence[str]) -> list[str]:
         def should_drop(line: str) -> bool:
             return (
                 line.startswith("#")
@@ -91,13 +94,13 @@ def _convert_and_read(
     output_format: str,
     *,
     output_filename: str,
-    json_indent: Union[int, None] = 2,
+    json_indent: int | None = 2,
     ordered: bool = False,
     stringify: bool = False,
-    transform: Union[Callable[[remarshal.Document], remarshal.Document], None] = None,
-    unwrap: Union[str, None] = None,
-    wrap: Union[str, None] = None,
-    yaml_options: Dict[Any, Any] | None = None,
+    transform: Callable[[remarshal.Document], remarshal.Document] | None = None,
+    unwrap: str | None = None,
+    wrap: str | None = None,
+    yaml_options: Mapping[Any, Any] | None = None,
 ) -> bytes:
     remarshal.remarshal(
         input_format,
