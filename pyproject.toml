@@ -45,7 +45,7 @@ colorama = "^0.4.6"
 rich-argparse = "^1.4.0"
 
 [tool.poetry.group.dev.dependencies]
-ruff = "0.1.6"
+ruff = "0.2.1"
 tomli = "^2.0.1"
 types-python-dateutil = "^2.8.19.13"
 types-pyyaml = "^6.0.12.10"
@@ -126,6 +126,10 @@ help = "Run Pyright"
 pythonVersion = "3.8"
 
 [tool.ruff]
+src = ["src", "tests"]
+target-version = "py38"
+
+[tool.ruff.lint]
 select = [
   "A",      # flake8-builtins
   "AIR",    # Airflow
@@ -186,21 +190,20 @@ select = [
 ]
 ignore = [
   "A002",   # builtin-argument-shadowing
+  "ISC001", # single-line-implicit-string-concatenation
   "PGH003", # blanket-type-ignore
 ]
-src = ["src", "tests"]
-target-version = "py38"
 
-[tool.ruff.mccabe]
+[tool.ruff.lint.mccabe]
 max-complexity = 14
 
-[tool.ruff.pylint]
+[tool.ruff.lint.pylint]
 allow-magic-value-types = ["int", "str"]
 max-args = 12
 max-branches = 20
 max-statements = 100
 
-[tool.ruff.per-file-ignores]
+[tool.ruff.lint.per-file-ignores]
 "src/remarshal/main.py" = ["ARG001", "B904", "EM103", "RET506", "S506", "SIM115"]
 "tests/test_remarshal.py" = ["F841", "PT011", "SLF001"]
 "tests/*" = ["S101"]
