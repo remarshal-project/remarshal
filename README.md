@@ -2,20 +2,21 @@
 
 Convert between CBOR, JSON, MessagePack, TOML, and YAML.
 When installed, provides the command-line command `remarshal` as well as the short commands <code>{cbor,json,msgpack,toml,yaml}2<wbr>{cbor,json,msgpack,toml,yaml}</code>.
-You can perform format conversion, reformatting, and error detection using these commands.
+You can use these commands
+to perform format conversion, reformatting, and error detection.
 
 ## Known limitations
 
-* CBOR, MessagePack, and YAML with binary fields cannot be converted to JSON or TOML.
-Binary fields are converted between CBOR, MessagePack, and YAML.
-* TOML containing values of the [Local Date-Time](https://toml.io/en/v1.0.0-rc.1#local-date-time) type cannot be converted to CBOR.
-The Local Date type can only be converted to JSON and YAML.
+- CBOR, MessagePack, and YAML with binary fields cannot be converted to JSON or TOML.
+Binary fields can be converted between CBOR, MessagePack, and YAML.
+- TOML containing values of the [Local Date-Time](https://toml.io/en/v1.0.0#local-date-time) type cannot be converted to CBOR.
+The Local Date type can only be converted to JSON (as a string) and YAML.
 The Local Time type cannot be converted to any other format.
 Offset Date-Time and its equivalents can be converted between CBOR, MessagePack, TOML, and YAML.
 Keys of any date-time type are converted to string TOML keys.
-* Date and time types are converted to JSON strings.
+- Date and time types are converted to JSON strings.
 They cannot be safely roundtripped through JSON.
-* A YAML timestamp with only a date becomes a YAML timestamp or a TOML Local Date-Time for the midnight of that date.
+- A YAML timestamp with only a date becomes a YAML timestamp or a TOML Local Date-Time for the midnight of that date.
 This means you cannot roundtrip every YAML document through Remarshal.
 
 ## Installation
