@@ -19,7 +19,7 @@ import cbor2  # type: ignore
 import pytest
 
 import remarshal
-from remarshal.main import _argv0_to_format, _parse_command_line
+from remarshal.main import YAMLOptions, _argv0_to_format, _parse_command_line
 
 if TYPE_CHECKING:
     from collections.abc import Mapping, Sequence
@@ -95,12 +95,12 @@ def _convert_and_read(
     *,
     output_filename: str,
     json_indent: int | None = 2,
-    ordered: bool = False,
+    sort_keys: bool = False,
     stringify: bool = False,
     transform: Callable[[remarshal.Document], remarshal.Document] | None = None,
     unwrap: str | None = None,
     wrap: str | None = None,
-    yaml_options: Mapping[Any, Any] | None = None,
+    yaml_options: YAMLOptions | None = None,
 ) -> bytes:
     remarshal.remarshal(
         input_format,
@@ -108,7 +108,7 @@ def _convert_and_read(
         data_file_path(input_filename),
         output_filename,
         json_indent=json_indent,
-        ordered=ordered,
+        sort_keys=sort_keys,
         stringify=stringify,
         transform=transform,
         unwrap=unwrap,
@@ -137,7 +137,7 @@ class TestRemarshal:
             "example.msgpack",
             "msgpack",
             "msgpack",
-            ordered=True,
+            sort_keys=False,
         )
         reference = read_file("example.msgpack")
         assert output == reference
@@ -168,7 +168,6 @@ class TestRemarshal:
             "example.json",
             "json",
             "msgpack",
-            ordered=True,
             transform=patch,
         )
         reference = read_file("example.msgpack")
@@ -185,7 +184,6 @@ class TestRemarshal:
             "example.json",
             "json",
             "cbor",
-            ordered=True,
             transform=patch,
         )
 
@@ -245,7 +243,6 @@ class TestRemarshal:
             "example.toml",
             "toml",
             "msgpack",
-            transform=lambda col: remarshal.traverse(col, dict_callback=sorted_dict),
         )
         reference = read_file("example.msgpack")
         assert output == reference
@@ -274,7 +271,6 @@ class TestRemarshal:
             "example.yaml",
             "yaml",
             "msgpack",
-            ordered=True,
         )
         reference = read_file("example.msgpack")
         assert output == reference
@@ -315,8 +311,6 @@ class TestRemarshal:
             "example.cbor",
             "cbor",
             "msgpack",
-            ordered=True,
-            transform=lambda col: remarshal.traverse(col, dict_callback=sorted_dict),
         )
         reference = read_file("example.msgpack")
         assert output == reference
@@ -377,28 +371,28 @@ class TestRemarshal:
 
     def test_yaml_style_single_quote(self, convert_and_read) -> None:
         output = convert_and_read(
-            "long-line.json", "json", "yaml", yaml_options={"default_style": "'"}
+            "long-line.json", "json", "yaml", yaml_options=YAMLOptions(style="'")
         )
         reference = read_file("long-line-single-quote.yaml")
         assert output == reference
 
     def test_yaml_style_double_quote(self, convert_and_read) -> None:
         output = convert_and_read(
-            "long-line.json", "json", "yaml", yaml_options={"default_style": '"'}
+            "long-line.json", "json", "yaml", yaml_options=YAMLOptions(style='"')
         )
         reference = read_file("long-line-double-quote.yaml")
         assert output == reference
 
     def test_yaml_style_pipe(self, convert_and_read) -> None:
         output = convert_and_read(
-            "long-line.json", "json", "yaml", yaml_options={"default_style": "|"}
+            "long-line.json", "json", "yaml", yaml_options=YAMLOptions(style="|")
         )
         reference = read_file("long-line-pipe.yaml")
         assert output == reference
 
     def test_yaml_style_gt(self, convert_and_read) -> None:
         output = convert_and_read(
-            "long-line.json", "json", "yaml", yaml_options={"default_style": ">"}
+            "long-line.json", "json", "yaml", yaml_options=YAMLOptions(style=">")
         )
         reference = read_file("long-line-gt.yaml")
         assert output == reference
@@ -500,10 +494,10 @@ class TestRemarshal:
             )
 
     def test_ordered_simple(self, convert_and_read) -> None:
-        formats = ("json", "toml", "yaml")
+        formats = ("json", "toml")
         for from_ in formats:
             for to in formats:
-                output = convert_and_read("order." + from_, from_, to, ordered=True)
+                output = convert_and_read("order." + from_, from_, to)
                 reference = read_file("order." + to)
 
                 message = "failed for {} to {} ({!r} instead of {!r})".format(
@@ -514,10 +508,20 @@ class TestRemarshal:
                 )
                 assert output == reference, message
 
-    def test_ordered_yaml2yaml(self, convert_and_read) -> None:
-        output = convert_and_read("example.yaml", "yaml", "yaml", ordered=True)
-        reference = read_file("example.yaml")
-        assert output == reference
+    def test_sort_keys_simple(self, convert_and_read) -> None:
+        formats = ("json", "toml")
+        for from_ in formats:
+            for to in formats:
+                output = convert_and_read("sorted." + from_, from_, to, sort_keys=True)
+                reference = read_file("sorted." + to)
+
+                message = "failed for {} to {} ({!r} instead of {!r})".format(
+                    from_,
+                    to,
+                    output,
+                    reference,
+                )
+                assert output == reference, message
 
     def test_yaml2json_bool_null_key(self, convert_and_read) -> None:
         output = convert_and_read(
@@ -525,7 +529,6 @@ class TestRemarshal:
             "yaml",
             "json",
             json_indent=0,
-            ordered=True,
             stringify=True,
         )
         reference = read_file("bool-null-key.json")
@@ -536,7 +539,6 @@ class TestRemarshal:
             "bool-null-key.yaml",
             "yaml",
             "toml",
-            ordered=True,
             stringify=True,
         )
         reference = read_file("bool-null-key.toml")
@@ -547,7 +549,6 @@ class TestRemarshal:
             "timestamp-key.yaml",
             "yaml",
             "toml",
-            ordered=True,
             stringify=True,
         )
         reference = read_file("timestamp-key.toml")
@@ -561,21 +562,21 @@ class TestRemarshal:
         ).decode("utf-8")
         assert len([char for char in output if char == "\n"]) == 4
 
-    def test_yaml_width_30(self, convert_and_read) -> None:
+    def test_yaml_width_5(self, convert_and_read) -> None:
         output = convert_and_read(
-            "long-line.json", "json", "yaml", yaml_options={"width": 5}
-        ).decode("utf-8")
-        assert len([char for char in output if char == "\n"]) == 21
+            "long-line.json", "json", "yaml", yaml_options=YAMLOptions(width=5)
+        ).decode()
+        assert len([char for char in output if char == "\n"]) == 23
 
     def test_yaml_width_120(self, convert_and_read) -> None:
         output = convert_and_read(
-            "long-line.json", "json", "yaml", yaml_options={"width": 120}
+            "long-line.json", "json", "yaml", yaml_options=YAMLOptions(width=120)
         ).decode("utf-8")
         assert len([char for char in output if char == "\n"]) == 3
 
     def test_yaml_ident_5(self, convert_and_read) -> None:
         output = convert_and_read(
-            "long-line.json", "json", "yaml", yaml_options={"indent": 5}
+            "long-line.json", "json", "yaml", yaml_options=YAMLOptions(indent=5)
         ).decode("utf-8")
         assert set(re.findall(r"\n +", output)) == {"\n     ", "\n          "}
 
@@ -615,6 +616,16 @@ class TestRemarshal:
     def test_yaml_billion_laughs(self, convert_and_read) -> None:
         with pytest.raises(remarshal.TooManyValuesError):
             convert_and_read("lol.yml", "yaml", "json")
+
+    def test_yaml_norway_problem(self, convert_and_read) -> None:
+        output = convert_and_read(
+            "norway.yaml",
+            "yaml",
+            "json",
+            json_indent=None,
+        )
+        reference = read_file("norway.json")
+        assert output == reference
 
 
 if __name__ == "__main__":

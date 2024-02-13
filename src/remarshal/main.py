@@ -12,11 +12,14 @@ import json
 import re
 import sys
 import traceback
+from dataclasses import dataclass
+from io import StringIO
 from pathlib import Path
 from typing import (
     TYPE_CHECKING,
     Any,
     Callable,
+    Literal,
     Mapping,
     Sequence,
     Union,
@@ -25,7 +28,6 @@ from typing import (
 
 import cbor2  # type: ignore
 import colorama
-import dateutil.parser
 import tomlkit
 from rich_argparse import RichHelpFormatter
 
@@ -34,13 +36,22 @@ try:
 except ModuleNotFoundError:
     import tomli as tomllib
 
+import ruamel.yaml
+import ruamel.yaml.parser
+import ruamel.yaml.representer
+import ruamel.yaml.scanner
 import umsgpack
-import yaml
-import yaml.parser
-import yaml.scanner
 
 if TYPE_CHECKING:
     from rich.style import StyleType
+
+
+@dataclass(frozen=True)
+class YAMLOptions:
+    indent: int = 2
+    style: Literal["", "'", '"', "|", ">"] | None = None
+    width: int = 80
+
 
 __all__ = [
     "DEFAULT_MAX_VALUES",
@@ -48,6 +59,7 @@ __all__ = [
     "RICH_ARGPARSE_STYLES",
     "Document",
     "TooManyValuesError",
+    "YAMLOptions",
     "decode",
     "encode",
     "identity",
@@ -56,6 +68,11 @@ __all__ = [
     "traverse",
 ]
 
+CLI_DEFAULTS: dict[str, Any] = {
+    "json_indent": None,
+    "sort_keys": False,
+    "stringify": False,
+}
 DEFAULT_MAX_VALUES = 1000000
 FORMATS = ["cbor", "json", "msgpack", "toml", "yaml"]
 UTF_8 = "utf-8"
@@ -70,38 +87,6 @@ RICH_ARGPARSE_STYLES: dict[str, StyleType] = {
     "argparse.text": "default",
     "argparse.default": "default",
 }
-
-
-# === YAML ===
-
-
-# An ordered dumper for PyYAML.
-class _OrderedDumper(yaml.SafeDumper):
-    pass
-
-
-def _mapping_representer(dumper: Any, data: Any) -> Any:
-    return dumper.represent_mapping(
-        yaml.resolver.BaseResolver.DEFAULT_MAPPING_TAG, data.items()
-    )
-
-
-_OrderedDumper.add_representer(dict, _mapping_representer)
-
-
-# Fix loss of time zone information in PyYAML.
-# http://stackoverflow.com/questions/13294186/can-pyyaml-parse-iso8601-dates
-class _TimezoneLoader(yaml.SafeLoader):
-    pass
-
-
-def _timestamp_constructor(loader: Any, node: Any) -> datetime.datetime:
-    return dateutil.parser.parse(node.value)
-
-
-loaders = [_TimezoneLoader]
-for loader in loaders:
-    loader.add_constructor("tag:yaml.org,2002:timestamp", _timestamp_constructor)
 
 
 # === CLI ===
@@ -124,13 +109,6 @@ def _extension_to_format(path: str) -> str:
 
 
 def _parse_command_line(argv: Sequence[str]) -> argparse.Namespace:  # noqa: C901.
-    defaults: dict[str, Any] = {
-        "json_indent": None,
-        "ordered": True,
-        "stringify": False,
-        "yaml_options": {},
-    }
-
     me = Path(argv[0]).name
     argv0_from, argv0_to = _argv0_to_format(me)
     format_from_argv0 = argv0_to != ""
@@ -186,7 +164,7 @@ def _parse_command_line(argv: Sequence[str]) -> argparse.Namespace:  # noqa: C90
             dest="json_indent",
             metavar="<n>",
             type=int,
-            default=defaults["json_indent"],
+            default=CLI_DEFAULTS["json_indent"],
             help="JSON indentation",
         )
         parser.add_argument(
@@ -260,9 +238,8 @@ def _parse_command_line(argv: Sequence[str]) -> argparse.Namespace:  # noqa: C90
         parser.add_argument(
             "-s",
             "--sort-keys",
-            dest="ordered",
-            action="store_false",
-            help="sort JSON, TOML, YAML keys instead of preserving key order",
+            action="store_true",
+            help="sort JSON and TOML keys instead of preserving key order",
         )
 
     parser.add_argument(
@@ -294,13 +271,13 @@ def _parse_command_line(argv: Sequence[str]) -> argparse.Namespace:  # noqa: C90
             dest="yaml_indent",
             metavar="<n>",
             type=int,
-            default=2,
+            default=YAMLOptions().indent,
             help="YAML indentation",
         )
         parser.add_argument(
             "--yaml-style",
             dest="yaml_style",
-            default=None,
+            default=YAMLOptions().style,
             help="YAML formatting style",
             choices=["", "'", '"', "|", ">"],
         )
@@ -314,7 +291,7 @@ def _parse_command_line(argv: Sequence[str]) -> argparse.Namespace:  # noqa: C90
             dest="yaml_width",
             metavar="<n>",
             type=yaml_width,  # Allow "inf".
-            default=80,
+            default=YAMLOptions().width,
             help="YAML line width for long strings",
         )
 
@@ -343,16 +320,19 @@ def _parse_command_line(argv: Sequence[str]) -> argparse.Namespace:  # noqa: C90
             if args.output_format == "":
                 parser.error("Need an explicit output format")
 
-    for key, value in defaults.items():
+    for key, value in CLI_DEFAULTS.items():
         vars(args).setdefault(key, value)
 
-    # Wrap the yaml_* option.
+    # Wrap `yaml_*` options in `YAMLOptions` if they are present.
+    vars(args)["yaml_options"] = YAMLOptions()
+
     if "yaml_indent" in vars(args):
-        vars(args)["yaml_options"] = {
-            "default_style": args.yaml_style,
-            "indent": args.yaml_indent,
-            "width": args.yaml_width,
-        }
+        vars(args)["yaml_options"] = YAMLOptions(
+            indent=args.yaml_indent,
+            style=args.yaml_style,
+            width=args.yaml_width,
+        )
+
         for key in ("yaml_indent", "yaml_style", "yaml_width"):
             del vars(args)[key]
 
@@ -460,10 +440,11 @@ def _decode_toml(input_data: bytes) -> Document:
 
 def _decode_yaml(input_data: bytes) -> Document:
     try:
-        loader = _TimezoneLoader
-        doc = yaml.load(input_data, loader)
+        yaml = ruamel.yaml.YAML(typ="safe")
+        doc = yaml.load(input_data)
+
         return cast(Document, doc)
-    except (yaml.scanner.ScannerError, yaml.parser.ParserError) as e:
+    except (ruamel.yaml.scanner.ScannerError, ruamel.yaml.parser.ParserError) as e:
         msg = f"Cannot parse as YAML ({e})"
         raise ValueError(msg)
 
@@ -511,9 +492,19 @@ def _reject_special_keys(key: Any) -> Any:
     if isinstance(key, bool):
         msg = "boolean key"
         raise TypeError(msg)
+
+    if isinstance(key, datetime.date):
+        msg = "date key"
+        raise TypeError(msg)
+
     if isinstance(key, datetime.datetime):
         msg = "date-time key"
         raise TypeError(msg)
+
+    if isinstance(key, datetime.time):
+        msg = "time key"
+        raise TypeError(msg)
+
     if key is None:
         msg = "null key"
         raise TypeError(msg)
@@ -550,8 +541,8 @@ def _json_default(obj: Any) -> str:
 def _encode_json(
     data: Document,
     *,
-    ordered: bool,
     indent: bool | int | None,
+    sort_keys: bool,
     stringify: bool,
 ) -> str:
     if indent is True:
@@ -571,7 +562,7 @@ def _encode_json(
                 ensure_ascii=False,
                 indent=indent,
                 separators=separators,
-                sort_keys=not ordered,
+                sort_keys=sort_keys,
             )
             + "\n"
         )
@@ -591,7 +582,7 @@ def _encode_msgpack(data: Document) -> bytes:
 def _encode_toml(
     data: Mapping[Any, Any],
     *,
-    ordered: bool,
+    sort_keys: bool,
     stringify: bool,
 ) -> str:
     key_callback = _stringify_special_keys if stringify else _reject_special_keys
@@ -618,7 +609,7 @@ def _encode_toml(
                 key_callback=key_callback,
                 default_callback=default_callback,
             ),
-            sort_keys=not ordered,
+            sort_keys=sort_keys,
         )
     except AttributeError as e:
         if str(e) == "'list' object has no attribute 'as_string'":
@@ -634,21 +625,23 @@ def _encode_toml(
         raise ValueError(msg)
 
 
-def _encode_yaml(
-    data: Document, *, ordered: bool, yaml_options: Mapping[Any, Any]
-) -> str:
-    dumper = _OrderedDumper if ordered else yaml.SafeDumper
+def _encode_yaml(data: Document, *, yaml_options: YAMLOptions) -> str:
+    yaml = ruamel.yaml.YAML()
+    yaml.default_flow_style = False
+
+    yaml.default_style = yaml_options.style  # type: ignore
+    yaml.indent = yaml_options.indent
+    yaml.width = yaml_options.width
+
     try:
-        return yaml.dump(
+        out = StringIO()
+        yaml.dump(
             data,
-            None,
-            dumper,
-            allow_unicode=True,
-            default_flow_style=False,
-            encoding=None,
-            **yaml_options,
+            out,
         )
-    except yaml.representer.RepresenterError as e:
+
+        return out.getvalue()
+    except ruamel.yaml.representer.RepresenterError as e:
         msg = f"Cannot convert data to YAML ({e})"
         raise ValueError(msg)
 
@@ -658,15 +651,15 @@ def encode(
     data: Document,
     *,
     json_indent: int | None,
-    ordered: bool,
+    sort_keys: bool,
     stringify: bool,
-    yaml_options: Mapping[Any, Any],
+    yaml_options: YAMLOptions,
 ) -> bytes:
     if output_format == "json":
         encoded = _encode_json(
             data,
             indent=json_indent,
-            ordered=ordered,
+            sort_keys=sort_keys,
             stringify=stringify,
         ).encode(UTF_8)
     elif output_format == "msgpack":
@@ -678,11 +671,11 @@ def encode(
                 "be encoded as TOML"
             )
             raise TypeError(msg)
-        encoded = _encode_toml(data, ordered=ordered, stringify=stringify).encode(UTF_8)
-    elif output_format == "yaml":
-        encoded = _encode_yaml(data, ordered=ordered, yaml_options=yaml_options).encode(
+        encoded = _encode_toml(data, sort_keys=sort_keys, stringify=stringify).encode(
             UTF_8
         )
+    elif output_format == "yaml":
+        encoded = _encode_yaml(data, yaml_options=yaml_options).encode(UTF_8)
     elif output_format == "cbor":
         encoded = _encode_cbor(data)
     else:
@@ -703,12 +696,12 @@ def remarshal(
     *,
     json_indent: int | None = None,
     max_values: int = DEFAULT_MAX_VALUES,
-    ordered: bool = True,
+    sort_keys: bool = True,
     stringify: bool = False,
     transform: Callable[[Document], Document] | None = None,
     unwrap: str | None = None,
     wrap: str | None = None,
-    yaml_options: Mapping[Any, Any] | None = None,
+    yaml_options: YAMLOptions | None = None,
 ) -> None:
     input_file = None
     output_file = None
@@ -746,9 +739,9 @@ def remarshal(
             output_format,
             parsed,
             json_indent=json_indent,
-            ordered=ordered,
+            sort_keys=sort_keys,
             stringify=stringify,
-            yaml_options={} if yaml_options is None else yaml_options,
+            yaml_options=YAMLOptions() if yaml_options is None else yaml_options,
         )
 
         output_file.write(encoded)
@@ -770,7 +763,7 @@ def main() -> None:
             args.output,
             json_indent=args.json_indent,
             max_values=args.max_values,
-            ordered=args.ordered,
+            sort_keys=args.sort_keys,
             stringify=args.stringify,
             unwrap=args.unwrap,
             wrap=args.wrap,

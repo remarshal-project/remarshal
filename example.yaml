@@ -1,3 +1,25 @@
+title: TOML Example
+owner:
+  name: Tom Preston-Werner
+  organization: GitHub
+  bio: "GitHub Cofounder & CEO\nLikes tater tots and beer."
+  dob: 1979-05-27 07:32:00+00:00
+database:
+  server: 192.168.1.1
+  ports:
+  - 8001
+  - 8001
+  - 8002
+  connection_max: 5000
+  enabled: true
+servers:
+  alpha:
+    ip: 10.0.0.1
+    dc: eqdc10
+  beta:
+    ip: 10.0.0.2
+    dc: eqdc10
+    country: 中国
 clients:
   data:
   - - gamma
@@ -7,33 +29,9 @@ clients:
   hosts:
   - alpha
   - omega
-database:
-  connection_max: 5000
-  enabled: true
-  ports:
-  - 8001
-  - 8001
-  - 8002
-  server: 192.168.1.1
-owner:
-  bio: 'GitHub Cofounder & CEO
-
-    Likes tater tots and beer.'
-  dob: 1979-05-27 07:32:00+00:00
-  name: Tom Preston-Werner
-  organization: GitHub
 products:
 - name: Hammer
   sku: 738594937
-- color: gray
-  name: Nail
+- name: Nail
   sku: 284758393
-servers:
-  alpha:
-    dc: eqdc10
-    ip: 10.0.0.1
-  beta:
-    country: 中国
-    dc: eqdc10
-    ip: 10.0.0.2
-title: TOML Example
+  color: gray

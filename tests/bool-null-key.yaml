@@ -1,4 +1,4 @@
-on: foo
-off: oof
+True: foo
+false: oof
 another: bar
 NULL: "nothin'"
