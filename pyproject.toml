@@ -1,3 +1,7 @@
+[build-system]
+requires = ["poetry-core>=1.0"]
+build-backend = "poetry.core.masonry.api"
+
 [tool.poetry]
 name = "remarshal"
 version = "1.0.0rc2"
@@ -51,10 +55,6 @@ pyright = "1.1.350"
 pytest = "^8"
 pytest-cov = "^4.1.0"
 
-[build-system]
-requires = ["poetry-core>=1.0"]
-build-backend = "poetry.core.masonry.api"
-
 [tool.poetry.scripts]
 remarshal        = 'remarshal.main:main'
 cbor2cbor        = 'remarshal.main:main'
@@ -83,8 +83,11 @@ yaml2msgpack     = 'remarshal.main:main'
 yaml2toml        = 'remarshal.main:main'
 yaml2yaml        = 'remarshal.main:main'
 
+[tool.codespell]
+quiet-level = 3
+
 [tool.poe.env]
-"PYTHON_SOURCES" = "src/remarshal/__init__.py src/remarshal/__main__.py src/remarshal/main.py tests/__init__.py tests/test_remarshal.py"
+"PYTHON_SOURCES" = "src/ tests/"
 
 [tool.poe.tasks.check]
 sequence = ["format", "codespell", "lint", "type"]
@@ -92,12 +95,12 @@ help = "Run the formatter, then all static checks"
 ignore_fail = "return_non_zero"
 
 [tool.poe.tasks.codespell]
-cmd = "codespell --quiet-level 1 ${PYTHON_SOURCES}"
+cmd = "codespell ${PYTHON_SOURCES}"
 help = "Run codespell"
 
 [tool.poe.tasks.files]
 cmd = "echo ${PYTHON_SOURCES}"
-help = "Print the list of files used for static checks"
+help = "Print the list of files and directories used for static checks"
 
 [tool.poe.tasks.format]
 cmd = "ruff format ${PYTHON_SOURCES}"
