@@ -1,18 +1,27 @@
 # Remarshal
 
 Convert between CBOR, JSON, MessagePack, TOML, and YAML.
-When installed, provides the command-line command `remarshal` as well as the short commands <code>{cbor,json,msgpack,toml,yaml}2<wbr>{cbor,json,msgpack,toml,yaml}</code>.
-You can use these commands
-to perform format conversion, reformatting, and error detection.
+When installed,
+Remarshal provides the command-line command `remarshal`
+as well as the short commands
+<code>{cbor,json,msgpack,toml,yaml}2<wbr>{cbor,json,msgpack,toml,yaml}</code>.
+You can use the commands
+to convert between formats,
+reformat,
+and detect errors.
 
 ## Known limitations
 
-- CBOR, MessagePack, and YAML with binary fields cannot be converted to JSON or TOML.
+- CBOR, MessagePack, and YAML with binary fields cannot be converted
+to JSON or TOML.
 Binary fields can be converted between CBOR, MessagePack, and YAML.
-- TOML containing values of the [Local Date-Time](https://toml.io/en/v1.0.0#local-date-time) type cannot be converted to CBOR.
+- TOML containing values of the
+[Local Date-Time](https://toml.io/en/v1.0.0#local-date-time)
+type cannot be converted to CBOR.
 The Local Date type can only be converted to JSON (as a string) and YAML.
 The Local Time type cannot be converted to any other format.
-Offset Date-Time and its equivalents can be converted between CBOR, MessagePack, TOML, and YAML.
+Offset Date-Time and its equivalents can be converted between
+CBOR, MessagePack, TOML, and YAML.
 - The date and time types have no JSON counterpart.
 They are converted to JSON strings with the `--stringify` option.
 They cannot be safely roundtripped through JSON.
@@ -20,9 +29,12 @@ They cannot be safely roundtripped through JSON.
 ## Installation
 
 You will need Python 3.8 or later.
-Earlier versions of Python 3 do not work.
+Earlier versions of Python 3 will not work.
 
-The recommended way to run Remarshal is to install the latest release [from PyPI](https://pypi.org/project/remarshal/) with [pipx](https://github.com/pypa/pipx).
+The recommended way to run Remarshal is to install the latest release
+[from PyPI](https://pypi.org/project/remarshal/)
+with
+[pipx](https://github.com/pypa/pipx).
 
 ```sh
 pipx install remarshal
@@ -100,26 +112,42 @@ options:
 ```
 
 Instead of `remarshal` with format arguments,
-you can use a short command <code>{cbor,json,msgpack,toml,yaml}2<wbr>{cbor,json,msgpack,toml,yaml}</code>.
-The `remarshal` command as well as the short commands exit with status 0 on success, 1 on operational failure, and 2 when they fail to parse the command line.
+you can use a short command
+<code>{cbor,json,msgpack,toml,yaml}2<wbr>{cbor,json,msgpack,toml,yaml}</code>.
+The `remarshal` command as well as the short commands
+exit with status 0 on success,
+1 on operational failure,
+and 2 on failure to parse the command line.
 
-If no input argument `input`/`-i input` is given or its value is `-`, Remarshal reads input data from standard input.
-Similarly, with no `output`/`-o output` or an output argument that is `-`, it writes the result to standard output.
+If no input argument `input`/`-i input` is given or its value is `-`,
+Remarshal reads input data from standard input.
+Similarly,
+with no `output`/`-o output` or an output argument that is `-`,
+Remarshal writes the result to standard output.
 
 ### Wrappers
 
-The arguments `--wrap` and `--unwrap` are available to solve the problem of converting CBOR, JSON, MessagePack, and YAML data to TOML if the top-level element of the data is not of a dictionary type
-(i.e., not a map in CBOR and MessagePack, an object in JSON, or an associative array in YAML).
+The arguments `--wrap` and `--unwrap` are available
+to solve the problem of converting CBOR, JSON, MessagePack, and YAML data to TOML
+if the top-level element of the data is not of a dictionary type
+(i.e., not a map in CBOR and MessagePack,
+an object in JSON,
+or an associative array in YAML).
 You cannot represent such data as TOML directly;
 the data must be wrapped in a dictionary first.
-Passing the flag `--wrap some-key` to `remarshal` or one of its short commands wraps the input data in a "wrapper" dictionary with one key, `some-key`, with the input data as its value.
+Passing the flag `--wrap some-key` to `remarshal` or one of its short commands
+wraps the input data in a "wrapper" dictionary with one key, `some-key`, l
+with the input data as its value.
 The flag `--unwrap some-key` does the opposite:
-only the value stored under the key `some-key` in the top-level dictionary element of the input data is converted to the target format and output;
-the rest of the input is ignored.
+only the value stored under the key `some-key`
+in the top-level dictionary element of the input data
+is converted to the target format and output;
+the rest of the input is discarded.
 If the top-level element is not a dictionary or does not have the key `some-key`,
 `--unwrap some-key` causes an error.
 
-The following shell transcript demonstrates the problem and how `--wrap` and `--unwrap` solve it:
+The following shell transcript demonstrates the problem
+and how `--wrap` and `--unwrap` solve it:
 
 ```
 $ echo '[{"a":"b"},{"c":[1,2,3]}]' | remarshal --if json --of toml
@@ -147,6 +175,28 @@ $ remarshal test.toml --of json --unwrap main
 
 ```
 $ remarshal example.toml --of yaml
+title: TOML Example
+owner:
+  name: Tom Preston-Werner
+  organization: GitHub
+  bio: "GitHub Cofounder & CEO\nLikes tater tots and beer."
+  dob: 1979-05-27 07:32:00+00:00
+database:
+  server: 192.168.1.1
+  ports:
+  - 8001
+  - 8001
+  - 8002
+  connection_max: 5000
+  enabled: true
+servers:
+  alpha:
+    ip: 10.0.0.1
+    dc: eqdc10
+  beta:
+    ip: 10.0.0.2
+    dc: eqdc10
+    country: 中国
 clients:
   data:
   - - gamma
@@ -156,80 +206,103 @@ clients:
   hosts:
   - alpha
   - omega
-database:
-  connection_max: 5000
-  enabled: true
-  ports:
-  - 8001
-  - 8001
-  - 8002
-  server: 192.168.1.1
-owner:
-  bio: 'GitHub Cofounder & CEO
-
-    Likes tater tots and beer.'
-  dob: 1979-05-27 07:32:00+00:00
-  name: Tom Preston-Werner
-  organization: GitHub
 products:
 - name: Hammer
   sku: 738594937
-- color: gray
-  name: Nail
+- name: Nail
   sku: 284758393
-servers:
-  alpha:
-    dc: eqdc10
-    ip: 10.0.0.1
-  beta:
-    country: 中国
-    dc: eqdc10
-    ip: 10.0.0.2
-title: TOML Example
-
-$ curl -s 'http://api.openweathermap.org/data/2.5/weather?q=Kiev,ua' \
-  | remarshal --if json --of toml
-base = "cmc stations"
-cod = 200
-dt = 1412532000
-id = 703448
-name = "Kiev"
-
-[clouds]
-all = 44
-
-[coord]
-lat = 50.42999999999999972
-lon = 30.51999999999999957
-
-[main]
-humidity = 66
-pressure = 1026
-temp = 283.49000000000000909
-temp_max = 284.14999999999997726
-temp_min = 283.14999999999997726
-
-[sys]
-country = "UA"
-id = 7358
-message = 0.24370000000000000
-sunrise = 1412481902
-sunset = 1412522846
-type = 1
-
-[[weather]]
-description = "scattered clouds"
-icon = "03n"
-id = 802
-main = "Clouds"
-
-[wind]
-deg = 80
-speed = 2
+  color: gray
 ```
+
+```
+$ curl -f 'https://archive-api.open-meteo.com/v1/era5?latitude=50.43&longitude=30.52&start_date=2014-10-05&end_date=2014-10-05&hourly=temperature_2m' \
+  | remarshal --from json --to toml \
+  | taplo fmt - \
+  ;
+latitude = 50.439365
+longitude = 30.476192
+generationtime_ms = 0.04291534423828125
+utc_offset_seconds = 0
+timezone = "GMT"
+timezone_abbreviation = "GMT"
+elevation = 147.0
+
+[hourly_units]
+time = "iso8601"
+temperature_2m = "°C"
+
+[hourly]
+time = [
+  "2014-10-05T00:00",
+  "2014-10-05T01:00",
+  "2014-10-05T02:00",
+  "2014-10-05T03:00",
+  "2014-10-05T04:00",
+  "2014-10-05T05:00",
+  "2014-10-05T06:00",
+  "2014-10-05T07:00",
+  "2014-10-05T08:00",
+  "2014-10-05T09:00",
+  "2014-10-05T10:00",
+  "2014-10-05T11:00",
+  "2014-10-05T12:00",
+  "2014-10-05T13:00",
+  "2014-10-05T14:00",
+  "2014-10-05T15:00",
+  "2014-10-05T16:00",
+  "2014-10-05T17:00",
+  "2014-10-05T18:00",
+  "2014-10-05T19:00",
+  "2014-10-05T20:00",
+  "2014-10-05T21:00",
+  "2014-10-05T22:00",
+  "2014-10-05T23:00",
+]
+temperature_2m = [
+  5.7,
+  5.3,
+  5.0,
+  4.8,
+  4.6,
+  4.6,
+  7.0,
+  8.9,
+  10.8,
+  12.2,
+  13.3,
+  13.9,
+  13.9,
+  13.7,
+  13.3,
+  12.3,
+  11.1,
+  10.2,
+  9.4,
+  8.5,
+  8.2,
+  7.9,
+  8.0,
+  7.8,
+]
+```
+
+(This example uses
+[`taplo fmt`](https://taplo.tamasfe.dev/cli/usage/formatting.html)
+to reformat the TOML
+and break up long lines containing the arrays.
+Remarshal does not limit TOML line length.)
 
 ## License
 
-MIT. See the file `LICENSE`.
+MIT.
+See the file
+[`LICENSE`](LICENSE).
 
-`example.toml` from <https://github.com/toml-lang/toml>. `example.json`, `example.msgpack`, `example.cbor`, `example.yml`, `tests/bin.msgpack`, and `tests/bin.yml` are derived from it.
+`example.toml` from <https://github.com/toml-lang/toml>.
+`example.json`,
+`example.msgpack`,
+`example.cbor`,
+`example.yml`,
+`tests/bin.msgpack`,
+and `tests/bin.yml`
+are derived from it.
