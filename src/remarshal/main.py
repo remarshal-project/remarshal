@@ -49,7 +49,7 @@ if TYPE_CHECKING:
 @dataclass(frozen=True)
 class YAMLOptions:
     indent: int = 2
-    style: Literal["", "'", '"', "|", ">"] | None = None
+    style: Literal["", "'", '"', "|", ">"] = ""
     width: int = 80
 
 
