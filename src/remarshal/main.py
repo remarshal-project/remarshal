@@ -181,8 +181,8 @@ def _parse_command_line(argv: Sequence[str]) -> argparse.Namespace:  # noqa: C90
             dest="stringify",
             action="store_true",
             help=(
-                "turn into strings boolean, date-time, and null keys for JSON "
-                "and TOML and null values for TOML"
+                "turn into strings: boolean and null keys and date-time keys "
+                "and values for JSON; boolean, date-time, and null keys and null values for TOML"
             ),
         )
 
@@ -531,10 +531,10 @@ def _encode_cbor(data: Document) -> bytes:
         raise ValueError(msg)
 
 
-def _json_default(obj: Any) -> str:
+def _json_default_stringify(obj: Any) -> str:
     if isinstance(obj, datetime.datetime):
         return obj.isoformat()
-    msg = f"{obj!r} is not JSON-serializable"
+    msg = f"{obj!r} is not JSON serializable"
     raise TypeError(msg)
 
 
@@ -549,7 +549,13 @@ def _encode_json(
         indent = 2
 
     separators = (",", ": " if indent else ":")
-    key_callback = _stringify_special_keys if stringify else _reject_special_keys
+
+    if stringify:
+        default_callback = _json_default_stringify
+        key_callback = _stringify_special_keys
+    else:
+        default_callback = None
+        key_callback = _reject_special_keys
 
     try:
         return (
@@ -558,7 +564,7 @@ def _encode_json(
                     data,
                     key_callback=key_callback,
                 ),
-                default=_json_default,
+                default=default_callback,
                 ensure_ascii=False,
                 indent=indent,
                 separators=separators,

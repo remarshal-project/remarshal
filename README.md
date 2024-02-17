@@ -90,8 +90,9 @@ options:
 --from {cbor,json,msgpack,toml,yaml}
                         input format
   --json-indent <n>     JSON indentation
-  -k, --stringify       turn into strings boolean, date-time, and null keys
-                        for JSON and TOML and null values for TOML
+  -k, --stringify       turn into strings: boolean and null keys and date-time
+                        keys and values for JSON; boolean, date-time, and null
+                        keys and null values for TOML
   --max-values <n>      maximum number of values in input data (default
                         1000000, negative for unlimited)
   -o <output>, --output <output>

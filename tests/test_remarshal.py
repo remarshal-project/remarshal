@@ -210,7 +210,7 @@ class TestRemarshal:
         assert output == reference_patched
 
     def test_msgpack2json(self, convert_and_read) -> None:
-        output = convert_and_read("example.msgpack", "msgpack", "json")
+        output = convert_and_read("example.msgpack", "msgpack", "json", stringify=True)
         reference = read_file("example.json")
         assert output == reference
 
@@ -234,7 +234,7 @@ class TestRemarshal:
         assert_cbor_same(output, reference)
 
     def test_toml2json(self, convert_and_read) -> None:
-        output = convert_and_read("example.toml", "toml", "json")
+        output = convert_and_read("example.toml", "toml", "json", stringify=True)
         reference = read_file("example.json")
         assert output == reference
 
@@ -262,7 +262,7 @@ class TestRemarshal:
         assert_cbor_same(output, reference)
 
     def test_yaml2json(self, convert_and_read) -> None:
-        output = convert_and_read("example.yaml", "yaml", "json")
+        output = convert_and_read("example.yaml", "yaml", "json", stringify=True)
         reference = read_file("example.json")
         assert output == reference
 
@@ -290,7 +290,7 @@ class TestRemarshal:
         assert_cbor_same(output, reference)
 
     def test_cbor2json(self, convert_and_read) -> None:
-        output = convert_and_read("example.cbor", "cbor", "json")
+        output = convert_and_read("example.cbor", "cbor", "json", stringify=True)
         reference = read_file("example.json")
         assert output == reference
 
