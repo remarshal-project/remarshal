@@ -182,7 +182,8 @@ def _parse_command_line(argv: Sequence[str]) -> argparse.Namespace:  # noqa: C90
             action="store_true",
             help=(
                 "turn into strings: boolean and null keys and date-time keys "
-                "and values for JSON; boolean, date-time, and null keys and null values for TOML"
+                "and values for JSON; boolean, date-time, and null keys and "
+                "null values for TOML"
             ),
         )
 
