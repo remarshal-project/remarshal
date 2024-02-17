@@ -577,10 +577,21 @@ def _encode_json(
         raise ValueError(msg)
 
 
+def _msgpack_reject_local_datetime(obj: datetime.datetime) -> None:
+    if obj.tzinfo is None:
+        msg = "'datetime.datetime' without a time zone is unsupported"
+        raise TypeError(msg)
+
+
 def _encode_msgpack(data: Document) -> bytes:
     try:
+        traverse(
+            data,
+            instance_callbacks=[(datetime.datetime, _msgpack_reject_local_datetime)],
+        )
+
         return umsgpack.packb(data)
-    except umsgpack.UnsupportedTypeException as e:
+    except (TypeError, umsgpack.UnsupportedTypeException) as e:
         msg = f"Cannot convert data to MessagePack ({e})"
         raise ValueError(msg)
 
