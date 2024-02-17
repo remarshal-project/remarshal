@@ -627,6 +627,113 @@ class TestRemarshal:
         reference = read_file("norway.json")
         assert output == reference
 
+    def test_toml2cbor_date(self, convert_and_read) -> None:
+        with pytest.raises(ValueError):
+            convert_and_read("date.toml", "toml", "cbor")
+
+    def test_toml2json_date(self, convert_and_read) -> None:
+        with pytest.raises(ValueError):
+            convert_and_read("date.toml", "toml", "json")
+
+    def test_toml2json_date_stringify(self, convert_and_read) -> None:
+        output = convert_and_read("date.toml", "toml", "json", stringify=True)
+        reference = read_file("date.json")
+        assert output == reference
+
+    def test_toml2msgpack_date(self, convert_and_read) -> None:
+        with pytest.raises(ValueError):
+            convert_and_read("date.toml", "toml", "msgpack")
+
+    def test_toml2toml_date(self, convert_and_read) -> None:
+        output = convert_and_read("date.toml", "toml", "toml")
+        reference = read_file("date.toml")
+
+    def test_toml2yaml_date(self, convert_and_read) -> None:
+        output = convert_and_read("date.toml", "toml", "yaml")
+        reference = read_file("date.yaml")
+
+    def test_toml2cbor_datetime_local(self, convert_and_read) -> None:
+        with pytest.raises(ValueError):
+            convert_and_read("datetime-local.toml", "toml", "cbor")
+
+    def test_toml2json_datetime_local(self, convert_and_read) -> None:
+        with pytest.raises(ValueError):
+            convert_and_read("datetime-local.toml", "toml", "json")
+
+    def test_toml2json_datetime_local_stringify(self, convert_and_read) -> None:
+        output = convert_and_read("datetime-local.toml", "toml", "json", stringify=True)
+        reference = read_file("datetime-local.json")
+        assert output == reference
+
+    def test_toml2msgpack_datetime_local(self, convert_and_read) -> None:
+        with pytest.raises(ValueError):
+            convert_and_read("datetime-local.toml", "toml", "msgpack")
+
+    def test_toml2toml_datetime_local(self, convert_and_read) -> None:
+        output = convert_and_read("datetime-local.toml", "toml", "toml")
+        reference = read_file("datetime-local.toml")
+        assert output == reference
+
+    def test_toml2yaml_datetime_local(self, convert_and_read) -> None:
+        output = convert_and_read("datetime-local.toml", "toml", "yaml")
+        reference = read_file("datetime-local.yaml")
+        assert output == reference
+
+    def test_toml2cbor_datetime_tz(self, convert_and_read) -> None:
+        output = convert_and_read("datetime-tz.toml", "toml", "cbor")
+        reference = read_file("datetime-tz.cbor")
+        assert output == reference
+
+    def test_toml2json_datetime_tz(self, convert_and_read) -> None:
+        with pytest.raises(ValueError):
+            convert_and_read("datetime-tz.toml", "toml", "json")
+
+    def test_toml2json_datetime_tz_stringify(self, convert_and_read) -> None:
+        output = convert_and_read("datetime-tz.toml", "toml", "json", stringify=True)
+        reference = read_file("datetime-tz.json")
+        assert output == reference
+
+    def test_toml2msgpack_datetime_tz(self, convert_and_read) -> None:
+        output = convert_and_read("datetime-tz.toml", "toml", "msgpack")
+        reference = read_file("datetime-tz.msgpack")
+        assert output == reference
+
+    def test_toml2toml_datetime_tz(self, convert_and_read) -> None:
+        output = convert_and_read("datetime-tz.toml", "toml", "toml")
+        reference = read_file("datetime-tz.toml")
+        assert output == reference
+
+    def test_toml2yaml_datetime_tz(self, convert_and_read) -> None:
+        output = convert_and_read("datetime-tz.toml", "toml", "yaml")
+        reference = read_file("datetime-tz.yaml")
+        assert output == reference
+
+    def test_toml2cbor_time(self, convert_and_read) -> None:
+        with pytest.raises(ValueError):
+            convert_and_read("time.toml", "toml", "cbor")
+
+    def test_toml2json_time(self, convert_and_read) -> None:
+        with pytest.raises(ValueError):
+            convert_and_read("time.toml", "toml", "json")
+
+    def test_toml2json_time_stringify(self, convert_and_read) -> None:
+        output = convert_and_read("time.toml", "toml", "json", stringify=True)
+        reference = read_file("time.json")
+        assert output == reference
+
+    def test_toml2msgpack_time(self, convert_and_read) -> None:
+        with pytest.raises(ValueError):
+            convert_and_read("time.toml", "toml", "msgpack")
+
+    def test_toml2toml_time_stringify(self, convert_and_read) -> None:
+        output = convert_and_read("time.toml", "toml", "toml")
+        reference = read_file("time.toml")
+        assert output == reference
+
+    def test_toml2yaml_time(self, convert_and_read) -> None:
+        with pytest.raises(ValueError):
+            convert_and_read("time.toml", "toml", "yaml")
+
 
 if __name__ == "__main__":
     pytest.main()
