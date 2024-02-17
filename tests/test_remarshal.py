@@ -94,7 +94,7 @@ def _convert_and_read(
     output_format: str,
     *,
     output_filename: str,
-    json_indent: int | None = 2,
+    json_indent: bool | int | None = True,
     sort_keys: bool = False,
     stringify: bool = False,
     transform: Callable[[remarshal.Document], remarshal.Document] | None = None,

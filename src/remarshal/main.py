@@ -56,6 +56,7 @@ class YAMLOptions:
 __all__ = [
     "DEFAULT_MAX_VALUES",
     "FORMATS",
+    "JSON_INDENT_TRUE",
     "RICH_ARGPARSE_STYLES",
     "Document",
     "TooManyValuesError",
@@ -75,6 +76,7 @@ CLI_DEFAULTS: dict[str, Any] = {
 }
 DEFAULT_MAX_VALUES = 1000000
 FORMATS = ["cbor", "json", "msgpack", "toml", "yaml"]
+JSON_INDENT_TRUE = 4
 UTF_8 = "utf-8"
 
 RICH_ARGPARSE_STYLES: dict[str, StyleType] = {
@@ -547,7 +549,7 @@ def _encode_json(
     stringify: bool,
 ) -> str:
     if indent is True:
-        indent = 2
+        indent = JSON_INDENT_TRUE
 
     separators = (",", ": " if indent else ":")
 
@@ -668,7 +670,7 @@ def encode(
     output_format: str,
     data: Document,
     *,
-    json_indent: int | None,
+    json_indent: bool | int | None,
     sort_keys: bool,
     stringify: bool,
     yaml_options: YAMLOptions,
@@ -712,7 +714,7 @@ def remarshal(
     input: Path | str,
     output: Path | str,
     *,
-    json_indent: int | None = None,
+    json_indent: bool | int | None = None,
     max_values: int = DEFAULT_MAX_VALUES,
     sort_keys: bool = True,
     stringify: bool = False,
