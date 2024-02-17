@@ -515,7 +515,7 @@ def _reject_special_keys(key: Any) -> Any:
 def _stringify_special_keys(key: Any) -> Any:
     if isinstance(key, bool):
         return "true" if key else "false"
-    if isinstance(key, datetime.datetime):
+    if isinstance(key, (datetime.date, datetime.datetime, datetime.time)):
         return key.isoformat()
     if key is None:
         return "null"
@@ -532,7 +532,7 @@ def _encode_cbor(data: Document) -> bytes:
 
 
 def _json_default_stringify(obj: Any) -> str:
-    if isinstance(obj, datetime.datetime):
+    if isinstance(obj, (datetime.date, datetime.datetime, datetime.time)):
         return obj.isoformat()
     msg = f"{obj!r} is not JSON serializable"
     raise TypeError(msg)
