@@ -628,8 +628,9 @@ class TestRemarshal:
         assert output == reference
 
     def test_toml2cbor_date(self, convert_and_read) -> None:
-        with pytest.raises(ValueError):
-            convert_and_read("date.toml", "toml", "cbor")
+        output = convert_and_read("date.toml", "toml", "cbor")
+        reference = read_file("date.cbor")
+        assert output == reference
 
     def test_toml2json_date(self, convert_and_read) -> None:
         with pytest.raises(ValueError):
