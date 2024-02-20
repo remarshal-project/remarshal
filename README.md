@@ -10,21 +10,47 @@ to convert between formats,
 reformat,
 and detect errors.
 
-## Known limitations
+## Known limitations and quirks
+
+There are limitations
+on what data can be converted
+between what formats.
 
 - CBOR, MessagePack, and YAML with binary fields cannot be converted
-to JSON or TOML.
-Binary fields can be converted between CBOR, MessagePack, and YAML.
-- TOML containing values of the
-[Local Date-Time](https://toml.io/en/v1.0.0#local-date-time)
-type cannot be converted to CBOR.
-The Local Date type can only be converted to JSON (as a string) and YAML.
-The Local Time type cannot be converted to any other format.
-Offset Date-Time and its equivalents can be converted between
-CBOR, MessagePack, TOML, and YAML.
-- The date and time types have no JSON counterpart.
-They are converted to JSON strings with the `--stringify` option.
-They cannot be safely roundtripped through JSON.
+  to JSON or TOML.
+  Binary fields can be converted between CBOR, MessagePack, and YAML.
+- The following date-time value conversions are possible:
+  - Local dates are converted between
+    [CBOR RFC 8943](https://www.rfc-editor.org/rfc/rfc8943.html)
+    dates (tag 1004),
+    [TOML Local Dates](https://toml.io/en/v1.0.0#local-date),
+    and
+    [YAML timestamps](https://yaml.org/type/timetamp.html)
+    without a time or a time zone.
+  - Local date-time is converted between
+    [TOML Local Date-Time](https://toml.io/en/v1.0.0#local-date-time)
+    and
+    [YAML timestamps](https://yaml.org/type/timestamp.html)
+    without a time zone.
+  - Date-time with a time zone
+    is converted between
+    [CBOR standard date-time strings](https://www.rfc-editor.org/rfc/rfc8949.html#stringdatetimesect)
+    (tag 0),
+    the
+    [MessagePack Timestamp extension type](https://github.com/msgpack/msgpack/blob/master/spec.md#timestamp-extension-type),
+    [TOML Offset Date-Times](https://toml.io/en/v1.0.0#offset-date-time),
+    and
+    [YAML timestamps](https://yaml.org/type/timestamp.html) with a time zone.
+- [TOML Local Time](https://toml.io/en/v1.0.0#local-time)
+  cannot be converted to a date-time in another format.
+- All date-time types can be converted to JSON
+  with the `-k`/`--stringify` option,
+  which turns them into strings.
+- Contrary to the
+  [YAML timestamp draft spec](https://yaml.org/type/timestamp.html),
+  Remarshal converts YAML dates to TOML Local Dates instead of TOML Offset Dates
+  in the UTC time zone.
+  It converts TOML Local Dates to YAML dates.
 
 ## Installation
 
@@ -101,8 +127,7 @@ options:
 {cbor,json,msgpack,toml,yaml}, -t {cbor,json,msgpack,toml,yaml},
 --to {cbor,json,msgpack,toml,yaml}
                         output format
-  -s, --sort-keys       sort JSON, TOML, YAML keys instead of preserving key
-                        order
+  -s, --sort-keys       sort JSON and TOML keys instead of preserving key order
   --unwrap <key>        only output the data stored under the given key
   --verbose             print debug information when an error occurs
   --wrap <key>          wrap the data in a map type with the given key
