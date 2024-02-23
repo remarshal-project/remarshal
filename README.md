@@ -5,7 +5,7 @@ When installed,
 Remarshal provides the command-line command `remarshal`
 as well as the short commands
 <code>{cbor,json,msgpack,toml,yaml}2<wbr>{cbor,json,msgpack,toml,yaml}</code>.
-You can use the commands
+You can use these commands
 to convert between formats,
 reformat,
 and detect errors.
@@ -77,13 +77,13 @@ will download Remarshal and run it from a temporary location.
 It will cache the downloaded version for up to 14 days.
 Remarshal will not be automatically upgraded during this period.
 
-You can install Remarshal using pip.
+You can also install Remarshal using pip.
 
 ```sh
 python3 -m pip install --user remarshal
 ```
 
-It is possible to install the current development version instead of a release.
+It is possible to install the current development version of Remarshal.
 Prefer releases unless you have a reason to run the development version.
 
 ```sh
@@ -140,7 +140,7 @@ options:
 Instead of `remarshal` with format arguments,
 you can use a short command
 <code>{cbor,json,msgpack,toml,yaml}2<wbr>{cbor,json,msgpack,toml,yaml}</code>.
-The `remarshal` command as well as the short commands
+The `remarshal` command and the short commands
 exit with status 0 on success,
 1 on operational failure,
 and 2 on failure to parse the command line.
@@ -153,21 +153,21 @@ Remarshal writes the result to standard output.
 
 ### Wrappers
 
-The arguments `--wrap` and `--unwrap` are available
+The options `--wrap` and `--unwrap` are available
 to solve the problem of converting CBOR, JSON, MessagePack, and YAML data to TOML
-if the top-level element of the data is not of a dictionary type
+when the top-level element of the data is not of a dictionary type
 (i.e., not a map in CBOR and MessagePack,
 an object in JSON,
 or an associative array in YAML).
 You cannot represent such data as TOML directly;
 the data must be wrapped in a dictionary first.
-Passing the flag `--wrap some-key` to `remarshal` or one of its short commands
-wraps the input data in a "wrapper" dictionary with one key, `some-key`, l
+Passing the option `--wrap some-key` to `remarshal` or one of its short commands
+wraps the input data in a "wrapper" dictionary with one key, `some-key`,
 with the input data as its value.
-The flag `--unwrap some-key` does the opposite:
+The option `--unwrap some-key` does the opposite:
+it converts to the target format and outputs
 only the value stored under the key `some-key`
-in the top-level dictionary element of the input data
-is converted to the target format and output;
+in the top-level dictionary element of the input data;
 the rest of the input is discarded.
 If the top-level element is not a dictionary or does not have the key `some-key`,
 `--unwrap some-key` causes an error.
