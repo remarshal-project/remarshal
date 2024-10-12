@@ -14,17 +14,15 @@ ports = [ 8001, 8001, 8002 ]
 connection_max = 5000
 enabled = true
 
-[servers]
+# You can indent as you please. Tabs or spaces. TOML don't care.
+[servers.alpha]
+ip = "10.0.0.1"
+dc = "eqdc10"
 
-  # You can indent as you please. Tabs or spaces. TOML don't care.
-  [servers.alpha]
-  ip = "10.0.0.1"
-  dc = "eqdc10"
-
-  [servers.beta]
-  ip = "10.0.0.2"
-  dc = "eqdc10"
-  country = "中国" # This should be parsed as UTF-8
+[servers.beta]
+ip = "10.0.0.2"
+dc = "eqdc10"
+country = "中国" # This should be parsed as UTF-8
 
 [clients]
 data = [ ["gamma", "delta"], [1, 2] ] # just an update to make sure parsers support it
@@ -37,11 +35,11 @@ hosts = [
 
 # Products
 
-  [[products]]
-  name = "Hammer"
-  sku = 738594937
+[[products]]
+name = "Hammer"
+sku = 738594937
 
-  [[products]]
-  name = "Nail"
-  sku = 284758393
-  color = "gray"
+[[products]]
+name = "Nail"
+sku = 284758393
+color = "gray"
