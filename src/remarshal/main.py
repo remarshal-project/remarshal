@@ -447,8 +447,9 @@ def _decode_yaml(input_data: bytes) -> Document:
         doc = yaml.load(input_data)
 
         return cast(Document, doc)
-    except (ruamel.yaml.scanner.ScannerError, ruamel.yaml.parser.ParserError) as e:
-        msg = f"Cannot parse as YAML ({e})"
+    except ruamel.yaml.YAMLError as e:
+        problem = getattr(e, "problem", str(e))
+        msg = f"Cannot parse as YAML ({problem})"
         raise ValueError(msg)
 
 
@@ -661,8 +662,9 @@ def _encode_yaml(data: Document, *, yaml_options: YAMLOptions) -> str:
         )
 
         return out.getvalue()
-    except ruamel.yaml.representer.RepresenterError as e:
-        msg = f"Cannot convert data to YAML ({e})"
+    except ruamel.yaml.YAMLError as e:
+        problem = getattr(e, "problem", str(e))
+        msg = f"Cannot convert data to YAML ({problem})"
         raise ValueError(msg)
 
 
