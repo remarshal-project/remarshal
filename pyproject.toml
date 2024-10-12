@@ -47,7 +47,7 @@ colorama = "^0.4.6"
 rich-argparse = "^1.4.0"
 
 [tool.poetry.group.dev.dependencies]
-ruff = "0.3.5"
+ruff = "0.6.9"
 tomli = "^2.0.1"
 types-python-dateutil = "^2.8.19.13"
 codespell = {extras = ["toml"], version = "^2.2.5"}

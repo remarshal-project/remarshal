@@ -119,7 +119,7 @@ def _convert_and_read(
     return read_file(output_filename)
 
 
-@pytest.fixture()
+@pytest.fixture
 def convert_and_read(tmp_path):
     return functools.partial(
         _convert_and_read, output_filename=str(tmp_path / secrets.token_hex(16))
