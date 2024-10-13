@@ -1,6 +1,6 @@
 #! /usr/bin/env python
 # Remarshal, a utility to convert between serialization formats.
-# Copyright (c) 2014-2020, 2023 D. Bohdan
+# Copyright (c) 2014-2020, 2023-2024 D. Bohdan
 # License: MIT
 
 from __future__ import annotations
@@ -364,6 +364,11 @@ class TestRemarshal:
     def test_binary_to_cbor(self, convert_and_read) -> None:
         convert_and_read("bin.msgpack", "msgpack", "cbor")
 
+    def test_yaml_null(self, convert_and_read) -> None:
+        output = convert_and_read("null.json", "json", "yaml")
+        reference = read_file("null.yaml")
+        assert output == reference
+
     def test_yaml_style_default(self, convert_and_read) -> None:
         output = convert_and_read("long-line.json", "json", "yaml")
         reference = read_file("long-line-default.yaml")
@@ -543,6 +548,16 @@ class TestRemarshal:
         )
         reference = read_file("bool-null-key.toml")
         assert output == reference
+
+    def test_yaml2yaml_bool_null_key(self, convert_and_read) -> None:
+        output = convert_and_read(
+            "bool-null-key.yaml",
+            "yaml",
+            "yaml",
+        )
+        reference = read_file("bool-null-key.yaml")
+
+        assert output == reference.lower()
 
     def test_yaml2toml_timestamp_key(self, convert_and_read) -> None:
         output = convert_and_read(
