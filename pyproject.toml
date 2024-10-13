@@ -54,6 +54,7 @@ codespell = {extras = ["toml"], version = "^2.2.5"}
 pyright = "1.1.384"
 pytest = "^8"
 pytest-cov = "^4.1.0"
+snoop = "^0.6.0"
 
 [tool.poetry.scripts]
 remarshal        = 'remarshal.main:main'
