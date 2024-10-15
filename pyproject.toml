@@ -91,13 +91,9 @@ quiet-level = 3
 "PYTHON_SOURCES" = "src/ tests/"
 
 [tool.poe.tasks.check]
-sequence = ["format", "codespell", "lint", "type"]
+sequence = ["format", "spell", "lint", "type"]
 help = "Run the formatter, then all static checks"
 ignore_fail = "return_non_zero"
-
-[tool.poe.tasks.codespell]
-cmd = "codespell ${PYTHON_SOURCES}"
-help = "Run codespell"
 
 [tool.poe.tasks.files]
 cmd = "echo ${PYTHON_SOURCES}"
@@ -114,6 +110,10 @@ help = "Run Ruff"
 [tool.poe.tasks.remarshal]
 cmd = "python -m remarshal"
 help = "Run Remarshal"
+
+[tool.poe.tasks.spell]
+cmd = "codespell ${PYTHON_SOURCES}"
+help = "Run codespell"
 
 [tool.poe.tasks.test]
 cmd = "pytest"
