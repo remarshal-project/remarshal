@@ -25,12 +25,12 @@ between what formats.
     dates (tag 1004),
     [TOML Local Dates](https://toml.io/en/v1.0.0#local-date),
     and
-    [YAML timestamps](https://yaml.org/type/timetamp.html)
+    [YAML timestamps](https://yaml.org/spec/1.2.2/#tags)
     without a time or a time zone.
   - Local date-time is converted between
     [TOML Local Date-Time](https://toml.io/en/v1.0.0#local-date-time)
     and
-    [YAML timestamps](https://yaml.org/type/timestamp.html)
+    [YAML timestamps](https://yaml.org/spec/1.2.2/#tags)
     without a time zone.
   - Date-time with a time zone
     is converted between
@@ -40,21 +40,18 @@ between what formats.
     [MessagePack Timestamp extension type](https://github.com/msgpack/msgpack/blob/master/spec.md#timestamp-extension-type),
     [TOML Offset Date-Times](https://toml.io/en/v1.0.0#offset-date-time),
     and
-    [YAML timestamps](https://yaml.org/type/timestamp.html) with a time zone.
+    [YAML timestamps](spec/1.2.2/#tags) with a time zone.
 - [TOML Local Time](https://toml.io/en/v1.0.0#local-time)
   cannot be converted to a date-time in another format.
 - All date-time types can be converted to JSON
   with the `-k`/`--stringify` option,
   which turns them into strings.
-- Contrary to the
-  [YAML timestamp draft spec](https://yaml.org/type/timestamp.html),
-  Remarshal converts YAML dates to TOML Local Dates instead of TOML Offset Dates
-  in the UTC time zone.
+- Remarshal converts YAML dates to TOML Local Dates.
   It converts TOML Local Dates to YAML dates.
 
 ## Installation
 
-You will need Python 3.8 or later.
+You will need Python 3.9 or later.
 Earlier versions of Python 3 will not work.
 
 The recommended way to run Remarshal is to install the latest release
