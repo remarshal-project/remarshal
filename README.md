@@ -12,6 +12,10 @@ and detect errors.
 
 ## Known limitations and quirks
 
+Remarshal works with YAML 1.2.
+The last version that read and wrote YAML 1.1 was 0.17.1.
+Install it if you need YAML 1.1.
+
 There are limitations
 on what data can be converted
 between what formats.
