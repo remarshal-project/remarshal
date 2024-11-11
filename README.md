@@ -226,6 +226,8 @@ $ remarshal test.toml --of json --unwrap main
 
 ## Examples
 
+### TOML to YAML
+
 ```
 $ remarshal example.toml --of yaml
 title: TOML Example
@@ -267,14 +269,15 @@ products:
   color: gray
 ```
 
+### JSON to TOML
+
 ```
 $ curl -f 'https://archive-api.open-meteo.com/v1/era5?latitude=50.43&longitude=30.52&start_date=2014-10-05&end_date=2014-10-05&hourly=temperature_2m' \
   | remarshal --from json --to toml \
-  | taplo fmt - \
   ;
 latitude = 50.439365
 longitude = 30.476192
-generationtime_ms = 0.04291534423828125
+generationtime_ms = 0.04208087921142578
 utc_offset_seconds = 0
 timezone = "GMT"
 timezone_abbreviation = "GMT"
@@ -285,65 +288,14 @@ time = "iso8601"
 temperature_2m = "°C"
 
 [hourly]
-time = [
-  "2014-10-05T00:00",
-  "2014-10-05T01:00",
-  "2014-10-05T02:00",
-  "2014-10-05T03:00",
-  "2014-10-05T04:00",
-  "2014-10-05T05:00",
-  "2014-10-05T06:00",
-  "2014-10-05T07:00",
-  "2014-10-05T08:00",
-  "2014-10-05T09:00",
-  "2014-10-05T10:00",
-  "2014-10-05T11:00",
-  "2014-10-05T12:00",
-  "2014-10-05T13:00",
-  "2014-10-05T14:00",
-  "2014-10-05T15:00",
-  "2014-10-05T16:00",
-  "2014-10-05T17:00",
-  "2014-10-05T18:00",
-  "2014-10-05T19:00",
-  "2014-10-05T20:00",
-  "2014-10-05T21:00",
-  "2014-10-05T22:00",
-  "2014-10-05T23:00",
-]
-temperature_2m = [
-  5.7,
-  5.3,
-  5.0,
-  4.8,
-  4.6,
-  4.6,
-  7.0,
-  8.9,
-  10.8,
-  12.2,
-  13.3,
-  13.9,
-  13.9,
-  13.7,
-  13.3,
-  12.3,
-  11.1,
-  10.2,
-  9.4,
-  8.5,
-  8.2,
-  7.9,
-  8.0,
-  7.8,
-]
+time = ["2014-10-05T00:00", "2014-10-05T01:00", "2014-10-05T02:00", "2014-10-05T03:00", "2014-10-05T04:00", "2014-10-05T05:00", "2014-10-05T06:00", "2014-10-05T07:00", "2014-10-05T08:00", "2014-10-05T09:00", "2014-10-05T10:00", "2014-10-05T11:00", "2014-10-05T12:00", "2014-10-05T13:00", "2014-10-05T14:00", "2014-10-05T15:00", "2014-10-05T16:00", "2014-10-05T17:00", "2014-10-05T18:00", "2014-10-05T19:00", "2014-10-05T20:00", "2014-10-05T21:00", "2014-10-05T22:00", "2014-10-05T23:00"]
+temperature_2m = [5.7, 5.3, 5.0, 4.8, 4.6, 4.6, 7.0, 8.9, 10.8, 12.2, 13.3, 13.9, 13.9, 13.7, 13.3, 12.3, 11.1, 10.2, 9.4, 8.5, 8.2, 7.9, 8.0, 7.8]
 ```
 
-(This example uses
+Remarshal does not limit the line length in TOML.
+You can use
 [`taplo fmt`](https://taplo.tamasfe.dev/cli/usage/formatting.html)
-to reformat the TOML
-and break up long lines containing the arrays.
-Remarshal does not limit TOML line length.)
+to reformat the TOML and break up long lines with arrays.
 
 ## License
 
