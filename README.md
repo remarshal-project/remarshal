@@ -12,9 +12,34 @@ and detect errors.
 
 ## Known limitations and quirks
 
+### YAML 1.2 only
+
 Remarshal works with YAML 1.2.
 The last version that read and wrote YAML 1.1 was 0.17.1.
 Install it if you need YAML 1.1.
+
+### Lossless by default; lossy must be enabled
+
+Remarshal tries to convert documents without losing information by default.
+This means that a document converted from format A to B and then back to A should be equal to the original document.
+When a lossless conversion is impossible,
+Remarshal exits with an error.
+
+Use the command-line option `-k`/`--stringify` to relax this restriction.
+It will make Remarshal do the following:
+
+- When converting to JSON,   turn boolean and null keys and date-time keys and values into strings.
+- When converting to TOML,
+  turn boolean, date-time, and null keys and null values into strings.
+
+This is **usually what you want**.
+It isn't the default as a safeguard against information loss.
+
+### Comments are removed
+
+Remarshal does not preserve or convert TOML and YAML comments.
+
+### Date-time conversion limitations
 
 There are limitations
 on what data can be converted
@@ -50,6 +75,7 @@ between what formats.
 - All date-time types can be converted to JSON
   with the `-k`/`--stringify` option,
   which turns them into strings.
+  Converting a document with a date-time type to JSON fails without `-k`/`--stringify`.
 - Remarshal converts YAML dates to TOML Local Dates.
   It converts TOML Local Dates to YAML dates.
 
