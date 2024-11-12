@@ -1,8 +1,11 @@
 /attic
 /build
+/.coverage
 /dist
 *.egg-info
+/help
 *.pyc
 __pycache__
+/.python-version
 /.tox
 /venv*
