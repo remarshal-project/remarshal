@@ -55,6 +55,7 @@ class Defaults:
 
     INDENT = None
     JSON_INDENT = 4
+    PYTHON_INDENT = 1
     YAML_INDENT = 2
 
     WIDTH = 80
@@ -87,7 +88,7 @@ class MsgPackOptions(FormatOptions):
 
 @dataclass(frozen=True)
 class PythonOptions(FormatOptions):
-    indent: int | None = Defaults.INDENT
+    indent: int | None = Defaults.PYTHON_INDENT
     sort_keys: bool = Defaults.SORT_KEYS
     width: int = Defaults.WIDTH
 
@@ -658,15 +659,12 @@ def _encode_python(
     sort_keys: bool,
     width: int,
 ) -> str:
-    compact = False
     if indent is None:
-        compact = True
-        indent = 0
+        return repr(data)
 
     return (
         pprint.pformat(
             data,
-            compact=compact,
             indent=indent,
             sort_dicts=sort_keys,
             width=width,

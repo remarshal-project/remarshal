@@ -85,10 +85,14 @@ between what formats.
 
 Conversion to Python code is one-way.
 
-The Python output is formatted by
-[`pprint.pformat`](https://docs.python.org/3/library/pprint.html#pprint.pformat).
-It is probably not how you want your Python code to look.
-Apply your preferred formatter to it.
+The Python output is either from
+[`repr`](https://docs.python.org/3/library/functions.html#repr)
+(the default) or formatted by
+[`pprint.pformat`](https://docs.python.org/3/library/pprint.html#pprint.pformat)
+(when you pass the option `--indent`).
+The style of `pprint`
+is probably not what you want your Python code to look like.
+Apply your preferred Python formatter to it.
 
 The Python output does not include the necessary `import` statements.
 You may need to add `import datetime` before the data.
