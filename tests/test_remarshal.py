@@ -134,6 +134,11 @@ def convert_and_read(tmp_path):
 
 
 class TestRemarshal:
+    def test_cbor2cbor(self, convert_and_read) -> None:
+        output = convert_and_read("example.cbor", "cbor", "cbor")
+        reference = read_file("example.cbor")
+        assert_cbor_same(output, reference)
+
     def test_json2json(self, convert_and_read) -> None:
         output = convert_and_read("example.json", "json", "json")
         reference = read_file("example.json")
@@ -159,8 +164,20 @@ class TestRemarshal:
         reference = read_file("example.yaml")
         assert output == reference
 
-    def test_cbor2cbor(self, convert_and_read) -> None:
-        output = convert_and_read("example.cbor", "cbor", "cbor")
+    def test_json2cbor(self, convert_and_read) -> None:
+        def patch(x: Any) -> Any:
+            x["owner"]["dob"] = datetime.datetime(
+                1979, 5, 27, 7, 32, 0, 0, datetime.timezone.utc
+            )
+            return x
+
+        output = convert_and_read(
+            "example.json",
+            "json",
+            "cbor",
+            transform=patch,
+        )
+
         reference = read_file("example.cbor")
         assert_cbor_same(output, reference)
 
@@ -179,23 +196,6 @@ class TestRemarshal:
         )
         reference = read_file("example.msgpack")
         assert output == reference
-
-    def test_json2cbor(self, convert_and_read) -> None:
-        def patch(x: Any) -> Any:
-            x["owner"]["dob"] = datetime.datetime(
-                1979, 5, 27, 7, 32, 0, 0, datetime.timezone.utc
-            )
-            return x
-
-        output = convert_and_read(
-            "example.json",
-            "json",
-            "cbor",
-            transform=patch,
-        )
-
-        reference = read_file("example.cbor")
-        assert_cbor_same(output, reference)
 
     def test_json2toml(self, convert_and_read) -> None:
         output = convert_and_read("example.json", "json", "toml").decode("utf-8")
@@ -216,6 +216,15 @@ class TestRemarshal:
         )
         assert output == reference_patched
 
+    def test_msgpack2cbor(self, convert_and_read) -> None:
+        output = convert_and_read(
+            "example.msgpack",
+            "msgpack",
+            "cbor",
+        )
+        reference = read_file("example.cbor")
+        assert_cbor_same(output, reference)
+
     def test_msgpack2json(self, convert_and_read) -> None:
         output = convert_and_read("example.msgpack", "msgpack", "json", stringify=True)
         reference = read_file("example.json")
@@ -231,10 +240,10 @@ class TestRemarshal:
         reference = read_file("example.yaml")
         assert output == reference
 
-    def test_msgpack2cbor(self, convert_and_read) -> None:
+    def test_toml2cbor(self, convert_and_read) -> None:
         output = convert_and_read(
-            "example.msgpack",
-            "msgpack",
+            "example.toml",
+            "toml",
             "cbor",
         )
         reference = read_file("example.cbor")
@@ -259,10 +268,10 @@ class TestRemarshal:
         reference = read_file("example.yaml")
         assert output == reference
 
-    def test_toml2cbor(self, convert_and_read) -> None:
+    def test_yaml2cbor(self, convert_and_read) -> None:
         output = convert_and_read(
-            "example.toml",
-            "toml",
+            "example.yaml",
+            "yaml",
             "cbor",
         )
         reference = read_file("example.cbor")
@@ -287,18 +296,18 @@ class TestRemarshal:
         reference = read_file("example.toml")
         assert toml_signature(output) == toml_signature(reference)
 
-    def test_yaml2cbor(self, convert_and_read) -> None:
-        output = convert_and_read(
-            "example.yaml",
-            "yaml",
-            "cbor",
-        )
-        reference = read_file("example.cbor")
-        assert_cbor_same(output, reference)
-
     def test_cbor2json(self, convert_and_read) -> None:
         output = convert_and_read("example.cbor", "cbor", "json", stringify=True)
         reference = read_file("example.json")
+        assert output == reference
+
+    def test_cbor2msgpack(self, convert_and_read) -> None:
+        output = convert_and_read(
+            "example.cbor",
+            "cbor",
+            "msgpack",
+        )
+        reference = read_file("example.msgpack")
         assert output == reference
 
     def test_cbor2toml(self, convert_and_read) -> None:
@@ -311,15 +320,6 @@ class TestRemarshal:
     def test_cbor2yaml(self, convert_and_read) -> None:
         output = convert_and_read("example.cbor", "cbor", "yaml")
         reference = read_file("example.yaml")
-        assert output == reference
-
-    def test_cbor2msgpack(self, convert_and_read) -> None:
-        output = convert_and_read(
-            "example.cbor",
-            "cbor",
-            "msgpack",
-        )
-        reference = read_file("example.msgpack")
         assert output == reference
 
     def test_missing_wrap(self, convert_and_read) -> None:
@@ -356,6 +356,9 @@ class TestRemarshal:
         with pytest.raises(ValueError):
             convert_and_read("bin.yml", "yaml", "json")
 
+    def test_binary_to_cbor(self, convert_and_read) -> None:
+        convert_and_read("bin.msgpack", "msgpack", "cbor")
+
     def test_binary_to_msgpack(self, convert_and_read) -> None:
         convert_and_read("bin.yml", "yaml", "msgpack")
 
@@ -367,9 +370,6 @@ class TestRemarshal:
 
     def test_binary_to_yaml(self, convert_and_read) -> None:
         convert_and_read("bin.msgpack", "msgpack", "yaml")
-
-    def test_binary_to_cbor(self, convert_and_read) -> None:
-        convert_and_read("bin.msgpack", "msgpack", "cbor")
 
     def test_yaml_null(self, convert_and_read) -> None:
         output = convert_and_read("null.json", "json", "yaml")
