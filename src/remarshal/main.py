@@ -116,7 +116,7 @@ def _extension_to_format(path: str, formats: list[str]) -> str:
     return ext if ext in formats else ""
 
 
-def _parse_command_line(argv: Sequence[str]) -> argparse.Namespace:  # noqa: C901.
+def _parse_command_line(argv: Sequence[str]) -> argparse.Namespace:
     me = Path(argv[0]).name
     argv0_from, argv0_to = _argv0_to_format(me)
     format_from_argv0 = argv0_to != ""
@@ -129,6 +129,7 @@ def _parse_command_line(argv: Sequence[str]) -> argparse.Namespace:  # noqa: C90
         formatter_class=RichHelpFormatter,
         prog="remarshal",
     )
+
     parser.add_argument(
         "-v",
         "--version",
@@ -158,6 +159,7 @@ def _parse_command_line(argv: Sequence[str]) -> argparse.Namespace:  # noqa: C90
             help="input format",
             choices=INPUT_FORMATS,
         )
+
         parser.add_argument(
             "-if",
             dest="input_format",
@@ -166,34 +168,33 @@ def _parse_command_line(argv: Sequence[str]) -> argparse.Namespace:  # noqa: C90
             choices=INPUT_FORMATS,
         )
 
-    if not format_from_argv0 or argv0_to == "json":
-        parser.add_argument(
-            "--json-indent",
-            dest="json_indent",
-            metavar="<n>",
-            type=int,
-            default=CLI_DEFAULTS["json_indent"],
-            help="JSON indentation",
-        )
-        parser.add_argument(
-            "--indent-json",
-            dest="json_indent",
-            type=int,
-            help=argparse.SUPPRESS,
-        )
+    parser.add_argument(
+        "--json-indent",
+        dest="json_indent",
+        metavar="<n>",
+        type=int,
+        default=CLI_DEFAULTS["json_indent"],
+        help="JSON indentation",
+    )
 
-    if not format_from_argv0 or argv0_to in {"json", "toml"}:
-        parser.add_argument(
-            "-k",
-            "--stringify",
-            dest="stringify",
-            action="store_true",
-            help=(
-                "turn into strings: boolean and null keys and date-time keys "
-                "and values for JSON; boolean, date-time, and null keys and "
-                "null values for TOML"
-            ),
-        )
+    parser.add_argument(
+        "--indent-json",
+        dest="json_indent",
+        type=int,
+        help=argparse.SUPPRESS,
+    )
+
+    parser.add_argument(
+        "-k",
+        "--stringify",
+        dest="stringify",
+        action="store_true",
+        help=(
+            "turn into strings: boolean and null keys and date-time keys "
+            "and values for JSON; boolean, date-time, and null keys and "
+            "null values for TOML"
+        ),
+    )
 
     parser.add_argument(
         "--max-values",
@@ -229,6 +230,7 @@ def _parse_command_line(argv: Sequence[str]) -> argparse.Namespace:  # noqa: C90
             help="output format",
             choices=OUTPUT_FORMATS,
         )
+
         parser.add_argument(
             "-of",
             dest="output_format",
@@ -243,13 +245,12 @@ def _parse_command_line(argv: Sequence[str]) -> argparse.Namespace:  # noqa: C90
         help=argparse.SUPPRESS,
     )
 
-    if not format_from_argv0 or argv0_to in {"json", "toml", "yaml"}:
-        parser.add_argument(
-            "-s",
-            "--sort-keys",
-            action="store_true",
-            help="sort JSON, Python, and TOML keys instead of preserving key order",
-        )
+    parser.add_argument(
+        "-s",
+        "--sort-keys",
+        action="store_true",
+        help="sort JSON, Python, and TOML keys instead of preserving key order",
+    )
 
     parser.add_argument(
         "--unwrap",
@@ -274,35 +275,35 @@ def _parse_command_line(argv: Sequence[str]) -> argparse.Namespace:  # noqa: C90
         help="wrap the data in a map type with the given key",
     )
 
-    if not format_from_argv0 or argv0_to == "yaml":
-        parser.add_argument(
-            "--yaml-indent",
-            dest="yaml_indent",
-            metavar="<n>",
-            type=int,
-            default=YAMLOptions().indent,
-            help="YAML indentation",
-        )
-        parser.add_argument(
-            "--yaml-style",
-            dest="yaml_style",
-            default=YAMLOptions().style,
-            help="YAML formatting style",
-            choices=["", "'", '"', "|", ">"],
-        )
+    parser.add_argument(
+        "--yaml-indent",
+        dest="yaml_indent",
+        metavar="<n>",
+        type=int,
+        default=YAMLOptions().indent,
+        help="YAML indentation",
+    )
 
-        def yaml_width(value: str) -> int:
-            # This is theoretically compatible with LibYAML.
-            return (1 << 32) - 1 if value.lower() == "inf" else int(value)
+    parser.add_argument(
+        "--yaml-style",
+        dest="yaml_style",
+        default=YAMLOptions().style,
+        help="YAML formatting style",
+        choices=["", "'", '"', "|", ">"],
+    )
 
-        parser.add_argument(
-            "--yaml-width",
-            dest="yaml_width",
-            metavar="<n>",
-            type=yaml_width,  # Allow "inf".
-            default=YAMLOptions().width,
-            help="YAML line width for long strings",
-        )
+    def yaml_width(value: str) -> int:
+        # This is theoretically compatible with LibYAML.
+        return (1 << 32) - 1 if value.lower() == "inf" else int(value)
+
+    parser.add_argument(
+        "--yaml-width",
+        dest="yaml_width",
+        metavar="<n>",
+        type=yaml_width,  # Allow "inf".
+        default=YAMLOptions().width,
+        help="YAML line width for long strings",
+    )
 
     colorama.init()
     args = parser.parse_args(args=argv[1:])
@@ -329,21 +330,15 @@ def _parse_command_line(argv: Sequence[str]) -> argparse.Namespace:  # noqa: C90
             if args.output_format == "":
                 parser.error("Need an explicit output format")
 
-    for key, value in CLI_DEFAULTS.items():
-        vars(args).setdefault(key, value)
+    # Replace `yaml_*` options with `YAMLOptions`.
+    vars(args)["yaml_options"] = YAMLOptions(
+        indent=args.yaml_indent,
+        style=args.yaml_style,
+        width=args.yaml_width,
+    )
 
-    # Wrap `yaml_*` options in `YAMLOptions` if they are present.
-    vars(args)["yaml_options"] = YAMLOptions()
-
-    if "yaml_indent" in vars(args):
-        vars(args)["yaml_options"] = YAMLOptions(
-            indent=args.yaml_indent,
-            style=args.yaml_style,
-            width=args.yaml_width,
-        )
-
-        for key in ("yaml_indent", "yaml_style", "yaml_width"):
-            del vars(args)[key]
+    for key in ("yaml_indent", "yaml_style", "yaml_width"):
+        del vars(args)[key]
 
     return args
 
