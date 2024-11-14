@@ -20,10 +20,9 @@ import pytest
 
 import remarshal
 from remarshal.main import (
-    CLIDefaults,
     Defaults,
     FormatOptions,
-    YAMLOptions,
+    YAMLStyle,
     _argv0_to_format,
     _parse_command_line,
 )
@@ -95,7 +94,7 @@ def toml_signature(data: bytes | str) -> list[str]:
 output_file = None
 
 
-def _convert_and_read(
+def _convert_and_read(  # noqa: PLR0913
     input_filename: str,
     input_format: str,
     output_format: str,
@@ -106,22 +105,28 @@ def _convert_and_read(
     stringify: bool = False,
     transform: Callable[[remarshal.Document], remarshal.Document] | None = None,
     unwrap: str | None = None,
-    width: int = CLIDefaults.WIDTH,
+    width: int = Defaults.WIDTH,
     wrap: str | None = None,
+    yaml_style: YAMLStyle = Defaults.YAML_STYLE,
     options: FormatOptions | None = None,
 ) -> bytes:
+    options = remarshal.format_options(
+        output_format,
+        indent=indent,
+        sort_keys=sort_keys,
+        stringify=stringify,
+        width=width,
+        yaml_style=yaml_style,
+    )
+
     remarshal.remarshal(
         input_format,
         output_format,
         data_file_path(input_filename),
         output_filename,
-        indent=indent,
         options=options,
-        sort_keys=sort_keys,
-        stringify=stringify,
         transform=transform,
         unwrap=unwrap,
-        width=width,
         wrap=wrap,
     )
 
@@ -411,30 +416,22 @@ class TestRemarshal:
         assert output == reference
 
     def test_yaml_style_single_quote(self, convert_and_read) -> None:
-        output = convert_and_read(
-            "long-line.json", "json", "yaml", options=YAMLOptions(style="'")
-        )
+        output = convert_and_read("long-line.json", "json", "yaml", yaml_style="'")
         reference = read_file("long-line-single-quote.yaml")
         assert output == reference
 
     def test_yaml_style_double_quote(self, convert_and_read) -> None:
-        output = convert_and_read(
-            "long-line.json", "json", "yaml", options=YAMLOptions(style='"')
-        )
+        output = convert_and_read("long-line.json", "json", "yaml", yaml_style='"')
         reference = read_file("long-line-double-quote.yaml")
         assert output == reference
 
     def test_yaml_style_pipe(self, convert_and_read) -> None:
-        output = convert_and_read(
-            "long-line.json", "json", "yaml", options=YAMLOptions(style="|")
-        )
+        output = convert_and_read("long-line.json", "json", "yaml", yaml_style="|")
         reference = read_file("long-line-pipe.yaml")
         assert output == reference
 
     def test_yaml_style_gt(self, convert_and_read) -> None:
-        output = convert_and_read(
-            "long-line.json", "json", "yaml", options=YAMLOptions(style=">")
-        )
+        output = convert_and_read("long-line.json", "json", "yaml", yaml_style=">")
         reference = read_file("long-line-gt.yaml")
         assert output == reference
 
@@ -625,15 +622,13 @@ class TestRemarshal:
         assert len([char for char in output if char == "\n"]) == 4
 
     def test_yaml_width_5(self, convert_and_read) -> None:
-        output = convert_and_read(
-            "long-line.json", "json", "yaml", width=5, options=YAMLOptions()
-        ).decode()
+        output = convert_and_read("long-line.json", "json", "yaml", width=5).decode()
         assert len([char for char in output if char == "\n"]) == 23
 
     def test_yaml_width_120(self, convert_and_read) -> None:
-        output = convert_and_read(
-            "long-line.json", "json", "yaml", width=120, options=YAMLOptions()
-        ).decode("utf-8")
+        output = convert_and_read("long-line.json", "json", "yaml", width=120).decode(
+            "utf-8"
+        )
         assert len([char for char in output if char == "\n"]) == 3
 
     def test_yaml_ident_5(self, convert_and_read) -> None:

@@ -46,21 +46,21 @@ import umsgpack
 if TYPE_CHECKING:
     from rich.style import StyleType
 
-    YAMLStyle = Literal["", "'", '"', "|", ">"]
 
-
-class CLIDefaults:
-    INDENT = None
+class Defaults:
+    MAX_VALUES = 1000000
     SORT_KEYS = False
     STRINGIFY = False
+    YAML_STYLE = ""
+
+    INDENT = None
+    JSON_INDENT = 4
+    YAML_INDENT = 2
+
     WIDTH = 80
 
 
-class Defaults:
-    JSON_INDENT = 4
-    MAX_VALUES = 1000000
-    YAML_INDENT = 2
-    YAML_STYLE = ""
+YAMLStyle = Literal["", "'", '"', "|", ">"]
 
 
 @dataclass(frozen=True)
@@ -69,15 +69,48 @@ class FormatOptions:
 
 
 @dataclass(frozen=True)
+class CBOROptions(FormatOptions):
+    pass
+
+
+@dataclass(frozen=True)
+class JSONOptions(FormatOptions):
+    indent: int | None = Defaults.JSON_INDENT
+    sort_keys: bool = Defaults.SORT_KEYS
+    stringify: bool = Defaults.STRINGIFY
+
+
+@dataclass(frozen=True)
+class MsgPackOptions(FormatOptions):
+    pass
+
+
+@dataclass(frozen=True)
+class PythonOptions(FormatOptions):
+    indent: int | None = Defaults.INDENT
+    sort_keys: bool = Defaults.SORT_KEYS
+    width: int = Defaults.WIDTH
+
+
+@dataclass(frozen=True)
+class TOMLOptions(FormatOptions):
+    indent: int | None = Defaults.INDENT
+    sort_keys: bool = Defaults.SORT_KEYS
+    stringify: bool = Defaults.STRINGIFY
+
+
+@dataclass(frozen=True)
 class YAMLOptions(FormatOptions):
+    indent: int = Defaults.YAML_INDENT
     style: YAMLStyle = Defaults.YAML_STYLE
+    width: int = Defaults.WIDTH
 
 
 __all__ = [
     "INPUT_FORMATS",
+    "OPTIONS_CLASSES",
     "OUTPUT_FORMATS",
     "RICH_ARGPARSE_STYLES",
-    "CLIDefaults",
     "Defaults",
     "Document",
     "FormatOptions",
@@ -85,6 +118,7 @@ __all__ = [
     "YAMLOptions",
     "decode",
     "encode",
+    "format_options",
     "identity",
     "main",
     "remarshal",
@@ -94,6 +128,14 @@ __all__ = [
 
 INPUT_FORMATS = ["cbor", "json", "msgpack", "toml", "yaml"]
 OUTPUT_FORMATS = ["cbor", "json", "msgpack", "python", "toml", "yaml"]
+OPTIONS_CLASSES = {
+    "cbor": CBOROptions,
+    "json": JSONOptions,
+    "msgpack": MsgPackOptions,
+    "python": PythonOptions,
+    "toml": TOMLOptions,
+    "yaml": YAMLOptions,
+}
 UTF_8 = "utf-8"
 
 RICH_ARGPARSE_STYLES: dict[str, StyleType] = {
@@ -184,7 +226,7 @@ def _parse_command_line(argv: Sequence[str]) -> argparse.Namespace:
 
     parser.add_argument(
         "--indent",
-        default=CLIDefaults.INDENT,
+        default=Defaults.INDENT,
         metavar="<n>",
         type=int,
         help="JSON and YAML indentation",
@@ -289,7 +331,7 @@ def _parse_command_line(argv: Sequence[str]) -> argparse.Namespace:
 
     parser.add_argument(
         "--width",
-        default=CLIDefaults.WIDTH,
+        default=Defaults.WIDTH,
         metavar="<n>",
         type=output_width,  # Allow "inf".
         help=(
@@ -350,13 +392,6 @@ def _parse_command_line(argv: Sequence[str]) -> argparse.Namespace:
             args.output_format = _extension_to_format(args.output, OUTPUT_FORMATS)
             if args.output_format == "":
                 parser.error("Need an explicit output format")
-
-    # Replace `yaml_*` options with `YAMLOptions`.
-    vars(args)["yaml_options"] = YAMLOptions(
-        style=args.yaml_style,
-    )
-
-    del vars(args)["yaml_style"]
 
     return args
 
@@ -622,13 +657,13 @@ def _encode_python(
     indent: int | None,
     sort_keys: bool,
     width: int,
-) -> bytes:
+) -> str:
     compact = False
     if indent is None:
         compact = True
         indent = 0
 
-    return bytes(
+    return (
         pprint.pformat(
             data,
             compact=compact,
@@ -636,8 +671,7 @@ def _encode_python(
             sort_dicts=sort_keys,
             width=width,
         )
-        + "\n",
-        UTF_8,
+        + "\n"
     )
 
 
@@ -695,20 +729,13 @@ def _encode_yaml(
     data: Document,
     *,
     indent: int | None,
-    options: FormatOptions | None,
+    style: YAMLStyle,
     width: int,
 ) -> str:
-    if options is None:
-        options = YAMLOptions()
-
-    if not isinstance(options, YAMLOptions):
-        msg = "'options' not of type 'YAMLOptions'"
-        raise TypeError(msg)
-
     yaml = ruamel.yaml.YAML()
     yaml.default_flow_style = False
 
-    yaml.default_style = options.style  # type: ignore
+    yaml.default_style = style  # type: ignore
     yaml.indent = indent
     yaml.width = width
 
@@ -728,53 +755,123 @@ def _encode_yaml(
         raise ValueError(msg)
 
 
-def encode(
+def format_options(
     output_format: str,
-    data: Document,
     *,
-    indent: int | None,
-    options: FormatOptions | None,
-    sort_keys: bool,
-    stringify: bool,
-    width: int,
-) -> bytes:
+    indent: int | None = None,
+    sort_keys: bool = False,
+    stringify: bool = False,
+    width: int = Defaults.WIDTH,
+    yaml_style: YAMLStyle = Defaults.YAML_STYLE,
+) -> FormatOptions:
+    if output_format == "cbor":
+        return CBOROptions()
+
     if output_format == "json":
-        encoded = _encode_json(
-            data,
+        return JSONOptions(
             indent=indent,
             sort_keys=sort_keys,
             stringify=stringify,
-        ).encode(UTF_8)
-    elif output_format == "msgpack":
-        encoded = _encode_msgpack(data)
-    elif output_format == "python":
-        encoded = _encode_python(
-            data,
+        )
+
+    if output_format == "msgpack":
+        return MsgPackOptions()
+
+    if output_format == "python":
+        return PythonOptions(
             indent=indent,
             sort_keys=sort_keys,
             width=width,
         )
+
+    if output_format == "toml":
+        return TOMLOptions(
+            sort_keys=sort_keys,
+            stringify=stringify,
+        )
+
+    if output_format == "yaml":
+        return YAMLOptions(
+            indent=Defaults.YAML_INDENT if indent is None else indent,
+            style=yaml_style,
+            width=width,
+        )
+
+    msg = f"Unknown output format: {output_format}"
+    raise ValueError(msg)
+
+
+def encode(
+    output_format: str,
+    data: Document,
+    *,
+    options: FormatOptions | None,
+) -> bytes:
+    if output_format == "cbor":
+        if not isinstance(options, CBOROptions):
+            msg = "expected 'options' argument to have class 'CBOROptions'"
+            raise TypeError(msg)
+
+        encoded = _encode_cbor(data)
+
+    elif output_format == "json":
+        if not isinstance(options, JSONOptions):
+            msg = "expected 'options' argument to have class 'JSONOptions'"
+            raise TypeError(msg)
+
+        encoded = _encode_json(
+            data,
+            indent=options.indent,
+            sort_keys=options.sort_keys,
+            stringify=options.stringify,
+        ).encode(UTF_8)
+
+    elif output_format == "msgpack":
+        if not isinstance(options, MsgPackOptions):
+            msg = "expected 'options' argument to have class 'MsgPackOptions'"
+            raise TypeError(msg)
+        encoded = _encode_msgpack(data)
+
+    elif output_format == "python":
+        if not isinstance(options, PythonOptions):
+            msg = "expected 'options' argument to have class 'PythonOptions'"
+            raise TypeError(msg)
+        encoded = _encode_python(
+            data,
+            indent=options.indent,
+            sort_keys=options.sort_keys,
+            width=options.width,
+        ).encode(UTF_8)
+
     elif output_format == "toml":
+        if not isinstance(options, TOMLOptions):
+            msg = "expected 'options' argument to have class 'TOMLOptions'"
+            raise TypeError(msg)
+
         if not isinstance(data, Mapping):
             msg = (
                 f"Top-level value of type '{type(data).__name__}' cannot "
                 "be encoded as TOML"
             )
             raise TypeError(msg)
-        encoded = _encode_toml(data, sort_keys=sort_keys, stringify=stringify).encode(
-            UTF_8
-        )
+        encoded = _encode_toml(
+            data,
+            sort_keys=options.sort_keys,
+            stringify=options.stringify,
+        ).encode(UTF_8)
+
     elif output_format == "yaml":
+        if not isinstance(options, YAMLOptions):
+            msg = "expected 'options' argument to have class 'YAMLOptions'"
+            raise TypeError(msg)
+
         encoded = _encode_yaml(
             data,
-            indent=indent,
-            options=options,
-            width=width,
+            indent=options.indent,
+            style=options.style,
+            width=options.width,
         ).encode(UTF_8)
-    elif output_format == "msgpack":
-        encoded = _encode_msgpack(data)
-    elif output_format == "cbor":
-        encoded = _encode_cbor(data)
+
     else:
         msg = f"Unknown output format: {output_format}"
         raise ValueError(msg)
@@ -785,24 +882,23 @@ def encode(
 # === Main ===
 
 
-def remarshal(  # noqa: PLR0913
+def remarshal(
     input_format: str,
     output_format: str,
     input: Path | str,
     output: Path | str,
     *,
-    indent: int | None = None,
     max_values: int = Defaults.MAX_VALUES,
     options: FormatOptions | None = None,
-    sort_keys: bool = True,
-    stringify: bool = False,
     transform: Callable[[Document], Document] | None = None,
     unwrap: str | None = None,
-    width: int = CLIDefaults.WIDTH,
     wrap: str | None = None,
 ) -> None:
     input_file = None
     output_file = None
+
+    if options is None:
+        options = format_options(output_format)
 
     try:
         input_file = sys.stdin.buffer if input == "-" else Path(input).open("rb")
@@ -810,7 +906,7 @@ def remarshal(  # noqa: PLR0913
 
         input_data = input_file.read()
         if not isinstance(input_data, bytes):
-            msg = "input_data must be bytes"
+            msg = "'input_data' must be 'bytes'"
             raise TypeError(msg)
 
         parsed = decode(input_format, input_data)
@@ -836,11 +932,7 @@ def remarshal(  # noqa: PLR0913
         encoded = encode(
             output_format,
             parsed,
-            indent=indent,
             options=options,
-            sort_keys=sort_keys,
-            stringify=stringify,
-            width=width,
         )
 
         output_file.write(encoded)
@@ -855,16 +947,22 @@ def main() -> None:
     args = _parse_command_line(sys.argv)
 
     try:
+        options = format_options(
+            args.output_format,
+            indent=args.indent,
+            sort_keys=args.sort_keys,
+            stringify=args.stringify,
+            width=args.width,
+            yaml_style=args.yaml_style,
+        )
+
         remarshal(
             args.input_format,
             args.output_format,
             args.input,
             args.output,
-            indent=args.indent,
             max_values=args.max_values,
-            options=args.yaml_options,
-            sort_keys=args.sort_keys,
-            stringify=args.stringify,
+            options=options,
             unwrap=args.unwrap,
             wrap=args.wrap,
         )
