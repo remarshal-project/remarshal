@@ -46,28 +46,7 @@ import umsgpack
 if TYPE_CHECKING:
     from rich.style import StyleType
 
-
-@dataclass(frozen=True)
-class YAMLOptions:
-    style: Literal["", "'", '"', "|", ">"] = ""
-
-
-__all__ = [
-    "INPUT_FORMATS",
-    "OUTPUT_FORMATS",
-    "RICH_ARGPARSE_STYLES",
-    "CLIDefaults",
-    "Defaults",
-    "Document",
-    "TooManyValuesError",
-    "YAMLOptions",
-    "decode",
-    "encode",
-    "identity",
-    "main",
-    "remarshal",
-    "traverse",
-]
+    YAMLStyle = Literal["", "'", '"', "|", ">"]
 
 
 class CLIDefaults:
@@ -81,6 +60,36 @@ class Defaults:
     JSON_INDENT = 4
     MAX_VALUES = 1000000
     YAML_INDENT = 2
+    YAML_STYLE = ""
+
+
+@dataclass(frozen=True)
+class FormatOptions:
+    pass
+
+
+@dataclass(frozen=True)
+class YAMLOptions(FormatOptions):
+    style: YAMLStyle = Defaults.YAML_STYLE
+
+
+__all__ = [
+    "INPUT_FORMATS",
+    "OUTPUT_FORMATS",
+    "RICH_ARGPARSE_STYLES",
+    "CLIDefaults",
+    "Defaults",
+    "Document",
+    "FormatOptions",
+    "TooManyValuesError",
+    "YAMLOptions",
+    "decode",
+    "encode",
+    "identity",
+    "main",
+    "remarshal",
+    "traverse",
+]
 
 
 INPUT_FORMATS = ["cbor", "json", "msgpack", "toml", "yaml"]
@@ -675,12 +684,23 @@ def _yaml_represent_none(self, data):
 
 
 def _encode_yaml(
-    data: Document, *, indent: int | None, width: int, yaml_options: YAMLOptions
+    data: Document,
+    *,
+    indent: int | None,
+    options: FormatOptions | None,
+    width: int,
 ) -> str:
+    if options is None:
+        options = YAMLOptions()
+
+    if not isinstance(options, YAMLOptions):
+        msg = "'options' not of type 'YAMLOptions'"
+        raise TypeError(msg)
+
     yaml = ruamel.yaml.YAML()
     yaml.default_flow_style = False
 
-    yaml.default_style = yaml_options.style  # type: ignore
+    yaml.default_style = options.style  # type: ignore
     yaml.indent = indent
     yaml.width = width
 
@@ -705,10 +725,10 @@ def encode(
     data: Document,
     *,
     indent: int | None,
+    options: FormatOptions | None,
     sort_keys: bool,
     stringify: bool,
     width: int,
-    yaml_options: YAMLOptions,
 ) -> bytes:
     if output_format == "json":
         encoded = _encode_json(
@@ -735,8 +755,8 @@ def encode(
         encoded = _encode_yaml(
             data,
             indent=indent,
+            options=options,
             width=width,
-            yaml_options=yaml_options,
         ).encode(UTF_8)
     elif output_format == "msgpack":
         encoded = _encode_msgpack(data)
@@ -760,13 +780,13 @@ def remarshal(  # noqa: PLR0913
     *,
     indent: int | None = None,
     max_values: int = Defaults.MAX_VALUES,
+    options: FormatOptions | None = None,
     sort_keys: bool = True,
     stringify: bool = False,
     transform: Callable[[Document], Document] | None = None,
     unwrap: str | None = None,
     width: int = CLIDefaults.WIDTH,
     wrap: str | None = None,
-    yaml_options: YAMLOptions | None = None,
 ) -> None:
     input_file = None
     output_file = None
@@ -804,10 +824,10 @@ def remarshal(  # noqa: PLR0913
             output_format,
             parsed,
             indent=indent,
+            options=options,
             sort_keys=sort_keys,
             stringify=stringify,
             width=width,
-            yaml_options=YAMLOptions() if yaml_options is None else yaml_options,
         )
 
         output_file.write(encoded)
@@ -829,11 +849,11 @@ def main() -> None:
             args.output,
             indent=args.indent,
             max_values=args.max_values,
+            options=args.yaml_options,
             sort_keys=args.sort_keys,
             stringify=args.stringify,
             unwrap=args.unwrap,
             wrap=args.wrap,
-            yaml_options=args.yaml_options,
         )
     except KeyboardInterrupt:
         pass
