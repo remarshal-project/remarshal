@@ -35,7 +35,7 @@ TEST_PATH = Path(__file__).resolve().parent
 
 def data_file_path(filename: str) -> str:
     path_list = []
-    if re.match(r"example\.(json|msgpack|toml|yaml|cbor)$", filename):
+    if re.match(r"example\.(json|msgpack|py|toml|yaml|cbor)$", filename):
         path_list.append("..")
     path_list.append(filename)
     return str(TEST_PATH.joinpath(*path_list))
@@ -140,6 +140,14 @@ def convert_and_read(tmp_path):
     )
 
 
+def patch_date(x: Any) -> Any:
+    x["owner"]["dob"] = datetime.datetime(
+        1979, 5, 27, 7, 32, 0, 0, datetime.timezone.utc
+    )
+
+    return x
+
+
 class TestRemarshal:
     def test_cbor2cbor(self, convert_and_read) -> None:
         output = convert_and_read("example.cbor", "cbor", "cbor")
@@ -177,23 +185,16 @@ class TestRemarshal:
         assert output == reference
 
     def test_json2cbor(self, convert_and_read) -> None:
-        def patch(x: Any) -> Any:
-            x["owner"]["dob"] = datetime.datetime(
-                1979, 5, 27, 7, 32, 0, 0, datetime.timezone.utc
-            )
-            return x
-
         output = convert_and_read(
             "example.json",
             "json",
-            "cbor",
-            transform=patch,
+            "msgpack",
+            transform=patch_date,
         )
+        reference = read_file("example.msgpack")
+        assert output == reference
 
-        reference = read_file("example.cbor")
-        assert_cbor_same(output, reference)
-
-    def test_json2msgpack(self, convert_and_read) -> None:
+    def test_json2python(self, convert_and_read) -> None:
         def patch(x: Any) -> Any:
             x["owner"]["dob"] = datetime.datetime(
                 1979, 5, 27, 7, 32, tzinfo=datetime.timezone.utc
@@ -203,10 +204,11 @@ class TestRemarshal:
         output = convert_and_read(
             "example.json",
             "json",
-            "msgpack",
+            "python",
+            indent=Defaults.PYTHON_INDENT,
             transform=patch,
         )
-        reference = read_file("example.msgpack")
+        reference = read_file("example.py")
         assert output == reference
 
     def test_json2toml(self, convert_and_read) -> None:
@@ -248,6 +250,13 @@ class TestRemarshal:
         reference = read_file("example.json")
         assert output == reference
 
+    def test_msgpack2python(self, convert_and_read) -> None:
+        output = convert_and_read(
+            "example.msgpack", "msgpack", "python", indent=Defaults.PYTHON_INDENT
+        )
+        reference = read_file("example.py")
+        assert output == reference
+
     def test_msgpack2toml(self, convert_and_read) -> None:
         output = convert_and_read("example.msgpack", "msgpack", "toml")
         reference = read_file("example.toml")
@@ -287,6 +296,16 @@ class TestRemarshal:
         reference = read_file("example.msgpack")
         assert output == reference
 
+    def test_toml2python(self, convert_and_read) -> None:
+        output = convert_and_read(
+            "example.toml",
+            "toml",
+            "python",
+            indent=Defaults.PYTHON_INDENT,
+        )
+        reference = read_file("example.py")
+        assert output == reference
+
     def test_toml2yaml(self, convert_and_read) -> None:
         output = convert_and_read("example.toml", "toml", "yaml")
         reference = read_file("example.yaml")
@@ -319,6 +338,17 @@ class TestRemarshal:
             "msgpack",
         )
         reference = read_file("example.msgpack")
+        assert output == reference
+
+    def test_yaml2python(self, convert_and_read) -> None:
+        output = convert_and_read(
+            "example.yaml",
+            "yaml",
+            "python",
+            indent=Defaults.PYTHON_INDENT,
+            transform=patch_date,
+        )
+        reference = read_file("example.py")
         assert output == reference
 
     def test_yaml2toml(self, convert_and_read) -> None:

@@ -318,9 +318,10 @@ See the file
 [`LICENSE`](LICENSE).
 
 `example.toml` from <https://github.com/toml-lang/toml>.
+`example.cbor`,
 `example.json`,
 `example.msgpack`,
-`example.cbor`,
+`example.py`,
 `example.yml`,
 `tests/bin.msgpack`,
 and `tests/bin.yml`
