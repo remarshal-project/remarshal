@@ -619,12 +619,20 @@ def _encode_msgpack(data: Document) -> bytes:
 def _encode_python(
     data: Document,
     *,
+    indent: int | None,
     sort_keys: bool,
     width: int,
 ) -> bytes:
+    compact = False
+    if indent is None:
+        compact = True
+        indent = 0
+
     return bytes(
         pprint.pformat(
             data,
+            compact=compact,
+            indent=indent,
             sort_dicts=sort_keys,
             width=width,
         )
@@ -740,7 +748,12 @@ def encode(
     elif output_format == "msgpack":
         encoded = _encode_msgpack(data)
     elif output_format == "python":
-        encoded = _encode_python(data, sort_keys=sort_keys, width=width)
+        encoded = _encode_python(
+            data,
+            indent=indent,
+            sort_keys=sort_keys,
+            width=width,
+        )
     elif output_format == "toml":
         if not isinstance(data, Mapping):
             msg = (
