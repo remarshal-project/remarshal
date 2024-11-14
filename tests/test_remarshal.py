@@ -19,7 +19,12 @@ import cbor2  # type: ignore
 import pytest
 
 import remarshal
-from remarshal.main import YAMLOptions, _argv0_to_format, _parse_command_line
+from remarshal.main import (
+    CLIDefaults,
+    YAMLOptions,
+    _argv0_to_format,
+    _parse_command_line,
+)
 
 if TYPE_CHECKING:
     from collections.abc import Mapping, Sequence
@@ -99,6 +104,7 @@ def _convert_and_read(
     stringify: bool = False,
     transform: Callable[[remarshal.Document], remarshal.Document] | None = None,
     unwrap: str | None = None,
+    width: int = CLIDefaults.WIDTH,
     wrap: str | None = None,
     yaml_options: YAMLOptions | None = None,
 ) -> bytes:
@@ -112,6 +118,7 @@ def _convert_and_read(
         stringify=stringify,
         transform=transform,
         unwrap=unwrap,
+        width=width,
         wrap=wrap,
         yaml_options=yaml_options,
     )
@@ -579,13 +586,13 @@ class TestRemarshal:
 
     def test_yaml_width_5(self, convert_and_read) -> None:
         output = convert_and_read(
-            "long-line.json", "json", "yaml", yaml_options=YAMLOptions(width=5)
+            "long-line.json", "json", "yaml", width=5, yaml_options=YAMLOptions()
         ).decode()
         assert len([char for char in output if char == "\n"]) == 23
 
     def test_yaml_width_120(self, convert_and_read) -> None:
         output = convert_and_read(
-            "long-line.json", "json", "yaml", yaml_options=YAMLOptions(width=120)
+            "long-line.json", "json", "yaml", width=120, yaml_options=YAMLOptions()
         ).decode("utf-8")
         assert len([char for char in output if char == "\n"]) == 3
 

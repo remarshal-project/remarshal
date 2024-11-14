@@ -51,7 +51,6 @@ if TYPE_CHECKING:
 class YAMLOptions:
     indent: int = 2
     style: Literal["", "'", '"', "|", ">"] = ""
-    width: int = 80
 
 
 __all__ = [
@@ -60,6 +59,7 @@ __all__ = [
     "JSON_INDENT_TRUE",
     "OUTPUT_FORMATS",
     "RICH_ARGPARSE_STYLES",
+    "CLIDefaults",
     "Document",
     "TooManyValuesError",
     "YAMLOptions",
@@ -71,11 +71,14 @@ __all__ = [
     "traverse",
 ]
 
-CLI_DEFAULTS: dict[str, Any] = {
-    "json_indent": None,
-    "sort_keys": False,
-    "stringify": False,
-}
+
+class CLIDefaults:
+    JSON_INDENT = None
+    SORT_KEYS = False
+    STRINGIFY = False
+    WIDTH = 80
+
+
 DEFAULT_MAX_VALUES = 1000000
 INPUT_FORMATS = ["cbor", "json", "msgpack", "toml", "yaml"]
 OUTPUT_FORMATS = ["cbor", "json", "msgpack", "python", "toml", "yaml"]
@@ -173,7 +176,7 @@ def _parse_command_line(argv: Sequence[str]) -> argparse.Namespace:
         dest="json_indent",
         metavar="<n>",
         type=int,
-        default=CLI_DEFAULTS["json_indent"],
+        default=CLIDefaults.JSON_INDENT,
         help="JSON indentation",
     )
 
@@ -267,6 +270,18 @@ def _parse_command_line(argv: Sequence[str]) -> argparse.Namespace:
         help="print debug information when an error occurs",
     )
 
+    def output_width(value: str) -> int:
+        # This is theoretically compatible with LibYAML.
+        return (1 << 32) - 1 if value.lower() == "inf" else int(value)
+
+    parser.add_argument(
+        "--width",
+        metavar="<n>",
+        type=output_width,  # Allow "inf".
+        default=CLIDefaults.WIDTH,
+        help="Python line width and YAML line width for long strings",
+    )
+
     parser.add_argument(
         "--wrap",
         dest="wrap",
@@ -292,17 +307,11 @@ def _parse_command_line(argv: Sequence[str]) -> argparse.Namespace:
         choices=["", "'", '"', "|", ">"],
     )
 
-    def yaml_width(value: str) -> int:
-        # This is theoretically compatible with LibYAML.
-        return (1 << 32) - 1 if value.lower() == "inf" else int(value)
-
     parser.add_argument(
         "--yaml-width",
-        dest="yaml_width",
-        metavar="<n>",
-        type=yaml_width,  # Allow "inf".
-        default=YAMLOptions().width,
-        help="YAML line width for long strings",
+        dest="width",
+        type=output_width,
+        help=argparse.SUPPRESS,
     )
 
     colorama.init()
@@ -334,10 +343,9 @@ def _parse_command_line(argv: Sequence[str]) -> argparse.Namespace:
     vars(args)["yaml_options"] = YAMLOptions(
         indent=args.yaml_indent,
         style=args.yaml_style,
-        width=args.yaml_width,
     )
 
-    for key in ("yaml_indent", "yaml_style", "yaml_width"):
+    for key in ("yaml_indent", "yaml_style"):
         del vars(args)[key]
 
     return args
@@ -605,8 +613,17 @@ def _encode_python(
     data: Document,
     *,
     sort_keys: bool,
+    width: int,
 ) -> bytes:
-    return bytes(pprint.pformat(data, sort_dicts=sort_keys, width=80) + "\n", UTF_8)
+    return bytes(
+        pprint.pformat(
+            data,
+            sort_dicts=sort_keys,
+            width=width,
+        )
+        + "\n",
+        UTF_8,
+    )
 
 
 def _encode_toml(
@@ -659,13 +676,13 @@ def _yaml_represent_none(self, data):
     return self.represent_scalar("tag:yaml.org,2002:null", "null")
 
 
-def _encode_yaml(data: Document, *, yaml_options: YAMLOptions) -> str:
+def _encode_yaml(data: Document, *, width: int, yaml_options: YAMLOptions) -> str:
     yaml = ruamel.yaml.YAML()
     yaml.default_flow_style = False
 
     yaml.default_style = yaml_options.style  # type: ignore
     yaml.indent = yaml_options.indent
-    yaml.width = yaml_options.width
+    yaml.width = width
 
     yaml.representer.add_representer(type(None), _yaml_represent_none)
 
@@ -690,6 +707,7 @@ def encode(
     json_indent: bool | int | None,
     sort_keys: bool,
     stringify: bool,
+    width: int,
     yaml_options: YAMLOptions,
 ) -> bytes:
     if output_format == "json":
@@ -702,7 +720,7 @@ def encode(
     elif output_format == "msgpack":
         encoded = _encode_msgpack(data)
     elif output_format == "python":
-        encoded = _encode_python(data, sort_keys=sort_keys)
+        encoded = _encode_python(data, sort_keys=sort_keys, width=width)
     elif output_format == "toml":
         if not isinstance(data, Mapping):
             msg = (
@@ -714,7 +732,11 @@ def encode(
             UTF_8
         )
     elif output_format == "yaml":
-        encoded = _encode_yaml(data, yaml_options=yaml_options).encode(UTF_8)
+        encoded = _encode_yaml(
+            data,
+            width=width,
+            yaml_options=yaml_options,
+        ).encode(UTF_8)
     elif output_format == "msgpack":
         encoded = _encode_msgpack(data)
     elif output_format == "cbor":
@@ -729,7 +751,7 @@ def encode(
 # === Main ===
 
 
-def remarshal(
+def remarshal(  # noqa: PLR0913
     input_format: str,
     output_format: str,
     input: Path | str,
@@ -741,6 +763,7 @@ def remarshal(
     stringify: bool = False,
     transform: Callable[[Document], Document] | None = None,
     unwrap: str | None = None,
+    width: int = CLIDefaults.WIDTH,
     wrap: str | None = None,
     yaml_options: YAMLOptions | None = None,
 ) -> None:
@@ -782,6 +805,7 @@ def remarshal(
             json_indent=json_indent,
             sort_keys=sort_keys,
             stringify=stringify,
+            width=width,
             yaml_options=YAMLOptions() if yaml_options is None else yaml_options,
         )
 
