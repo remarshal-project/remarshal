@@ -10,6 +10,8 @@ to convert between formats,
 reformat,
 and detect errors.
 
+Remarshal can also convert all supported formats to Python code.
+
 ## Known limitations and quirks
 
 ### YAML 1.2 only
@@ -78,6 +80,17 @@ between what formats.
   Converting a document with a date-time type to JSON fails without `-k`/`--stringify`.
 - Remarshal converts YAML dates to TOML Local Dates.
   It converts TOML Local Dates to YAML dates.
+
+### Python output
+
+Conversion to Python code is one-way.
+
+The Python output is formatted by [`pprint.pformat`](https://docs.python.org/3/library/pprint.html#pprint.pformat).
+It is probably not how you want your Python code to look.
+Apply your preferred formatter to it.
+
+The Python output does not include the necessary `import` statements.
+You may need to add `import datetime` before the data.
 
 ## Installation
 

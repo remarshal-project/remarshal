@@ -9,6 +9,7 @@ import argparse
 import datetime
 import importlib.metadata
 import json
+import pprint
 import re
 import sys
 import traceback
@@ -55,8 +56,9 @@ class YAMLOptions:
 
 __all__ = [
     "DEFAULT_MAX_VALUES",
-    "FORMATS",
+    "INPUT_FORMATS",
     "JSON_INDENT_TRUE",
+    "OUTPUT_FORMATS",
     "RICH_ARGPARSE_STYLES",
     "Document",
     "TooManyValuesError",
@@ -75,7 +77,8 @@ CLI_DEFAULTS: dict[str, Any] = {
     "stringify": False,
 }
 DEFAULT_MAX_VALUES = 1000000
-FORMATS = ["cbor", "json", "msgpack", "toml", "yaml"]
+INPUT_FORMATS = ["cbor", "json", "msgpack", "toml", "yaml"]
+OUTPUT_FORMATS = ["cbor", "json", "msgpack", "python", "toml", "yaml"]
 JSON_INDENT_TRUE = 4
 UTF_8 = "utf-8"
 
@@ -95,19 +98,22 @@ RICH_ARGPARSE_STYLES: dict[str, StyleType] = {
 
 
 def _argv0_to_format(argv0: str) -> tuple[str, str]:
-    possible_format = "(" + "|".join(FORMATS) + ")"
-    match = re.search("^" + possible_format + "2" + possible_format, argv0)
+    possible_input_format = "(" + "|".join(INPUT_FORMATS) + ")"
+    possible_output_format = "(" + "|".join(OUTPUT_FORMATS) + ")"
+    match = re.search("^" + possible_input_format + "2" + possible_output_format, argv0)
     from_, to = match.groups() if match else ("", "")
     return from_, to
 
 
-def _extension_to_format(path: str) -> str:
+def _extension_to_format(path: str, formats: list[str]) -> str:
     ext = Path(path).suffix[1:]
 
+    if ext == "py":
+        return "python"
     if ext == "yml":
-        ext = "yaml"
+        return "yaml"
 
-    return ext if ext in FORMATS else ""
+    return ext if ext in formats else ""
 
 
 def _parse_command_line(argv: Sequence[str]) -> argparse.Namespace:  # noqa: C901.
@@ -150,14 +156,14 @@ def _parse_command_line(argv: Sequence[str]) -> argparse.Namespace:  # noqa: C90
             dest="input_format",
             default="",
             help="input format",
-            choices=FORMATS,
+            choices=INPUT_FORMATS,
         )
         parser.add_argument(
             "-if",
             dest="input_format",
             default="",
             help=argparse.SUPPRESS,
-            choices=FORMATS,
+            choices=INPUT_FORMATS,
         )
 
     if not format_from_argv0 or argv0_to == "json":
@@ -221,14 +227,14 @@ def _parse_command_line(argv: Sequence[str]) -> argparse.Namespace:  # noqa: C90
             dest="output_format",
             default="",
             help="output format",
-            choices=FORMATS,
+            choices=OUTPUT_FORMATS,
         )
         parser.add_argument(
             "-of",
             dest="output_format",
             default="",
             help=argparse.SUPPRESS,
-            choices=FORMATS,
+            choices=OUTPUT_FORMATS,
         )
 
     parser.add_argument(
@@ -242,7 +248,7 @@ def _parse_command_line(argv: Sequence[str]) -> argparse.Namespace:  # noqa: C90
             "-s",
             "--sort-keys",
             action="store_true",
-            help="sort JSON and TOML keys instead of preserving key order",
+            help="sort JSON, Python, and TOML keys instead of preserving key order",
         )
 
     parser.add_argument(
@@ -314,12 +320,12 @@ def _parse_command_line(argv: Sequence[str]) -> argparse.Namespace:  # noqa: C90
         args.output_format = argv0_to
     else:
         if args.input_format == "":
-            args.input_format = _extension_to_format(args.input)
+            args.input_format = _extension_to_format(args.input, INPUT_FORMATS)
             if args.input_format == "":
                 parser.error("Need an explicit input format")
 
         if args.output_format == "":
-            args.output_format = _extension_to_format(args.output)
+            args.output_format = _extension_to_format(args.output, OUTPUT_FORMATS)
             if args.output_format == "":
                 parser.error("Need an explicit output format")
 
@@ -600,6 +606,14 @@ def _encode_msgpack(data: Document) -> bytes:
         raise ValueError(msg)
 
 
+def _encode_python(
+    data: Document,
+    *,
+    sort_keys: bool,
+) -> bytes:
+    return bytes(pprint.pformat(data, sort_dicts=sort_keys, width=80) + "\n", UTF_8)
+
+
 def _encode_toml(
     data: Mapping[Any, Any],
     *,
@@ -692,6 +706,8 @@ def encode(
         ).encode(UTF_8)
     elif output_format == "msgpack":
         encoded = _encode_msgpack(data)
+    elif output_format == "python":
+        encoded = _encode_python(data, sort_keys=sort_keys)
     elif output_format == "toml":
         if not isinstance(data, Mapping):
             msg = (
@@ -704,6 +720,8 @@ def encode(
         )
     elif output_format == "yaml":
         encoded = _encode_yaml(data, yaml_options=yaml_options).encode(UTF_8)
+    elif output_format == "msgpack":
+        encoded = _encode_msgpack(data)
     elif output_format == "cbor":
         encoded = _encode_cbor(data)
     else:
