@@ -49,17 +49,15 @@ if TYPE_CHECKING:
 
 @dataclass(frozen=True)
 class YAMLOptions:
-    indent: int = 2
     style: Literal["", "'", '"', "|", ">"] = ""
 
 
 __all__ = [
-    "DEFAULT_MAX_VALUES",
     "INPUT_FORMATS",
-    "JSON_INDENT_TRUE",
     "OUTPUT_FORMATS",
     "RICH_ARGPARSE_STYLES",
     "CLIDefaults",
+    "Defaults",
     "Document",
     "TooManyValuesError",
     "YAMLOptions",
@@ -73,16 +71,20 @@ __all__ = [
 
 
 class CLIDefaults:
-    JSON_INDENT = None
+    INDENT = None
     SORT_KEYS = False
     STRINGIFY = False
     WIDTH = 80
 
 
-DEFAULT_MAX_VALUES = 1000000
+class Defaults:
+    JSON_INDENT = 4
+    MAX_VALUES = 1000000
+    YAML_INDENT = 2
+
+
 INPUT_FORMATS = ["cbor", "json", "msgpack", "toml", "yaml"]
 OUTPUT_FORMATS = ["cbor", "json", "msgpack", "python", "toml", "yaml"]
-JSON_INDENT_TRUE = 4
 UTF_8 = "utf-8"
 
 RICH_ARGPARSE_STYLES: dict[str, StyleType] = {
@@ -141,13 +143,13 @@ def _parse_command_line(argv: Sequence[str]) -> argparse.Namespace:
     )
 
     input_group = parser.add_mutually_exclusive_group()
-    input_group.add_argument("input", nargs="?", default="-", help="input file")
+    input_group.add_argument("input", default="-", nargs="?", help="input file")
     input_group.add_argument(
         "-i",
         "--input",
+        default=None,
         dest="input_flag",
         metavar="<input>",
-        default=None,
         help="input file",
     )
 
@@ -157,32 +159,38 @@ def _parse_command_line(argv: Sequence[str]) -> argparse.Namespace:
             "--input-format",
             "-f",
             "--from",
-            dest="input_format",
-            default="",
-            help="input format",
             choices=INPUT_FORMATS,
+            default="",
+            dest="input_format",
+            help="input format",
         )
 
         parser.add_argument(
             "-if",
-            dest="input_format",
-            default="",
-            help=argparse.SUPPRESS,
             choices=INPUT_FORMATS,
+            default="",
+            dest="input_format",
+            help=argparse.SUPPRESS,
         )
 
     parser.add_argument(
-        "--json-indent",
-        dest="json_indent",
+        "--indent",
+        default=CLIDefaults.INDENT,
         metavar="<n>",
         type=int,
-        default=CLIDefaults.JSON_INDENT,
-        help="JSON indentation",
+        help="JSON and YAML indentation",
     )
 
     parser.add_argument(
         "--indent-json",
-        dest="json_indent",
+        dest="indent",
+        type=int,
+        help=argparse.SUPPRESS,
+    )
+
+    parser.add_argument(
+        "--json-indent",
+        dest="indent",
         type=int,
         help=argparse.SUPPRESS,
     )
@@ -190,7 +198,6 @@ def _parse_command_line(argv: Sequence[str]) -> argparse.Namespace:
     parser.add_argument(
         "-k",
         "--stringify",
-        dest="stringify",
         action="store_true",
         help=(
             "turn into strings: boolean and null keys and date-time keys "
@@ -201,10 +208,9 @@ def _parse_command_line(argv: Sequence[str]) -> argparse.Namespace:
 
     parser.add_argument(
         "--max-values",
-        dest="max_values",
+        default=Defaults.MAX_VALUES,
         metavar="<n>",
         type=int,
-        default=DEFAULT_MAX_VALUES,
         help=(
             "maximum number of values in input data (default %(default)s, "
             "negative for unlimited)"
@@ -212,13 +218,13 @@ def _parse_command_line(argv: Sequence[str]) -> argparse.Namespace:
     )
 
     output_group = parser.add_mutually_exclusive_group()
-    output_group.add_argument("output", nargs="?", default="-", help="output file")
+    output_group.add_argument("output", default="-", nargs="?", help="output file")
     output_group.add_argument(
         "-o",
         "--output",
+        default=None,
         dest="output_flag",
         metavar="<output>",
-        default=None,
         help="output file",
     )
 
@@ -228,18 +234,18 @@ def _parse_command_line(argv: Sequence[str]) -> argparse.Namespace:
             "--output-format",
             "-t",
             "--to",
-            dest="output_format",
-            default="",
-            help="output format",
             choices=OUTPUT_FORMATS,
+            default="",
+            dest="output_format",
+            help="output format",
         )
 
         parser.add_argument(
             "-of",
-            dest="output_format",
-            default="",
-            help=argparse.SUPPRESS,
             choices=OUTPUT_FORMATS,
+            default="",
+            dest="output_format",
+            help=argparse.SUPPRESS,
         )
 
     parser.add_argument(
@@ -257,16 +263,14 @@ def _parse_command_line(argv: Sequence[str]) -> argparse.Namespace:
 
     parser.add_argument(
         "--unwrap",
-        dest="unwrap",
-        metavar="<key>",
         default=None,
+        metavar="<key>",
         help="only output the data stored under the given key",
     )
 
     parser.add_argument(
         "--verbose",
         action="store_true",
-        dest="verbose",
         help="print debug information when an error occurs",
     )
 
@@ -276,35 +280,34 @@ def _parse_command_line(argv: Sequence[str]) -> argparse.Namespace:
 
     parser.add_argument(
         "--width",
+        default=CLIDefaults.WIDTH,
         metavar="<n>",
         type=output_width,  # Allow "inf".
-        default=CLIDefaults.WIDTH,
-        help="Python line width and YAML line width for long strings",
+        help=(
+            "Python line width and YAML line width for long strings"
+            " (integer or 'inf')"
+        ),
     )
 
     parser.add_argument(
         "--wrap",
-        dest="wrap",
-        metavar="<key>",
         default=None,
+        metavar="<key>",
         help="wrap the data in a map type with the given key",
     )
 
     parser.add_argument(
         "--yaml-indent",
-        dest="yaml_indent",
-        metavar="<n>",
+        dest="indent",
         type=int,
-        default=YAMLOptions().indent,
-        help="YAML indentation",
+        help=argparse.SUPPRESS,
     )
 
     parser.add_argument(
         "--yaml-style",
-        dest="yaml_style",
+        choices=["", "'", '"', "|", ">"],
         default=YAMLOptions().style,
         help="YAML formatting style",
-        choices=["", "'", '"', "|", ">"],
     )
 
     parser.add_argument(
@@ -341,12 +344,10 @@ def _parse_command_line(argv: Sequence[str]) -> argparse.Namespace:
 
     # Replace `yaml_*` options with `YAMLOptions`.
     vars(args)["yaml_options"] = YAMLOptions(
-        indent=args.yaml_indent,
         style=args.yaml_style,
     )
 
-    for key in ("yaml_indent", "yaml_style"):
-        del vars(args)[key]
+    del vars(args)["yaml_style"]
 
     return args
 
@@ -554,13 +555,10 @@ def _json_default_stringify(obj: Any) -> str:
 def _encode_json(
     data: Document,
     *,
-    indent: bool | int | None,
+    indent: int | None,
     sort_keys: bool,
     stringify: bool,
 ) -> str:
-    if indent is True:
-        indent = JSON_INDENT_TRUE
-
     separators = (",", ": " if indent else ":")
 
     if stringify:
@@ -676,12 +674,14 @@ def _yaml_represent_none(self, data):
     return self.represent_scalar("tag:yaml.org,2002:null", "null")
 
 
-def _encode_yaml(data: Document, *, width: int, yaml_options: YAMLOptions) -> str:
+def _encode_yaml(
+    data: Document, *, indent: int | None, width: int, yaml_options: YAMLOptions
+) -> str:
     yaml = ruamel.yaml.YAML()
     yaml.default_flow_style = False
 
     yaml.default_style = yaml_options.style  # type: ignore
-    yaml.indent = yaml_options.indent
+    yaml.indent = indent
     yaml.width = width
 
     yaml.representer.add_representer(type(None), _yaml_represent_none)
@@ -704,7 +704,7 @@ def encode(
     output_format: str,
     data: Document,
     *,
-    json_indent: bool | int | None,
+    indent: int | None,
     sort_keys: bool,
     stringify: bool,
     width: int,
@@ -713,7 +713,7 @@ def encode(
     if output_format == "json":
         encoded = _encode_json(
             data,
-            indent=json_indent,
+            indent=indent,
             sort_keys=sort_keys,
             stringify=stringify,
         ).encode(UTF_8)
@@ -734,6 +734,7 @@ def encode(
     elif output_format == "yaml":
         encoded = _encode_yaml(
             data,
+            indent=indent,
             width=width,
             yaml_options=yaml_options,
         ).encode(UTF_8)
@@ -757,8 +758,8 @@ def remarshal(  # noqa: PLR0913
     input: Path | str,
     output: Path | str,
     *,
-    json_indent: bool | int | None = None,
-    max_values: int = DEFAULT_MAX_VALUES,
+    indent: int | None = None,
+    max_values: int = Defaults.MAX_VALUES,
     sort_keys: bool = True,
     stringify: bool = False,
     transform: Callable[[Document], Document] | None = None,
@@ -802,7 +803,7 @@ def remarshal(  # noqa: PLR0913
         encoded = encode(
             output_format,
             parsed,
-            json_indent=json_indent,
+            indent=indent,
             sort_keys=sort_keys,
             stringify=stringify,
             width=width,
@@ -826,7 +827,7 @@ def main() -> None:
             args.output_format,
             args.input,
             args.output,
-            json_indent=args.json_indent,
+            indent=args.indent,
             max_values=args.max_values,
             sort_keys=args.sort_keys,
             stringify=args.stringify,

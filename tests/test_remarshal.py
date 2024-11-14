@@ -21,6 +21,7 @@ import pytest
 import remarshal
 from remarshal.main import (
     CLIDefaults,
+    Defaults,
     YAMLOptions,
     _argv0_to_format,
     _parse_command_line,
@@ -98,8 +99,8 @@ def _convert_and_read(
     input_format: str,
     output_format: str,
     *,
+    indent: int | None = None,
     output_filename: str,
-    json_indent: bool | int | None = True,
     sort_keys: bool = False,
     stringify: bool = False,
     transform: Callable[[remarshal.Document], remarshal.Document] | None = None,
@@ -113,7 +114,7 @@ def _convert_and_read(
         output_format,
         data_file_path(input_filename),
         output_filename,
-        json_indent=json_indent,
+        indent=indent,
         sort_keys=sort_keys,
         stringify=stringify,
         transform=transform,
@@ -140,7 +141,12 @@ class TestRemarshal:
         assert_cbor_same(output, reference)
 
     def test_json2json(self, convert_and_read) -> None:
-        output = convert_and_read("example.json", "json", "json")
+        output = convert_and_read(
+            "example.json",
+            "json",
+            "json",
+            indent=Defaults.JSON_INDENT,
+        )
         reference = read_file("example.json")
         assert output == reference
 
@@ -226,7 +232,13 @@ class TestRemarshal:
         assert_cbor_same(output, reference)
 
     def test_msgpack2json(self, convert_and_read) -> None:
-        output = convert_and_read("example.msgpack", "msgpack", "json", stringify=True)
+        output = convert_and_read(
+            "example.msgpack",
+            "msgpack",
+            "json",
+            indent=Defaults.JSON_INDENT,
+            stringify=True,
+        )
         reference = read_file("example.json")
         assert output == reference
 
@@ -250,7 +262,13 @@ class TestRemarshal:
         assert_cbor_same(output, reference)
 
     def test_toml2json(self, convert_and_read) -> None:
-        output = convert_and_read("example.toml", "toml", "json", stringify=True)
+        output = convert_and_read(
+            "example.toml",
+            "toml",
+            "json",
+            indent=Defaults.JSON_INDENT,
+            stringify=True,
+        )
         reference = read_file("example.json")
         assert output == reference
 
@@ -278,7 +296,13 @@ class TestRemarshal:
         assert_cbor_same(output, reference)
 
     def test_yaml2json(self, convert_and_read) -> None:
-        output = convert_and_read("example.yaml", "yaml", "json", stringify=True)
+        output = convert_and_read(
+            "example.yaml",
+            "yaml",
+            "json",
+            indent=Defaults.JSON_INDENT,
+            stringify=True,
+        )
         reference = read_file("example.json")
         assert output == reference
 
@@ -297,7 +321,13 @@ class TestRemarshal:
         assert toml_signature(output) == toml_signature(reference)
 
     def test_cbor2json(self, convert_and_read) -> None:
-        output = convert_and_read("example.cbor", "cbor", "json", stringify=True)
+        output = convert_and_read(
+            "example.cbor",
+            "cbor",
+            "json",
+            indent=Defaults.JSON_INDENT,
+            stringify=True,
+        )
         reference = read_file("example.json")
         assert output == reference
 
@@ -332,9 +362,7 @@ class TestRemarshal:
         assert output == reference
 
     def test_unwrap(self, convert_and_read) -> None:
-        output = convert_and_read(
-            "array.toml", "toml", "json", json_indent=None, unwrap="data"
-        )
+        output = convert_and_read("array.toml", "toml", "json", unwrap="data")
         reference = read_file("array.json")
         assert output == reference
 
@@ -509,7 +537,12 @@ class TestRemarshal:
         formats = ("json", "toml")
         for from_ in formats:
             for to in formats:
-                output = convert_and_read("order." + from_, from_, to)
+                output = convert_and_read(
+                    "order." + from_,
+                    from_,
+                    to,
+                    indent=Defaults.JSON_INDENT,
+                )
                 reference = read_file("order." + to)
 
                 message = "failed for {} to {} ({!r} instead of {!r})".format(
@@ -524,7 +557,13 @@ class TestRemarshal:
         formats = ("json", "toml")
         for from_ in formats:
             for to in formats:
-                output = convert_and_read("sorted." + from_, from_, to, sort_keys=True)
+                output = convert_and_read(
+                    "sorted." + from_,
+                    from_,
+                    to,
+                    indent=Defaults.JSON_INDENT,
+                    sort_keys=True,
+                )
                 reference = read_file("sorted." + to)
 
                 message = "failed for {} to {} ({!r} instead of {!r})".format(
@@ -540,7 +579,7 @@ class TestRemarshal:
             "bool-null-key.yaml",
             "yaml",
             "json",
-            json_indent=0,
+            indent=0,
             stringify=True,
         )
         reference = read_file("bool-null-key.json")
@@ -598,7 +637,10 @@ class TestRemarshal:
 
     def test_yaml_ident_5(self, convert_and_read) -> None:
         output = convert_and_read(
-            "long-line.json", "json", "yaml", yaml_options=YAMLOptions(indent=5)
+            "long-line.json",
+            "json",
+            "yaml",
+            indent=5,
         ).decode("utf-8")
         assert set(re.findall(r"\n +", output)) == {"\n     ", "\n          "}
 
@@ -644,7 +686,7 @@ class TestRemarshal:
             "norway.yaml",
             "yaml",
             "json",
-            json_indent=None,
+            indent=None,
         )
         reference = read_file("norway.json")
         assert output == reference
@@ -659,7 +701,13 @@ class TestRemarshal:
             convert_and_read("date.toml", "toml", "json")
 
     def test_toml2json_date_stringify(self, convert_and_read) -> None:
-        output = convert_and_read("date.toml", "toml", "json", stringify=True)
+        output = convert_and_read(
+            "date.toml",
+            "toml",
+            "json",
+            indent=Defaults.JSON_INDENT,
+            stringify=True,
+        )
         reference = read_file("date.json")
         assert output == reference
 
@@ -684,7 +732,13 @@ class TestRemarshal:
             convert_and_read("datetime-local.toml", "toml", "json")
 
     def test_toml2json_datetime_local_stringify(self, convert_and_read) -> None:
-        output = convert_and_read("datetime-local.toml", "toml", "json", stringify=True)
+        output = convert_and_read(
+            "datetime-local.toml",
+            "toml",
+            "json",
+            indent=Defaults.JSON_INDENT,
+            stringify=True,
+        )
         reference = read_file("datetime-local.json")
         assert output == reference
 
@@ -712,7 +766,13 @@ class TestRemarshal:
             convert_and_read("datetime-tz.toml", "toml", "json")
 
     def test_toml2json_datetime_tz_stringify(self, convert_and_read) -> None:
-        output = convert_and_read("datetime-tz.toml", "toml", "json", stringify=True)
+        output = convert_and_read(
+            "datetime-tz.toml",
+            "toml",
+            "json",
+            indent=Defaults.JSON_INDENT,
+            stringify=True,
+        )
         reference = read_file("datetime-tz.json")
         assert output == reference
 
@@ -740,7 +800,13 @@ class TestRemarshal:
             convert_and_read("time.toml", "toml", "json")
 
     def test_toml2json_time_stringify(self, convert_and_read) -> None:
-        output = convert_and_read("time.toml", "toml", "json", stringify=True)
+        output = convert_and_read(
+            "time.toml",
+            "toml",
+            "json",
+            indent=Defaults.JSON_INDENT,
+            stringify=True,
+        )
         reference = read_file("time.json")
         assert output == reference
 
