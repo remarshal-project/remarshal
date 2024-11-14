@@ -85,7 +85,8 @@ between what formats.
 
 Conversion to Python code is one-way.
 
-The Python output is formatted by [`pprint.pformat`](https://docs.python.org/3/library/pprint.html#pprint.pformat).
+The Python output is formatted by
+[`pprint.pformat`](https://docs.python.org/3/library/pprint.html#pprint.pformat).
 It is probably not how you want your Python code to look.
 Apply your preferred formatter to it.
 
@@ -134,10 +135,10 @@ pipx install git+https://github.com/remarshal-project/remarshal
 
 ```
 usage: remarshal [-h] [-v] [-i <input>] [--if {cbor,json,msgpack,toml,yaml}]
-                 [--json-indent <n>] [-k] [--max-values <n>] [-o <output>]
-                 [--of {cbor,json,msgpack,toml,yaml}] [-s] [--unwrap <key>]
-                 [--verbose] [--wrap <key>] [--yaml-indent <n>]
-                 [--yaml-style {,',",|,>}] [--yaml-width <n>]
+                 [--indent <n>] [-k] [--max-values <n>] [-o <output>]
+                 [--of {cbor,json,msgpack,python,toml,yaml}] [-s]
+                 [--unwrap <key>] [--verbose] [--width <n>] [--wrap <key>]
+                 [--yaml-style {,',",|,>}]
                  [input] [output]
 
 Convert between CBOR, JSON, MessagePack, TOML, and YAML.
@@ -149,32 +150,28 @@ positional arguments:
 options:
   -h, --help            show this help message and exit
   -v, --version         show program's version number and exit
-  -i <input>, --input <input>
-                        input file
-  --if {cbor,json,msgpack,toml,yaml}, --input-format
-{cbor,json,msgpack,toml,yaml}, -f {cbor,json,msgpack,toml,yaml},
---from {cbor,json,msgpack,toml,yaml}
+  -i, --input <input>   input file
+  --if, --input-format, -f, --from {cbor,json,msgpack,toml,yaml}
                         input format
-  --json-indent <n>     JSON indentation
+  --indent <n>          JSON and YAML indentation
   -k, --stringify       turn into strings: boolean and null keys and date-time
                         keys and values for JSON; boolean, date-time, and null
                         keys and null values for TOML
   --max-values <n>      maximum number of values in input data (default
                         1000000, negative for unlimited)
-  -o <output>, --output <output>
+  -o, --output <output>
                         output file
-  --of {cbor,json,msgpack,toml,yaml}, --output-format
-{cbor,json,msgpack,toml,yaml}, -t {cbor,json,msgpack,toml,yaml},
---to {cbor,json,msgpack,toml,yaml}
+  --of, --output-format, -t, --to {cbor,json,msgpack,python,toml,yaml}
                         output format
-  -s, --sort-keys       sort JSON and TOML keys instead of preserving key order
+  -s, --sort-keys       sort JSON, Python, and TOML keys instead of preserving
+                        key order
   --unwrap <key>        only output the data stored under the given key
   --verbose             print debug information when an error occurs
+  --width <n>           Python line width and YAML line width for long strings
+                        (integer or 'inf')
   --wrap <key>          wrap the data in a map type with the given key
-  --yaml-indent <n>     YAML indentation
   --yaml-style {,',",|,>}
                         YAML formatting style
-  --yaml-width <n>      YAML line width for long strings
 ```
 
 Instead of `remarshal` with format arguments,
