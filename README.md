@@ -105,34 +105,36 @@ Earlier versions of Python 3 will not work.
 The recommended way to run Remarshal is to install the latest release
 [from PyPI](https://pypi.org/project/remarshal/)
 with
-[pipx](https://github.com/pypa/pipx).
+[pipx](https://github.com/pypa/pipx)
+or
+[uv](https://github.com/astral-sh/uv).
 
 ```sh
 pipx install remarshal
+# or
+uv tool install remarshal
 ```
 
 Regular installation is not mandatory.
-The command
-
-```sh
-pipx run remarshal [arg ...]
-```
-
-will download Remarshal and run it from a temporary location.
+The command `pipx run remarshal [arg ...]` will download Remarshal and run it from a temporary location.
 It will cache the downloaded version for up to 14 days.
 Remarshal will not be automatically upgraded during this period.
+You can use `uvx remarshal [arg ...]` the same way.
 
-You can also install Remarshal using pip.
+You can install Remarshal for the current user with pip.
+This isn't recommended because of the potential dependency version conflicts between Remarshal and other packages.
 
 ```sh
 python3 -m pip install --user remarshal
 ```
 
-It is possible to install the current development version of Remarshal.
-Prefer releases unless you have a reason to run the development version.
+It is also possible to install the current development version of Remarshal.
+Prefer releases unless you have a reason to run a development version.
 
 ```sh
 pipx install git+https://github.com/remarshal-project/remarshal
+# or
+uv tool install https://github.com/remarshal-project/remarshal
 ```
 
 ## Usage
