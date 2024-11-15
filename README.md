@@ -139,11 +139,11 @@ uv tool install https://github.com/remarshal-project/remarshal
 
 ## Usage
 
-```
-usage: remarshal [-h] [-v] [-i <input>] [--if {cbor,json,msgpack,toml,yaml}]
-                 [--indent <n>] [-k] [--max-values <n>] [-o <output>]
-                 [--of {cbor,json,msgpack,python,toml,yaml}] [-s]
-                 [--unwrap <key>] [--verbose] [--width <n>] [--wrap <key>]
+```none
+usage: remarshal [-h] [-v] [-f {cbor,json,msgpack,toml,yaml}] [-i <input>]
+                 [--indent <n>] [-k] [--max-values <n>] [-o <output>] [-s]
+                 [-t {cbor,json,msgpack,python,toml,yaml}] [--unwrap <key>]
+                 [--verbose] [--width <n>] [--wrap <key>]
                  [--yaml-style {,',",|,>}]
                  [input] [output]
 
@@ -156,9 +156,9 @@ positional arguments:
 options:
   -h, --help            show this help message and exit
   -v, --version         show program's version number and exit
-  -i, --input <input>   input file
-  --if, --input-format, -f, --from {cbor,json,msgpack,toml,yaml}
+  -f, --from, --if, --input-format {cbor,json,msgpack,toml,yaml}
                         input format
+  -i, --input <input>   input file
   --indent <n>          JSON and YAML indentation
   -k, --stringify       turn into strings: boolean and null keys and date-time
                         keys and values for JSON; boolean, date-time, and null
@@ -167,10 +167,10 @@ options:
                         1000000, negative for unlimited)
   -o, --output <output>
                         output file
-  --of, --output-format, -t, --to {cbor,json,msgpack,python,toml,yaml}
-                        output format
   -s, --sort-keys       sort JSON, Python, and TOML keys instead of preserving
                         key order
+  -t, --to, --of, --output-format {cbor,json,msgpack,python,toml,yaml}
+                        output format
   --unwrap <key>        only output the data stored under the given key
   --verbose             print debug information when an error occurs
   --width <n>           Python line width and YAML line width for long strings
@@ -219,11 +219,11 @@ The following shell transcript demonstrates the problem
 and how `--wrap` and `--unwrap` solve it:
 
 ```
-$ echo '[{"a":"b"},{"c":[1,2,3]}]' | remarshal --if json --of toml
+$ echo '[{"a":"b"},{"c":[1,2,3]}]' | remarshal --from json --to toml
 Error: cannot convert non-dictionary data to TOML; use "--wrap" to wrap it in a dictionary
 
 $ echo '[{"a":"b"},{"c":[1,2,3]}]' \
-  | remarshal --if json --of toml --wrap main
+  | remarshal --from json --to toml --wrap main
 [[main]]
 a = "b"
 
@@ -231,9 +231,9 @@ a = "b"
 c = [1, 2, 3]
 
 $ echo '[{"a":"b"},{"c":[1,2,3]}]' \
-  | remarshal --if json --wrap main - test.toml
+  | remarshal --from json --wrap main - test.toml
 
-$ remarshal test.toml --of json
+$ remarshal test.toml --to json
 {"main":[{"a":"b"},{"c":[1,2,3]}]}
 
 $ remarshal test.toml --of json --unwrap main

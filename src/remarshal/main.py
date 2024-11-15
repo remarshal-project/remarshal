@@ -194,23 +194,12 @@ def _parse_command_line(argv: Sequence[str]) -> argparse.Namespace:
         version=importlib.metadata.version("remarshal"),
     )
 
-    input_group = parser.add_mutually_exclusive_group()
-    input_group.add_argument("input", default="-", nargs="?", help="input file")
-    input_group.add_argument(
-        "-i",
-        "--input",
-        default=None,
-        dest="input_flag",
-        metavar="<input>",
-        help="input file",
-    )
-
     if not format_from_argv0:
         parser.add_argument(
-            "--if",
-            "--input-format",
             "-f",
             "--from",
+            "--if",
+            "--input-format",
             choices=INPUT_FORMATS,
             default="",
             dest="input_format",
@@ -224,6 +213,17 @@ def _parse_command_line(argv: Sequence[str]) -> argparse.Namespace:
             dest="input_format",
             help=argparse.SUPPRESS,
         )
+
+    input_group = parser.add_mutually_exclusive_group()
+    input_group.add_argument("input", default="-", nargs="?", help="input file")
+    input_group.add_argument(
+        "-i",
+        "--input",
+        default=None,
+        dest="input_flag",
+        metavar="<input>",
+        help="input file",
+    )
 
     parser.add_argument(
         "--indent",
@@ -280,12 +280,25 @@ def _parse_command_line(argv: Sequence[str]) -> argparse.Namespace:
         help="output file",
     )
 
+    parser.add_argument(
+        "-p",
+        "--preserve-key-order",
+        help=argparse.SUPPRESS,
+    )
+
+    parser.add_argument(
+        "-s",
+        "--sort-keys",
+        action="store_true",
+        help="sort JSON, Python, and TOML keys instead of preserving key order",
+    )
+
     if not format_from_argv0:
         parser.add_argument(
-            "--of",
-            "--output-format",
             "-t",
             "--to",
+            "--of",
+            "--output-format",
             choices=OUTPUT_FORMATS,
             default="",
             dest="output_format",
@@ -299,19 +312,6 @@ def _parse_command_line(argv: Sequence[str]) -> argparse.Namespace:
             dest="output_format",
             help=argparse.SUPPRESS,
         )
-
-    parser.add_argument(
-        "-p",
-        "--preserve-key-order",
-        help=argparse.SUPPRESS,
-    )
-
-    parser.add_argument(
-        "-s",
-        "--sort-keys",
-        action="store_true",
-        help="sort JSON, Python, and TOML keys instead of preserving key order",
-    )
 
     parser.add_argument(
         "--unwrap",
