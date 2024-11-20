@@ -7,5 +7,6 @@
 *.pyc
 __pycache__
 /.python-version
+*.swp
 /.tox
 /venv*
