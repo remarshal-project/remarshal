@@ -125,9 +125,11 @@ cmd = "pyright ${PYTHON_SOURCES}"
 help = "Run Pyright"
 
 [tool.pyright]
+exclude = ["tests/bool-null-key.py"]
 pythonVersion = "3.9"
 
 [tool.ruff]
+exclude = ["tests/bool-null-key.py"]
 src = ["src", "tests"]
 target-version = "py39"
 
