@@ -61,6 +61,7 @@ class Defaults:
     WIDTH = 80
 
 
+Document = Union[bool, bytes, datetime.datetime, Mapping, None, Sequence, str]
 YAMLStyle = Literal["", "'", '"', "|", ">"]
 
 
@@ -108,16 +109,24 @@ class YAMLOptions(FormatOptions):
 
 
 __all__ = [
+    # Constants.
     "INPUT_FORMATS",
-    "OPTIONS_CLASSES",
     "OUTPUT_FORMATS",
     "RICH_ARGPARSE_STYLES",
+    # Classes and static types.
     "Defaults",
     "Document",
-    "FormatOptions",
     "TooManyValuesError",
+    "YAMLStyle",
+    # Format dataclasses.
+    "FormatOptions",
+    "CBOROptions",
+    "JSONOptions",
+    "MsgPackOptions",
+    "PythonOptions",
+    "TOMLOptions",
     "YAMLOptions",
-    "decode",
+    # Functions.
     "encode",
     "format_options",
     "identity",
@@ -452,9 +461,6 @@ def traverse(
             res = default_callback(col)
 
     return res
-
-
-Document = Union[bool, bytes, datetime.datetime, Mapping, None, Sequence, str]
 
 
 def _decode_cbor(input_data: bytes) -> Document:
