@@ -308,7 +308,7 @@ time = ["2014-10-05T00:00", "2014-10-05T01:00", "2014-10-05T02:00", "2014-10-05T
 temperature_2m = [5.7, 5.3, 5.0, 4.8, 4.6, 4.6, 7.0, 8.9, 10.8, 12.2, 13.3, 13.9, 13.9, 13.7, 13.3, 12.3, 11.1, 10.2, 9.4, 8.5, 8.2, 7.9, 8.0, 7.8]
 ```
 
-Remarshal does not limit the line length in TOML.
+Remarshal does not limit the line width in TOML.
 You can use
 [`taplo fmt`](https://taplo.tamasfe.dev/cli/usage/formatting.html)
 to reformat the TOML and break up long lines with arrays.
