@@ -138,6 +138,7 @@ __all__ = [
 
 INPUT_FORMATS = ["cbor", "json", "msgpack", "toml", "yaml"]
 OUTPUT_FORMATS = ["cbor", "json", "msgpack", "python", "toml", "yaml"]
+OUTPUT_FORMATS_ARGV0 = ["cbor", "json", "msgpack", "py", "toml", "yaml"]
 OPTIONS_CLASSES = {
     "cbor": CBOROptions,
     "json": JSONOptions,
@@ -165,9 +166,14 @@ RICH_ARGPARSE_STYLES: dict[str, StyleType] = {
 
 def _argv0_to_format(argv0: str) -> tuple[str, str]:
     possible_input_format = "(" + "|".join(INPUT_FORMATS) + ")"
-    possible_output_format = "(" + "|".join(OUTPUT_FORMATS) + ")"
+    possible_output_format = "(" + "|".join(OUTPUT_FORMATS_ARGV0) + ")"
+
     match = re.search("^" + possible_input_format + "2" + possible_output_format, argv0)
     from_, to = match.groups() if match else ("", "")
+
+    if to == "py":
+        to = "python"
+
     return from_, to
 
 
