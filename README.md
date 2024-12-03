@@ -4,7 +4,7 @@ Convert between CBOR, JSON, MessagePack, TOML, and YAML.
 When installed,
 Remarshal provides the command-line command `remarshal`
 as well as the short commands
-<code>{cbor,json,msgpack,toml,yaml}2<wbr>{cbor,json,msgpack,toml,yaml}</code>.
+<code>{cbor,json,msgpack,toml,yaml}2<wbr>{cbor,json,msgpack,py,toml,yaml}</code>.
 You can use these commands
 to convert between formats,
 reformat,
@@ -182,7 +182,7 @@ options:
 
 Instead of `remarshal` with format arguments,
 you can use a short command
-<code>{cbor,json,msgpack,toml,yaml}2<wbr>{cbor,json,msgpack,toml,yaml}</code>.
+<code>{cbor,json,msgpack,toml,yaml}2<wbr>{cbor,json,msgpack,py,toml,yaml}</code>.
 The `remarshal` command and the short commands
 exit with status 0 on success,
 1 on operational failure,
