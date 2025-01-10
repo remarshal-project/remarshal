@@ -643,6 +643,15 @@ class TestRemarshal:
         reference = read_file("timestamp-key.toml")
         assert output == reference
 
+    def test_yaml_colon(self, convert_and_read) -> None:
+        output = convert_and_read(
+            "colon.yaml",
+            "yaml",
+            "json",
+        )
+        reference = read_file("colon.json")
+        assert output == reference
+
     def test_yaml_width_default(self, convert_and_read) -> None:
         output = convert_and_read(
             "long-line.json",

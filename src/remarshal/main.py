@@ -510,7 +510,7 @@ def _decode_toml(input_data: bytes) -> Document:
 
 def _decode_yaml(input_data: bytes) -> Document:
     try:
-        yaml = ruamel.yaml.YAML(typ="safe")
+        yaml = ruamel.yaml.YAML(pure=True, typ="safe")
         doc = yaml.load(input_data)
 
         return cast(Document, doc)
@@ -742,7 +742,7 @@ def _encode_yaml(
     style: YAMLStyle,
     width: int,
 ) -> str:
-    yaml = ruamel.yaml.YAML()
+    yaml = ruamel.yaml.YAML(pure=True)
     yaml.default_flow_style = False
 
     yaml.default_style = style  # type: ignore
