@@ -121,13 +121,6 @@ It will cache the downloaded version for up to 14 days.
 Remarshal will not be automatically upgraded during this period.
 You can use `uvx remarshal [arg ...]` the same way.
 
-You can install Remarshal for the current user with pip.
-This isn't recommended because of the potential dependency version conflicts between Remarshal and other packages.
-
-```sh
-python3 -m pip install --user remarshal
-```
-
 It is also possible to install the current development version of Remarshal.
 Prefer releases unless you have a reason to run a development version.
 
