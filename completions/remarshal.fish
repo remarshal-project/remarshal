@@ -11,6 +11,7 @@ complete -c remarshal -s t -l to -l of -l output-format -x -a "cbor json msgpack
 complete -c remarshal -l indent -x -d "JSON and YAML indentation"
 complete -c remarshal -s k -l stringify -d "Turn special values into strings"
 complete -c remarshal -l max-values -x -d "Maximum number of values in input data"
+complete -c remarshal -l multiline -x -d "Minimum items for multiline TOML array"
 complete -c remarshal -s s -l sort-keys -d "Sort JSON, Python, and TOML keys"
 complete -c remarshal -l width -x -d "Python and YAML line width"
 complete -c remarshal -l yaml-style -x -a '"\'" "\\"" "|" ">"' -d "YAML formatting style"

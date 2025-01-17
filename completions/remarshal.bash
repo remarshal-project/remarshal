@@ -9,7 +9,7 @@ _remarshal() {
     input_formats=$formats
     output_formats="$formats python"
 
-    opts='--help --version --from --if --input-format --input --indent --stringify --max-values --output --sort-keys --to --of --output-format --unwrap --verbose --width --wrap --yaml-style'
+    opts='--help --version --from --if --input-format --input --indent --stringify --max-values --multiline --output --sort-keys --to --of --output-format --unwrap --verbose --width --wrap --yaml-style'
 
     case "${prev}" in
     --from | --if | --input-format | -f)

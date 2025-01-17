@@ -235,6 +235,12 @@ $ remarshal test.toml --of json --unwrap main
 [{"a":"b"},{"c":[1,2,3]}]
 ```
 
+## Shell completions
+
+Remarshal provides shell-completion files for Bash and fish in the directory [`completions/`](completions/).
+You can install fish completions automatically by running `install.fish`.
+You will need to install Bash completions manually.
+
 ## Examples
 
 ### TOML to YAML
