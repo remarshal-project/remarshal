@@ -99,7 +99,7 @@ You may need to add `import datetime` before the data.
 
 ## Installation
 
-You will need Python 3.9 or later.
+You will need Python 3.10 or later.
 Earlier versions of Python 3 will not work.
 
 The recommended way to run Remarshal is to install the latest release
