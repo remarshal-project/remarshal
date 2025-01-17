@@ -134,9 +134,9 @@ uv tool install https://github.com/remarshal-project/remarshal
 
 ```none
 usage: remarshal [-h] [-v] [-f {cbor,json,msgpack,toml,yaml}] [-i <input>]
-                 [--indent <n>] [-k] [--max-values <n>] [-o <output>] [-s]
-                 [-t {cbor,json,msgpack,python,toml,yaml}] [--unwrap <key>]
-                 [--verbose] [--width <n>] [--wrap <key>]
+                 [--indent <n>] [-k] [--max-values <n>] [--multiline <n>]
+                 [-o <output>] [-s] [-t {cbor,json,msgpack,python,toml,yaml}]
+                 [--unwrap <key>] [--verbose] [--width <n>] [--wrap <key>]
                  [--yaml-style {,',",|,>}]
                  [input] [output]
 
@@ -158,6 +158,8 @@ options:
                         keys and null values for TOML
   --max-values <n>      maximum number of values in input data (default
                         1000000, negative for unlimited)
+  --multiline <n>       minimum number of items to make non-nested TOML array
+                        multiline (default 6)
   -o, --output <output>
                         output file
   -s, --sort-keys       sort JSON, Python, and TOML keys instead of preserving
@@ -286,7 +288,7 @@ $ curl -f 'https://archive-api.open-meteo.com/v1/era5?latitude=50.43&longitude=3
   ;
 latitude = 50.439365
 longitude = 30.476192
-generationtime_ms = 0.04208087921142578
+generationtime_ms = 0.03254413604736328
 utc_offset_seconds = 0
 timezone = "GMT"
 timezone_abbreviation = "GMT"
@@ -297,14 +299,65 @@ time = "iso8601"
 temperature_2m = "°C"
 
 [hourly]
-time = ["2014-10-05T00:00", "2014-10-05T01:00", "2014-10-05T02:00", "2014-10-05T03:00", "2014-10-05T04:00", "2014-10-05T05:00", "2014-10-05T06:00", "2014-10-05T07:00", "2014-10-05T08:00", "2014-10-05T09:00", "2014-10-05T10:00", "2014-10-05T11:00", "2014-10-05T12:00", "2014-10-05T13:00", "2014-10-05T14:00", "2014-10-05T15:00", "2014-10-05T16:00", "2014-10-05T17:00", "2014-10-05T18:00", "2014-10-05T19:00", "2014-10-05T20:00", "2014-10-05T21:00", "2014-10-05T22:00", "2014-10-05T23:00"]
-temperature_2m = [5.7, 5.3, 5.0, 4.8, 4.6, 4.6, 7.0, 8.9, 10.8, 12.2, 13.3, 13.9, 13.9, 13.7, 13.3, 12.3, 11.1, 10.2, 9.4, 8.5, 8.2, 7.9, 8.0, 7.8]
+time = [
+    "2014-10-05T00:00",
+    "2014-10-05T01:00",
+    "2014-10-05T02:00",
+    "2014-10-05T03:00",
+    "2014-10-05T04:00",
+    "2014-10-05T05:00",
+    "2014-10-05T06:00",
+    "2014-10-05T07:00",
+    "2014-10-05T08:00",
+    "2014-10-05T09:00",
+    "2014-10-05T10:00",
+    "2014-10-05T11:00",
+    "2014-10-05T12:00",
+    "2014-10-05T13:00",
+    "2014-10-05T14:00",
+    "2014-10-05T15:00",
+    "2014-10-05T16:00",
+    "2014-10-05T17:00",
+    "2014-10-05T18:00",
+    "2014-10-05T19:00",
+    "2014-10-05T20:00",
+    "2014-10-05T21:00",
+    "2014-10-05T22:00",
+    "2014-10-05T23:00",
+]
+temperature_2m = [
+    5.7,
+    5.3,
+    5.0,
+    4.8,
+    4.6,
+    4.6,
+    7.0,
+    8.9,
+    10.8,
+    12.2,
+    13.3,
+    13.9,
+    13.9,
+    13.7,
+    13.3,
+    12.3,
+    11.1,
+    10.2,
+    9.4,
+    8.5,
+    8.2,
+    7.9,
+    8.0,
+    7.8,
+]
 ```
 
-Remarshal does not limit the line width in TOML.
+Remarshal controls the number of items at which a TOML array becomes multiline,
+but it does not control the line width.
 You can use
 [`taplo fmt`](https://taplo.tamasfe.dev/cli/usage/formatting.html)
-to reformat the TOML and break up long lines with arrays.
+for finer TOML formatting.
 
 ## License
 

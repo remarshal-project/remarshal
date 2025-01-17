@@ -100,6 +100,7 @@ def _convert_and_read(  # noqa: PLR0913
     output_format: str,
     *,
     indent: int | None = None,
+    multiline_threshold: int = Defaults.MULTILINE_THRESHOLD,
     output_filename: str,
     sort_keys: bool = False,
     stringify: bool = False,
@@ -113,6 +114,7 @@ def _convert_and_read(  # noqa: PLR0913
     options = remarshal.format_options(
         output_format,
         indent=indent,
+        multiline_threshold=multiline_threshold,
         sort_keys=sort_keys,
         stringify=stringify,
         width=width,
@@ -220,6 +222,25 @@ class TestRemarshal:
             reference.replace("1979-05-27T07:32:00Z", '"1979-05-27T07:32:00+00:00"')
         )
         assert output_sig == reference_sig
+
+    def test_json2toml_multiline_default(self, convert_and_read) -> None:
+        output = convert_and_read("multiline.json", "json", "toml")
+        reference = read_file("multiline.toml")
+        assert output == reference
+
+    def test_json2toml_multiline_3(self, convert_and_read) -> None:
+        output = convert_and_read(
+            "multiline.json", "json", "toml", multiline_threshold=3
+        )
+        reference = read_file("multiline-3.toml")
+        assert output == reference
+
+    def test_json2toml_multiline_5(self, convert_and_read) -> None:
+        output = convert_and_read(
+            "multiline.json", "json", "toml", multiline_threshold=5
+        )
+        reference = read_file("multiline-5.toml")
+        assert output == reference
 
     def test_json2yaml(self, convert_and_read) -> None:
         output = convert_and_read("example.json", "json", "yaml").decode("utf-8")

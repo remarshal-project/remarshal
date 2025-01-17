@@ -30,6 +30,7 @@ from typing import (
 import cbor2  # type: ignore
 import colorama
 import tomlkit
+import tomlkit.items
 from rich_argparse import RichHelpFormatter
 
 try:
@@ -57,6 +58,8 @@ class Defaults:
     JSON_INDENT = 4
     PYTHON_INDENT = 1
     YAML_INDENT = 2
+
+    MULTILINE_THRESHOLD = 6
 
     WIDTH = 80
 
@@ -97,6 +100,7 @@ class PythonOptions(FormatOptions):
 @dataclass(frozen=True)
 class TOMLOptions(FormatOptions):
     indent: int | None = Defaults.INDENT
+    multiline_threshold: int = Defaults.MULTILINE_THRESHOLD
     sort_keys: bool = Defaults.SORT_KEYS
     stringify: bool = Defaults.STRINGIFY
 
@@ -281,6 +285,18 @@ def _parse_command_line(argv: Sequence[str]) -> argparse.Namespace:
         help=(
             "maximum number of values in input data (default %(default)s, "
             "negative for unlimited)"
+        ),
+    )
+
+    parser.add_argument(
+        "--multiline",
+        default=Defaults.MULTILINE_THRESHOLD,
+        dest="multiline_threshold",
+        metavar="<n>",
+        type=int,
+        help=(
+            "minimum number of items to make non-nested TOML array multiline "
+            "(default %(default)s)"
         ),
     )
 
@@ -688,6 +704,7 @@ def _encode_python(
 def _encode_toml(
     data: Mapping[Any, Any],
     *,
+    multiline_threshold: int,
     sort_keys: bool,
     stringify: bool,
 ) -> str:
@@ -709,14 +726,28 @@ def _encode_toml(
     default_callback = stringify_null if stringify else reject_null
 
     try:
-        return tomlkit.dumps(
+        toml = tomlkit.item(
             traverse(
                 data,
                 key_callback=key_callback,
                 default_callback=default_callback,
             ),
-            sort_keys=sort_keys,
+            _sort_keys=sort_keys,
         )
+
+        def multilinify(item: tomlkit.items.Item) -> None:
+            match item:
+                case tomlkit.items.Array():
+                    if len(item) >= multiline_threshold:
+                        item.multiline(multiline=True)
+
+                case tomlkit.items.AbstractTable():
+                    for value in item.values():
+                        multilinify(value)
+
+        multilinify(toml)
+
+        return toml.as_string()
     except AttributeError as e:
         if str(e) == "'list' object has no attribute 'as_string'":
             msg = (
@@ -769,6 +800,7 @@ def format_options(
     output_format: str,
     *,
     indent: int | None = None,
+    multiline_threshold: int = Defaults.MULTILINE_THRESHOLD,
     sort_keys: bool = False,
     stringify: bool = False,
     width: int = Defaults.WIDTH,
@@ -797,6 +829,7 @@ def format_options(
 
         case "toml":
             return TOMLOptions(
+                multiline_threshold=multiline_threshold,
                 sort_keys=sort_keys,
                 stringify=stringify,
             )
@@ -824,12 +857,14 @@ def encode(
             if not isinstance(options, CBOROptions):
                 msg = "expected 'options' argument to have class 'CBOROptions'"
                 raise TypeError(msg)
+
             encoded = _encode_cbor(data)
 
         case "json":
             if not isinstance(options, JSONOptions):
                 msg = "expected 'options' argument to have class 'JSONOptions'"
                 raise TypeError(msg)
+
             encoded = _encode_json(
                 data,
                 indent=options.indent,
@@ -841,12 +876,14 @@ def encode(
             if not isinstance(options, MsgPackOptions):
                 msg = "expected 'options' argument to have class 'MsgPackOptions'"
                 raise TypeError(msg)
+
             encoded = _encode_msgpack(data)
 
         case "python":
             if not isinstance(options, PythonOptions):
                 msg = "expected 'options' argument to have class 'PythonOptions'"
                 raise TypeError(msg)
+
             encoded = _encode_python(
                 data,
                 indent=options.indent,
@@ -858,14 +895,17 @@ def encode(
             if not isinstance(options, TOMLOptions):
                 msg = "expected 'options' argument to have class 'TOMLOptions'"
                 raise TypeError(msg)
+
             if not isinstance(data, Mapping):
                 msg = (
                     f"Top-level value of type '{type(data).__name__}' cannot "
                     "be encoded as TOML"
                 )
                 raise TypeError(msg)
+
             encoded = _encode_toml(
                 data,
+                multiline_threshold=options.multiline_threshold,
                 sort_keys=options.sort_keys,
                 stringify=options.stringify,
             ).encode(UTF_8)
@@ -874,6 +914,7 @@ def encode(
             if not isinstance(options, YAMLOptions):
                 msg = "expected 'options' argument to have class 'YAMLOptions'"
                 raise TypeError(msg)
+
             encoded = _encode_yaml(
                 data,
                 indent=options.indent,
@@ -959,6 +1000,7 @@ def main() -> None:
         options = format_options(
             args.output_format,
             indent=args.indent,
+            multiline_threshold=args.multiline_threshold,
             sort_keys=args.sort_keys,
             stringify=args.stringify,
             width=args.width,
