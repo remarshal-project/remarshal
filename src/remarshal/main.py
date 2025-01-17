@@ -774,41 +774,43 @@ def format_options(
     width: int = Defaults.WIDTH,
     yaml_style: YAMLStyle = Defaults.YAML_STYLE,
 ) -> FormatOptions:
-    if output_format == "cbor":
-        return CBOROptions()
+    match output_format:
+        case "cbor":
+            return CBOROptions()
 
-    if output_format == "json":
-        return JSONOptions(
-            indent=indent,
-            sort_keys=sort_keys,
-            stringify=stringify,
-        )
+        case "json":
+            return JSONOptions(
+                indent=indent,
+                sort_keys=sort_keys,
+                stringify=stringify,
+            )
 
-    if output_format == "msgpack":
-        return MsgPackOptions()
+        case "msgpack":
+            return MsgPackOptions()
 
-    if output_format == "python":
-        return PythonOptions(
-            indent=indent,
-            sort_keys=sort_keys,
-            width=width,
-        )
+        case "python":
+            return PythonOptions(
+                indent=indent,
+                sort_keys=sort_keys,
+                width=width,
+            )
 
-    if output_format == "toml":
-        return TOMLOptions(
-            sort_keys=sort_keys,
-            stringify=stringify,
-        )
+        case "toml":
+            return TOMLOptions(
+                sort_keys=sort_keys,
+                stringify=stringify,
+            )
 
-    if output_format == "yaml":
-        return YAMLOptions(
-            indent=Defaults.YAML_INDENT if indent is None else indent,
-            style=yaml_style,
-            width=width,
-        )
+        case "yaml":
+            return YAMLOptions(
+                indent=Defaults.YAML_INDENT if indent is None else indent,
+                style=yaml_style,
+                width=width,
+            )
 
-    msg = f"Unknown output format: {output_format}"
-    raise ValueError(msg)
+        case _:
+            msg = f"Unknown output format: {output_format}"
+            raise ValueError(msg)
 
 
 def encode(
@@ -817,74 +819,71 @@ def encode(
     *,
     options: FormatOptions | None,
 ) -> bytes:
-    if output_format == "cbor":
-        if not isinstance(options, CBOROptions):
-            msg = "expected 'options' argument to have class 'CBOROptions'"
-            raise TypeError(msg)
+    match output_format:
+        case "cbor":
+            if not isinstance(options, CBOROptions):
+                msg = "expected 'options' argument to have class 'CBOROptions'"
+                raise TypeError(msg)
+            encoded = _encode_cbor(data)
 
-        encoded = _encode_cbor(data)
+        case "json":
+            if not isinstance(options, JSONOptions):
+                msg = "expected 'options' argument to have class 'JSONOptions'"
+                raise TypeError(msg)
+            encoded = _encode_json(
+                data,
+                indent=options.indent,
+                sort_keys=options.sort_keys,
+                stringify=options.stringify,
+            ).encode(UTF_8)
 
-    elif output_format == "json":
-        if not isinstance(options, JSONOptions):
-            msg = "expected 'options' argument to have class 'JSONOptions'"
-            raise TypeError(msg)
+        case "msgpack":
+            if not isinstance(options, MsgPackOptions):
+                msg = "expected 'options' argument to have class 'MsgPackOptions'"
+                raise TypeError(msg)
+            encoded = _encode_msgpack(data)
 
-        encoded = _encode_json(
-            data,
-            indent=options.indent,
-            sort_keys=options.sort_keys,
-            stringify=options.stringify,
-        ).encode(UTF_8)
+        case "python":
+            if not isinstance(options, PythonOptions):
+                msg = "expected 'options' argument to have class 'PythonOptions'"
+                raise TypeError(msg)
+            encoded = _encode_python(
+                data,
+                indent=options.indent,
+                sort_keys=options.sort_keys,
+                width=options.width,
+            ).encode(UTF_8)
 
-    elif output_format == "msgpack":
-        if not isinstance(options, MsgPackOptions):
-            msg = "expected 'options' argument to have class 'MsgPackOptions'"
-            raise TypeError(msg)
-        encoded = _encode_msgpack(data)
+        case "toml":
+            if not isinstance(options, TOMLOptions):
+                msg = "expected 'options' argument to have class 'TOMLOptions'"
+                raise TypeError(msg)
+            if not isinstance(data, Mapping):
+                msg = (
+                    f"Top-level value of type '{type(data).__name__}' cannot "
+                    "be encoded as TOML"
+                )
+                raise TypeError(msg)
+            encoded = _encode_toml(
+                data,
+                sort_keys=options.sort_keys,
+                stringify=options.stringify,
+            ).encode(UTF_8)
 
-    elif output_format == "python":
-        if not isinstance(options, PythonOptions):
-            msg = "expected 'options' argument to have class 'PythonOptions'"
-            raise TypeError(msg)
-        encoded = _encode_python(
-            data,
-            indent=options.indent,
-            sort_keys=options.sort_keys,
-            width=options.width,
-        ).encode(UTF_8)
+        case "yaml":
+            if not isinstance(options, YAMLOptions):
+                msg = "expected 'options' argument to have class 'YAMLOptions'"
+                raise TypeError(msg)
+            encoded = _encode_yaml(
+                data,
+                indent=options.indent,
+                style=options.style,
+                width=options.width,
+            ).encode(UTF_8)
 
-    elif output_format == "toml":
-        if not isinstance(options, TOMLOptions):
-            msg = "expected 'options' argument to have class 'TOMLOptions'"
-            raise TypeError(msg)
-
-        if not isinstance(data, Mapping):
-            msg = (
-                f"Top-level value of type '{type(data).__name__}' cannot "
-                "be encoded as TOML"
-            )
-            raise TypeError(msg)
-        encoded = _encode_toml(
-            data,
-            sort_keys=options.sort_keys,
-            stringify=options.stringify,
-        ).encode(UTF_8)
-
-    elif output_format == "yaml":
-        if not isinstance(options, YAMLOptions):
-            msg = "expected 'options' argument to have class 'YAMLOptions'"
-            raise TypeError(msg)
-
-        encoded = _encode_yaml(
-            data,
-            indent=options.indent,
-            style=options.style,
-            width=options.width,
-        ).encode(UTF_8)
-
-    else:
-        msg = f"Unknown output format: {output_format}"
-        raise ValueError(msg)
+        case _:
+            msg = f"Unknown output format: {output_format}"
+            raise ValueError(msg)
 
     return encoded
 
