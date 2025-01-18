@@ -90,6 +90,8 @@ The Python output is either from
 (the default) or formatted by
 [`pprint.pformat`](https://docs.python.org/3/library/pprint.html#pprint.pformat)
 (when you pass the option `--indent`).
+The default `repr` format ignores `-s`/`--sort-keys`.
+
 The style of `pprint`
 is probably not what you want your Python code to look like.
 Apply your preferred Python formatter to it.
