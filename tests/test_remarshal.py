@@ -634,6 +634,16 @@ class TestRemarshal:
         reference = read_file("bool-null-key.json")
         assert output == reference
 
+    def test_yaml2python_bool_null_key(self, convert_and_read) -> None:
+        output = convert_and_read(
+            "bool-null-key.yaml",
+            "yaml",
+            "python",
+            indent=None,
+        )
+        reference = read_file("bool-null-key.py")
+        assert output == reference
+
     def test_yaml2toml_bool_null_key(self, convert_and_read) -> None:
         output = convert_and_read(
             "bool-null-key.yaml",

@@ -1,1 +1,1 @@
-{True: "foo", False: "oof", "another": "bar", None: "nothin'"}
+{True: 'foo', False: 'oof', 'another': 'bar', None: "nothin'"}

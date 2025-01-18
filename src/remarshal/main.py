@@ -687,18 +687,18 @@ def _encode_python(
     sort_keys: bool,
     width: int,
 ) -> str:
-    if indent is None:
-        return repr(data)
-
-    return (
-        pprint.pformat(
+    code = (
+        repr(data)
+        if indent is None
+        else pprint.pformat(
             data,
             indent=indent,
             sort_dicts=sort_keys,
             width=width,
         )
-        + "\n"
     )
+
+    return code + "\n"
 
 
 def _encode_toml(
