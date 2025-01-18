@@ -4,7 +4,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
 name = "remarshal"
-version = "1.0.0"
+version = "1.0.1"
 description = "Convert between CBOR, JSON, MessagePack, TOML, and YAML"
 authors = ["D. Bohdan <dbohdan@dbohdan.com>"]
 license = "MIT"
