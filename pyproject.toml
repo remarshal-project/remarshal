@@ -32,7 +32,6 @@ include = [
   { path = "example.toml", format = "sdist" },
   { path = "example.yaml", format = "sdist" },
   { path = "tests/", format = "sdist" },
-  { path = "tox.ini", format = "sdist" },
 ]
 
 [tool.poetry.dependencies]
@@ -216,3 +215,21 @@ max-statements = 100
 "src/remarshal/main.py" = ["ARG001", "B904", "EM103", "RET506", "S506", "SIM115"]
 "tests/test_remarshal.py" = ["F841", "PT011", "SLF001"]
 "tests/*" = ["S101"]
+
+[tool.tox]
+requires = ["tox>=4.22"]
+env_list = [
+  "py310",
+  "py311",
+  "py312",
+  "py313",
+  "pypy310",
+  "pypy311",
+]
+
+[tool.tox.env_run_base]
+description = "run tests"
+deps = ["pytest>=8,<9"]
+commands = [
+  ["pytest"],
+]
