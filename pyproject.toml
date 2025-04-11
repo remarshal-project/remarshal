@@ -1,16 +1,23 @@
 [build-system]
-requires = ["poetry-core>=1.0"]
+requires = ["poetry-core>=2.0"]
 build-backend = "poetry.core.masonry.api"
 
-[tool.poetry]
+[project]
 name = "remarshal"
 version = "1.0.1"
 description = "Convert between CBOR, JSON, MessagePack, TOML, and YAML"
-authors = ["D. Bohdan <dbohdan@dbohdan.com>"]
-license = "MIT"
+authors = [{ name = "D. Bohdan", email = "dbohdan@dbohdan.com" }]
+license = { text = "MIT" }
 readme = "README.md"
-repository = "https://github.com/remarshal-project/remarshal"
-keywords = ["converter", "cbor", "json", "messagepack", "msgpack", "toml", "yaml"]
+keywords = [
+  "converter",
+  "cbor",
+  "json",
+  "messagepack",
+  "msgpack",
+  "toml",
+  "yaml",
+]
 classifiers = [
   "Development Status :: 5 - Production/Stable",
   "Environment :: Console",
@@ -21,9 +28,69 @@ classifiers = [
   "Programming Language :: Python :: 3",
   "Topic :: File Formats",
   "Topic :: File Formats :: JSON",
-  "Topic :: Utilities"
+  "Topic :: Utilities",
 ]
 
+requires-python = ">=3.10"
+dependencies = [
+  "cbor2>=5.6,<6.0",
+  "colorama>=0.4.6,<0.5",
+  "rich-argparse>=1.4,<2.0",
+  "ruamel.yaml>=0.18,<0.19",
+  "tomli>=2.0.1,<3.0; python_version < '3.11'",
+  "tomlkit>=0.13.2,<0.14",
+  "u-msgpack-python>=2.8,<3.0",
+]
+
+[project.optional-dependencies]
+dev = [
+  "codespell[toml]>=2.2.5,<3.0",
+  "pyright==1.1.384",
+  "pytest>=8.0,<9.0",
+  "pytest-cov>=4.1,<5.0",
+  "ruff==0.6.9",
+  "snoop>=0.6,<0.7",
+  "tomli>=2.0.1,<3.0",
+  "types-python-dateutil>=2.8.19.13,<3.0",
+]
+
+[project.scripts]
+remarshal = 'remarshal.main:main'
+cbor2cbor = 'remarshal.main:main'
+cbor2json = 'remarshal.main:main'
+cbor2msgpack = 'remarshal.main:main'
+cbor2py = 'remarshal.main:main'
+cbor2toml = 'remarshal.main:main'
+cbor2yaml = 'remarshal.main:main'
+json2cbor = 'remarshal.main:main'
+json2json = 'remarshal.main:main'
+json2msgpack = 'remarshal.main:main'
+json2py = 'remarshal.main:main'
+json2toml = 'remarshal.main:main'
+json2yaml = 'remarshal.main:main'
+msgpack2cbor = 'remarshal.main:main'
+msgpack2json = 'remarshal.main:main'
+msgpack2msgpack = 'remarshal.main:main'
+msgpack2py = 'remarshal.main:main'
+msgpack2toml = 'remarshal.main:main'
+msgpack2yaml = 'remarshal.main:main'
+toml2cbor = 'remarshal.main:main'
+toml2json = 'remarshal.main:main'
+toml2msgpack = 'remarshal.main:main'
+toml2py = 'remarshal.main:main'
+toml2toml = 'remarshal.main:main'
+toml2yaml = 'remarshal.main:main'
+yaml2cbor = 'remarshal.main:main'
+yaml2json = 'remarshal.main:main'
+yaml2msgpack = 'remarshal.main:main'
+yaml2py = 'remarshal.main:main'
+yaml2toml = 'remarshal.main:main'
+yaml2yaml = 'remarshal.main:main'
+
+[project.urls]
+repository = "https://github.com/remarshal-project/remarshal"
+
+[tool.poetry]
 include = [
   { path = "example.cbor", format = "sdist" },
   { path = "example.json", format = "sdist" },
@@ -33,61 +100,7 @@ include = [
   { path = "example.yaml", format = "sdist" },
   { path = "tests/", format = "sdist" },
 ]
-
-[tool.poetry.dependencies]
-python = "^3.10"
-
-cbor2 = "^5.6"
-"ruamel.yaml" = "^0.18.0"
-tomli = { version = "^2.0.1", python = "<3.11" }
-tomlkit = "^0.13.2"
-u-msgpack-python = "^2.8"
-
-colorama = "^0.4.6"
-rich-argparse = "^1.4.0"
-
-[tool.poetry.group.dev.dependencies]
-ruff = "0.6.9"
-tomli = "^2.0.1"
-types-python-dateutil = "^2.8.19.13"
-codespell = {extras = ["toml"], version = "^2.2.5"}
-pyright = "1.1.384"
-pytest = "^8"
-pytest-cov = "^4.1.0"
-snoop = "^0.6.0"
-
-[tool.poetry.scripts]
-remarshal        = 'remarshal.main:main'
-cbor2cbor        = 'remarshal.main:main'
-cbor2json        = 'remarshal.main:main'
-cbor2msgpack     = 'remarshal.main:main'
-cbor2py          = 'remarshal.main:main'
-cbor2toml        = 'remarshal.main:main'
-cbor2yaml        = 'remarshal.main:main'
-json2cbor        = 'remarshal.main:main'
-json2json        = 'remarshal.main:main'
-json2msgpack     = 'remarshal.main:main'
-json2py          = 'remarshal.main:main'
-json2toml        = 'remarshal.main:main'
-json2yaml        = 'remarshal.main:main'
-msgpack2cbor     = 'remarshal.main:main'
-msgpack2json     = 'remarshal.main:main'
-msgpack2msgpack  = 'remarshal.main:main'
-msgpack2py       = 'remarshal.main:main'
-msgpack2toml     = 'remarshal.main:main'
-msgpack2yaml     = 'remarshal.main:main'
-toml2cbor        = 'remarshal.main:main'
-toml2json        = 'remarshal.main:main'
-toml2msgpack     = 'remarshal.main:main'
-toml2py          = 'remarshal.main:main'
-toml2toml        = 'remarshal.main:main'
-toml2yaml        = 'remarshal.main:main'
-yaml2cbor        = 'remarshal.main:main'
-yaml2json        = 'remarshal.main:main'
-yaml2msgpack     = 'remarshal.main:main'
-yaml2py          = 'remarshal.main:main'
-yaml2toml        = 'remarshal.main:main'
-yaml2yaml        = 'remarshal.main:main'
+requires-poetry = ">=2.0"
 
 [tool.codespell]
 quiet-level = 3
@@ -212,7 +225,14 @@ max-branches = 20
 max-statements = 100
 
 [tool.ruff.lint.per-file-ignores]
-"src/remarshal/main.py" = ["ARG001", "B904", "EM103", "RET506", "S506", "SIM115"]
+"src/remarshal/main.py" = [
+  "ARG001",
+  "B904",
+  "EM103",
+  "RET506",
+  "S506",
+  "SIM115",
+]
 "tests/test_remarshal.py" = ["F841", "PT011", "SLF001"]
 "tests/*" = ["S101"]
 

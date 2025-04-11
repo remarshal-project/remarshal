@@ -8,7 +8,7 @@ jobs:
       - name: Install dependencies
         run: |
           pipx install poethepoet poetry
-          poetry install
+          poetry install --extras dev
       - name: Format
         run: poe format
       - name: Check spelling
