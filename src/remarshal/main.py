@@ -367,8 +367,7 @@ def _parse_command_line(argv: Sequence[str]) -> argparse.Namespace:
         metavar="<n>",
         type=output_width,  # Allow "inf".
         help=(
-            "Python line width and YAML line width for long strings"
-            " (integer or 'inf')"
+            "Python line width and YAML line width for long strings (integer or 'inf')"
         ),
     )
 
@@ -488,7 +487,7 @@ def traverse(
 def _decode_cbor(input_data: bytes) -> Document:
     try:
         doc = cbor2.loads(input_data)
-        return cast(Document, doc)
+        return cast("Document", doc)
     except cbor2.CBORDecodeError as e:
         msg = f"Cannot parse as CBOR ({e})"
         raise ValueError(msg)
@@ -500,7 +499,7 @@ def _decode_json(input_data: bytes) -> Document:
             input_data.decode(UTF_8),
         )
 
-        return cast(Document, doc)
+        return cast("Document", doc)
     except json.JSONDecodeError as e:
         msg = f"Cannot parse as JSON ({e})"
         raise ValueError(msg)
@@ -509,7 +508,7 @@ def _decode_json(input_data: bytes) -> Document:
 def _decode_msgpack(input_data: bytes) -> Document:
     try:
         doc = umsgpack.unpackb(input_data)
-        return cast(Document, doc)
+        return cast("Document", doc)
     except umsgpack.UnpackException as e:
         msg = f"Cannot parse as MessagePack ({e})"
         raise ValueError(msg)
@@ -518,7 +517,7 @@ def _decode_msgpack(input_data: bytes) -> Document:
 def _decode_toml(input_data: bytes) -> Document:
     try:
         doc = tomllib.loads(input_data.decode(UTF_8))
-        return cast(Document, doc)
+        return cast("Document", doc)
     except tomllib.TOMLDecodeError as e:
         msg = f"Cannot parse as TOML ({e})"
         raise ValueError(msg)
@@ -529,7 +528,7 @@ def _decode_yaml(input_data: bytes) -> Document:
         yaml = ruamel.yaml.YAML(pure=True, typ="safe")
         doc = yaml.load(input_data)
 
-        return cast(Document, doc)
+        return cast("Document", doc)
     except ruamel.yaml.YAMLError as e:
         problem = getattr(e, "problem", str(e))
         msg = f"Cannot parse as YAML ({problem})"

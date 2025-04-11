@@ -213,6 +213,7 @@ ignore = [
   "A002",   # builtin-argument-shadowing
   "ISC001", # single-line-implicit-string-concatenation
   "PGH003", # blanket-type-ignore
+  "RUF022", # unsorted-dunder-all
 ]
 
 [tool.ruff.lint.mccabe]
