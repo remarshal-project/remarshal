@@ -78,8 +78,6 @@ between what formats.
   with the `-k`/`--stringify` option,
   which turns them into strings.
   Converting a document with a date-time type to JSON fails without `-k`/`--stringify`.
-- Remarshal converts YAML dates to TOML Local Dates.
-  It converts TOML Local Dates to YAML dates.
 
 ### Python output
 
