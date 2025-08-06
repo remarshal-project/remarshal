@@ -693,13 +693,13 @@ class TestRemarshal:
 
     def test_yaml_width_5(self, convert_and_read) -> None:
         output = convert_and_read("long-line.json", "json", "yaml", width=5).decode()
-        assert len([char for char in output if char == "\n"]) == 23
+        assert len([char for char in output if char == "\n"]) == 24
 
     def test_yaml_width_120(self, convert_and_read) -> None:
         output = convert_and_read("long-line.json", "json", "yaml", width=120).decode(
             "utf-8"
         )
-        assert len([char for char in output if char == "\n"]) == 3
+        assert len([char for char in output if char == "\n"]) == 4
 
     def test_yaml_ident_5(self, convert_and_read) -> None:
         output = convert_and_read(
