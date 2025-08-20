@@ -109,6 +109,7 @@ def _convert_and_read(  # noqa: PLR0913
     width: int = Defaults.WIDTH,
     wrap: str | None = None,
     yaml_style: YAMLStyle = Defaults.YAML_STYLE,
+    yaml_style_newline: YAMLStyle | None = None,
     options: FormatOptions | None = None,
 ) -> bytes:
     options = remarshal.format_options(
@@ -119,6 +120,7 @@ def _convert_and_read(  # noqa: PLR0913
         stringify=stringify,
         width=width,
         yaml_style=yaml_style,
+        yaml_style_newline=yaml_style_newline,
     )
 
     remarshal.remarshal(
@@ -484,6 +486,46 @@ class TestRemarshal:
     def test_yaml_style_gt(self, convert_and_read) -> None:
         output = convert_and_read("long-line.json", "json", "yaml", yaml_style=">")
         reference = read_file("long-line-gt.yaml")
+        assert output == reference
+
+    def test_yaml_style_newline_default(self, convert_and_read) -> None:
+        output = convert_and_read("newline.json", "json", "yaml", yaml_style="'")
+        reference = read_file("newline-default.yaml")
+        assert output == reference
+
+    def test_yaml_style_newline_empty(self, convert_and_read) -> None:
+        output = convert_and_read(
+            "newline.json", "json", "yaml", yaml_style="'", yaml_style_newline=""
+        )
+        reference = read_file("newline-empty.yaml")
+        assert output == reference
+
+    def test_yaml_style_newline_single_quote(self, convert_and_read) -> None:
+        output = convert_and_read(
+            "newline.json", "json", "yaml", yaml_style="'", yaml_style_newline="'"
+        )
+        reference = read_file("newline-single-quote.yaml")
+        assert output == reference
+
+    def test_yaml_style_newline_double_quote(self, convert_and_read) -> None:
+        output = convert_and_read(
+            "newline.json", "json", "yaml", yaml_style="'", yaml_style_newline='"'
+        )
+        reference = read_file("newline-double-quote.yaml")
+        assert output == reference
+
+    def test_yaml_style_newline_pipe(self, convert_and_read) -> None:
+        output = convert_and_read(
+            "newline.json", "json", "yaml", yaml_style="'", yaml_style_newline="|"
+        )
+        reference = read_file("newline-pipe.yaml")
+        assert output == reference
+
+    def test_yaml_style_newline_gt(self, convert_and_read) -> None:
+        output = convert_and_read(
+            "newline.json", "json", "yaml", yaml_style="'", yaml_style_newline=">"
+        )
+        reference = read_file("newline-gt.yaml")
         assert output == reference
 
     def test_argv0_to_format(self) -> None:

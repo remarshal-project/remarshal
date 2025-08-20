@@ -9,7 +9,7 @@ _remarshal() {
     input_formats=$formats
     output_formats="$formats python"
 
-    opts='--help --version --from --if --input-format --input --indent --stringify --max-values --multiline --output --sort-keys --to --of --output-format --unwrap --verbose --width --wrap --yaml-style'
+    opts='--help --version --from --if --input-format --input --indent --stringify --max-values --multiline --output --sort-keys --to --of --output-format --unwrap --verbose --width --wrap --yaml-style --yaml-style-newline'
 
     case "${prev}" in
     --from | --if | --input-format | -f)
@@ -20,7 +20,7 @@ _remarshal() {
         COMPREPLY=($(compgen -W "${output_formats}" -- ${cur}))
         return 0
         ;;
-    --yaml-style)
+    --yaml-style | --yaml-style-newline)
         COMPREPLY=($(compgen -W '\" '"\\' '|' '>'" -- ${cur}))
         return 0
         ;;

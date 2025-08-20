@@ -1,3 +1,5 @@
+set --local yaml_styles '"\'" "\\"" "|" ">"'
+
 complete -c remarshal -s h -l help -d "Show help message and exit"
 complete -c remarshal -s v -l version -d "Show program's version number and exit"
 
@@ -14,4 +16,5 @@ complete -c remarshal -l unwrap -x -d "Only output data under given key"
 complete -c remarshal -l verbose -d "Print debug information on error"
 complete -c remarshal -l width -x -d "Python and YAML line width"
 complete -c remarshal -l wrap -x -d "Wrap data in a map with given key"
-complete -c remarshal -l yaml-style -x -a '"\'" "\\"" "|" ">"' -d "YAML formatting style"
+complete -c remarshal -l yaml-style -x -a $yaml_styles -d "YAML formatting style"
+complete -c remarshal -l yaml-style-newline -x -a $yaml_styles -d "YAML formatting style override for strings that contain a newline"

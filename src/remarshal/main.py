@@ -41,6 +41,7 @@ except ModuleNotFoundError:
 import ruamel.yaml
 import ruamel.yaml.parser
 import ruamel.yaml.representer
+import ruamel.yaml.scalarstring
 import ruamel.yaml.scanner
 import umsgpack
 
@@ -109,6 +110,7 @@ class TOMLOptions(FormatOptions):
 class YAMLOptions(FormatOptions):
     indent: int = Defaults.YAML_INDENT
     style: YAMLStyle = Defaults.YAML_STYLE
+    style_newline: YAMLStyle | None = None
     width: int = Defaults.WIDTH
 
 
@@ -390,6 +392,13 @@ def _parse_command_line(argv: Sequence[str]) -> argparse.Namespace:
         choices=["", "'", '"', "|", ">"],
         default=YAMLOptions().style,
         help="YAML formatting style",
+    )
+
+    parser.add_argument(
+        "--yaml-style-newline",
+        choices=["", "'", '"', "|", ">"],
+        default=YAMLOptions().style_newline,
+        help="YAML formatting style override for strings that contain a newline",
     )
 
     parser.add_argument(
@@ -761,15 +770,12 @@ def _encode_toml(
         raise ValueError(msg)
 
 
-def _yaml_represent_none(self, data):
-    return self.represent_scalar("tag:yaml.org,2002:null", "null")
-
-
 def _encode_yaml(
     data: Document,
     *,
     indent: int | None,
     style: YAMLStyle,
+    style_newline: YAMLStyle | None,
     width: int,
 ) -> str:
     yaml = ruamel.yaml.YAML(pure=True)
@@ -779,7 +785,15 @@ def _encode_yaml(
     yaml.indent = indent
     yaml.width = width
 
-    yaml.representer.add_representer(type(None), _yaml_represent_none)
+    def represent_none(self, data):
+        return self.represent_scalar("tag:yaml.org,2002:null", "null")
+
+    def represent_str(self, data):
+        str_style = style_newline if "\n" in data else style
+        return self.represent_scalar("tag:yaml.org,2002:str", data, style=str_style)
+
+    yaml.representer.add_representer(type(None), represent_none)
+    yaml.representer.add_representer(str, represent_str)
 
     try:
         out = StringIO()
@@ -804,6 +818,7 @@ def format_options(
     stringify: bool = False,
     width: int = Defaults.WIDTH,
     yaml_style: YAMLStyle = Defaults.YAML_STYLE,
+    yaml_style_newline: YAMLStyle | None = None,
 ) -> FormatOptions:
     match output_format:
         case "cbor":
@@ -837,6 +852,7 @@ def format_options(
             return YAMLOptions(
                 indent=Defaults.YAML_INDENT if indent is None else indent,
                 style=yaml_style,
+                style_newline=yaml_style_newline,
                 width=width,
             )
 
@@ -918,6 +934,7 @@ def encode(
                 data,
                 indent=options.indent,
                 style=options.style,
+                style_newline=options.style_newline,
                 width=options.width,
             ).encode(UTF_8)
 
@@ -1004,6 +1021,7 @@ def main() -> None:
             stringify=args.stringify,
             width=args.width,
             yaml_style=args.yaml_style,
+            yaml_style_newline=args.yaml_style_newline,
         )
 
         remarshal(
