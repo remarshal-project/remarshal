@@ -137,7 +137,7 @@ usage: remarshal [-h] [-v] [-f {cbor,json,msgpack,toml,yaml}] [-i <input>]
                  [--indent <n>] [-k] [--max-values <n>] [--multiline <n>]
                  [-o <output>] [-s] [-t {cbor,json,msgpack,python,toml,yaml}]
                  [--unwrap <key>] [--verbose] [--width <n>] [--wrap <key>]
-                 [--yaml-style {,',",|,>}]
+                 [--yaml-style {,',",|,>}] [--yaml-style-newline {,',",|,>}]
                  [input] [output]
 
 Convert between CBOR, JSON, MessagePack, TOML, and YAML.
@@ -173,6 +173,9 @@ options:
   --wrap <key>          wrap the data in a map type with the given key
   --yaml-style {,',",|,>}
                         YAML formatting style
+  --yaml-style-newline {,',",|,>}
+                        YAML formatting style override for strings that
+                        contain a newline
 ```
 
 Instead of `remarshal` with format arguments,
