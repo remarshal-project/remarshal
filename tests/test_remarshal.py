@@ -458,6 +458,21 @@ class TestRemarshal:
     def test_binary_to_yaml(self, convert_and_read) -> None:
         convert_and_read("bin.msgpack", "msgpack", "yaml")
 
+    def test_yaml_1_1_features(self, convert_and_read) -> None:
+        output = convert_and_read("yaml-1.1-features.yaml", "yaml-1.1", "json")
+        reference = read_file("yaml-1.1-features.json")
+        assert output == reference
+
+    def test_yaml_1_1_features_in_1_2(self, convert_and_read) -> None:
+        output = convert_and_read("yaml-1.1-features.yaml", "yaml-1.2", "json")
+        reference = read_file("yaml-1.1-features-as-1.2.json")
+        assert output == reference
+
+    def test_yaml_1_1_features_to_1_2(self, convert_and_read) -> None:
+        output = convert_and_read("yaml-1.1-features.yaml", "yaml-1.1", "yaml-1.2")
+        reference = read_file("yaml-1.1-features-to-1.2.yaml")
+        assert output == reference
+
     def test_yaml_null(self, convert_and_read) -> None:
         output = convert_and_read("null.json", "json", "yaml")
         reference = read_file("null.yaml")
@@ -789,7 +804,7 @@ class TestRemarshal:
         with pytest.raises(remarshal.TooManyValuesError):
             convert_and_read("lol.yml", "yaml", "json")
 
-    def test_yaml_norway_problem(self, convert_and_read) -> None:
+    def test_yaml_norway_problem_from_default(self, convert_and_read) -> None:
         output = convert_and_read(
             "norway.yaml",
             "yaml",
@@ -797,6 +812,44 @@ class TestRemarshal:
             indent=None,
         )
         reference = read_file("norway.json")
+        assert output == reference
+
+    def test_yaml_norway_problem_from_yaml_1_1(self, convert_and_read) -> None:
+        output = convert_and_read(
+            "norway.yaml",
+            "yaml-1.1",
+            "json",
+            indent=None,
+        )
+        reference = read_file("norway-yaml-1.1.json")
+        assert output == reference
+
+    def test_yaml_norway_problem_from_yaml_1_2(self, convert_and_read) -> None:
+        output = convert_and_read(
+            "norway.yaml",
+            "yaml-1.2",
+            "json",
+            indent=None,
+        )
+        reference = read_file("norway.json")
+        assert output == reference
+
+    def test_yaml_norway_problem_to_yaml_1_1(self, convert_and_read) -> None:
+        output = convert_and_read(
+            "norway.json",
+            "json",
+            "yaml-1.1",
+        )
+        reference = read_file("norway-yaml-1.1.yaml")
+        assert output == reference
+
+    def test_yaml_norway_problem_to_yaml_1_2(self, convert_and_read) -> None:
+        output = convert_and_read(
+            "norway.json",
+            "json",
+            "yaml-1.2",
+        )
+        reference = read_file("norway-yaml-1.2.yaml")
         assert output == reference
 
     def test_toml2cbor_date(self, convert_and_read) -> None:
@@ -826,10 +879,12 @@ class TestRemarshal:
     def test_toml2toml_date(self, convert_and_read) -> None:
         output = convert_and_read("date.toml", "toml", "toml")
         reference = read_file("date.toml")
+        assert output == reference
 
     def test_toml2yaml_date(self, convert_and_read) -> None:
         output = convert_and_read("date.toml", "toml", "yaml")
         reference = read_file("date.yaml")
+        assert output == reference
 
     def test_toml2cbor_datetime_local(self, convert_and_read) -> None:
         with pytest.raises(ValueError):

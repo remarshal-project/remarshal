@@ -1,0 +1,10 @@
+%YAML 1.2
+---
+booleans:
+- true
+- false
+strings:
+- yes
+- no
+- on
+- off

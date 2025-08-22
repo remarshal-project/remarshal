@@ -5,7 +5,7 @@ _remarshal() {
     cur=${COMP_WORDS[COMP_CWORD]}
     prev=${COMP_WORDS[COMP_CWORD - 1]}
 
-    formats='cbor json msgpack toml yaml'
+    formats='cbor json msgpack toml yaml yaml-1.1 yaml-1.2'
     input_formats=$formats
     output_formats="$formats python"
 

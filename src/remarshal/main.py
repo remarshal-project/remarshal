@@ -67,6 +67,7 @@ class Defaults:
 
 Document = Union[bool, bytes, datetime.datetime, Mapping, None, Sequence, str]
 YAMLStyle = Literal["", "'", '"', "|", ">"]
+YAMLVersion = Union[tuple[int, int], None]
 
 
 @dataclass(frozen=True)
@@ -111,6 +112,7 @@ class YAMLOptions(FormatOptions):
     indent: int = Defaults.YAML_INDENT
     style: YAMLStyle = Defaults.YAML_STYLE
     style_newline: YAMLStyle | None = None
+    version: YAMLVersion = (1, 2)
     width: int = Defaults.WIDTH
 
 
@@ -124,6 +126,7 @@ __all__ = [
     "Document",
     "TooManyValuesError",
     "YAMLStyle",
+    "YAMLVersion",
     # Format dataclasses.
     "FormatOptions",
     "CBOROptions",
@@ -142,9 +145,27 @@ __all__ = [
 ]
 
 
-INPUT_FORMATS = ["cbor", "json", "msgpack", "toml", "yaml"]
-OUTPUT_FORMATS = ["cbor", "json", "msgpack", "python", "toml", "yaml"]
-OUTPUT_FORMATS_ARGV0 = ["cbor", "json", "msgpack", "py", "toml", "yaml"]
+INPUT_FORMATS = ["cbor", "json", "msgpack", "toml", "yaml", "yaml-1.1", "yaml-1.2"]
+OUTPUT_FORMATS = [
+    "cbor",
+    "json",
+    "msgpack",
+    "python",
+    "toml",
+    "yaml",
+    "yaml-1.1",
+    "yaml-1.2",
+]
+OUTPUT_FORMATS_ARGV0 = [
+    "cbor",
+    "json",
+    "msgpack",
+    "py",
+    "toml",
+    "yaml",
+    "yaml-1.1",
+    "yaml-1.2",
+]
 OPTIONS_CLASSES = {
     "cbor": CBOROptions,
     "json": JSONOptions,
@@ -152,6 +173,8 @@ OPTIONS_CLASSES = {
     "python": PythonOptions,
     "toml": TOMLOptions,
     "yaml": YAMLOptions,
+    "yaml-1.1": YAMLOptions,
+    "yaml-1.2": YAMLOptions,
 }
 UTF_8 = "utf-8"
 
@@ -436,6 +459,17 @@ def _parse_command_line(argv: Sequence[str]) -> argparse.Namespace:
     return args
 
 
+def _yaml_version(format: str) -> YAMLVersion:
+    match format:
+        case "yaml-1.1":
+            return (1, 1)
+
+        case "yaml-1.2":
+            return (1, 2)
+
+    return None
+
+
 # === Parser/serializer wrappers ===
 
 
@@ -532,9 +566,11 @@ def _decode_toml(input_data: bytes) -> Document:
         raise ValueError(msg)
 
 
-def _decode_yaml(input_data: bytes) -> Document:
+def _decode_yaml(input_data: bytes, version: YAMLVersion) -> Document:
     try:
         yaml = ruamel.yaml.YAML(pure=True, typ="safe")
+        yaml.version = version
+
         doc = yaml.load(input_data)
 
         return cast("Document", doc)
@@ -545,19 +581,25 @@ def _decode_yaml(input_data: bytes) -> Document:
 
 
 def decode(input_format: str, input_data: bytes) -> Document:
-    decoder = {
-        "cbor": _decode_cbor,
-        "json": _decode_json,
-        "msgpack": _decode_msgpack,
-        "toml": _decode_toml,
-        "yaml": _decode_yaml,
-    }
+    match input_format:
+        case "cbor":
+            return _decode_cbor(input_data)
 
-    if input_format not in decoder:
-        msg = f"Unknown input format: {input_format}"
-        raise ValueError(msg)
+        case "json":
+            return _decode_json(input_data)
 
-    return decoder[input_format](input_data)
+        case "msgpack":
+            return _decode_msgpack(input_data)
+
+        case "toml":
+            return _decode_toml(input_data)
+
+        case "yaml" | "yaml-1.1" | "yaml-1.2":
+            return _decode_yaml(input_data, version=_yaml_version(input_format))
+
+        case _:
+            msg = f"Unknown input format: {input_format}"
+            raise ValueError(msg)
 
 
 class TooManyValuesError(BaseException):
@@ -776,13 +818,14 @@ def _encode_yaml(
     indent: int | None,
     style: YAMLStyle,
     style_newline: YAMLStyle | None,
+    version: YAMLVersion,
     width: int,
 ) -> str:
     yaml = ruamel.yaml.YAML(pure=True)
     yaml.default_flow_style = False
-
     yaml.default_style = style  # type: ignore
     yaml.indent = indent
+    yaml.version = version
     yaml.width = width
 
     def represent_none(self, data):
@@ -848,11 +891,12 @@ def format_options(
                 stringify=stringify,
             )
 
-        case "yaml":
+        case "yaml" | "yaml-1.1" | "yaml-1.2":
             return YAMLOptions(
                 indent=Defaults.YAML_INDENT if indent is None else indent,
                 style=yaml_style,
                 style_newline=yaml_style_newline,
+                version=_yaml_version(output_format),
                 width=width,
             )
 
@@ -925,7 +969,7 @@ def encode(
                 stringify=options.stringify,
             ).encode(UTF_8)
 
-        case "yaml":
+        case "yaml" | "yaml-1.1" | "yaml-1.2":
             if not isinstance(options, YAMLOptions):
                 msg = "expected 'options' argument to have class 'YAMLOptions'"
                 raise TypeError(msg)
@@ -935,6 +979,7 @@ def encode(
                 indent=options.indent,
                 style=options.style,
                 style_newline=options.style_newline,
+                version=options.version,
                 width=options.width,
             ).encode(UTF_8)
 

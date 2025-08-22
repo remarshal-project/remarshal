@@ -14,11 +14,12 @@ Remarshal can also convert all supported formats to Python code.
 
 ## Known limitations and quirks
 
-### YAML 1.2 only
+### YAML versions
 
-Remarshal works with YAML 1.2.
-The last version that read and wrote YAML 1.1 was 0.17.1.
-Install it if you need YAML 1.1.
+Remarshal works with YAML 1.2 by default.
+You can choose the input and/or output format `yaml-1.1` to work with YAML 1.1.
+The input and output format `yaml-1.2` can be used to emphasize you mean YAML 1.2.
+Conversion from YAML 1.1 to YAML 1.2 and from YAML 1.2 to YAML 1.1 is supported.
 
 ### Lossless by default; lossy must be enabled
 
@@ -133,9 +134,11 @@ uv tool install https://github.com/remarshal-project/remarshal
 ## Usage
 
 ```none
-usage: remarshal [-h] [-v] [-f {cbor,json,msgpack,toml,yaml}] [-i <input>]
-                 [--indent <n>] [-k] [--max-values <n>] [--multiline <n>]
-                 [-o <output>] [-s] [-t {cbor,json,msgpack,python,toml,yaml}]
+usage: remarshal [-h] [-v]
+                 [-f {cbor,json,msgpack,toml,yaml,yaml-1.1,yaml-1.2}]
+                 [-i <input>] [--indent <n>] [-k] [--max-values <n>]
+                 [--multiline <n>] [-o <output>] [-s]
+                 [-t {cbor,json,msgpack,python,toml,yaml,yaml-1.1,yaml-1.2}]
                  [--unwrap <key>] [--verbose] [--width <n>] [--wrap <key>]
                  [--yaml-style {,',",|,>}] [--yaml-style-newline {,',",|,>}]
                  [input] [output]
@@ -149,7 +152,8 @@ positional arguments:
 options:
   -h, --help            show this help message and exit
   -v, --version         show program's version number and exit
-  -f, --from, --if, --input-format {cbor,json,msgpack,toml,yaml}
+  -f, --from, --if, --input-format
+{cbor,json,msgpack,toml,yaml,yaml-1.1,yaml-1.2}
                         input format
   -i, --input <input>   input file
   --indent <n>          JSON and YAML indentation
@@ -164,7 +168,8 @@ options:
                         output file
   -s, --sort-keys       sort JSON, Python, and TOML keys instead of preserving
                         key order
-  -t, --to, --of, --output-format {cbor,json,msgpack,python,toml,yaml}
+  -t, --to, --of, --output-format
+{cbor,json,msgpack,python,toml,yaml,yaml-1.1,yaml-1.2}
                         output format
   --unwrap <key>        only output the data stored under the given key
   --verbose             print debug information when an error occurs
