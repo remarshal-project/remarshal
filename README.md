@@ -239,7 +239,7 @@ $ echo '[{"a":"b"},{"c":[1,2,3]}]' \
 $ remarshal test.toml --to json
 {"main":[{"a":"b"},{"c":[1,2,3]}]}
 
-$ remarshal test.toml --of json --unwrap main
+$ remarshal test.toml --to json --unwrap main
 [{"a":"b"},{"c":[1,2,3]}]
 ```
 
@@ -254,7 +254,7 @@ You will need to install Bash completions manually.
 ### TOML to YAML
 
 ```
-$ remarshal example.toml --of yaml
+$ remarshal example.toml --to yaml
 title: TOML Example
 owner:
   name: Tom Preston-Werner
