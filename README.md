@@ -1,14 +1,8 @@
 # Remarshal
 
 Convert between CBOR, JSON, MessagePack, TOML, and YAML.
-When installed,
-Remarshal provides the command-line command `remarshal`
-as well as the short commands
-<code>{cbor,json,msgpack,toml,yaml}2<wbr>{cbor,json,msgpack,py,toml,yaml}</code>.
-You can use these commands
-to convert between formats,
-reformat,
-and detect errors.
+When installed, Remarshal provides the command-line command `remarshal` as well as short commands like `yaml2json`.
+You can use these commands to convert between formats, reformat, and detect errors.
 
 Remarshal can also convert all supported formats to Python code.
 
@@ -17,9 +11,9 @@ Remarshal can also convert all supported formats to Python code.
 ### YAML versions
 
 Remarshal works with YAML 1.2 by default.
-You can choose the input and/or output format `yaml-1.1` to work with YAML 1.1.
-The input and output format `yaml-1.2` can be used to emphasize you mean YAML 1.2.
-Conversion from YAML 1.1 to YAML 1.2 and from YAML 1.2 to YAML 1.1 is supported.
+You can use the format `yaml-1.1` to work with YAML 1.1.
+The format `yaml-1.2` can be used to be explicit about using YAML 1.2.
+Conversion between YAML 1.1 and 1.2 is supported.
 
 ### Lossless by default; lossy must be enabled
 
@@ -44,9 +38,7 @@ Remarshal does not preserve or convert TOML and YAML comments.
 
 ### Date-time conversion limitations
 
-There are limitations
-on what data can be converted
-between what formats.
+There are limitations on what data can be converted between formats.
 
 - CBOR, MessagePack, and YAML with binary fields cannot be converted
   to JSON or TOML.
@@ -72,7 +64,7 @@ between what formats.
     [MessagePack Timestamp extension type](https://github.com/msgpack/msgpack/blob/master/spec.md#timestamp-extension-type),
     [TOML Offset Date-Times](https://toml.io/en/v1.0.0#offset-date-time),
     and
-    [YAML timestamps](spec/1.2.2/#tags) with a time zone.
+    [YAML timestamps](https://yaml.org/spec/1.2.2/#tags) with a time zone.
 - [TOML Local Time](https://toml.io/en/v1.0.0#local-time)
   cannot be converted to a date-time in another format.
 - All date-time types can be converted to JSON
@@ -84,7 +76,7 @@ between what formats.
 
 Conversion to Python code is one-way.
 
-The Python output is either from
+Python output is either from
 [`repr`](https://docs.python.org/3/library/functions.html#repr)
 (the default) or formatted by
 [`pprint.pformat`](https://docs.python.org/3/library/pprint.html#pprint.pformat)
@@ -95,7 +87,7 @@ The style of `pprint`
 is probably not what you want your Python code to look like.
 Apply your preferred Python formatter to it.
 
-The Python output does not include the necessary `import` statements.
+Python output does not include the necessary `import` statements.
 You may need to add `import datetime` before the data.
 
 ## Installation
@@ -128,7 +120,7 @@ Prefer releases unless you have a reason to run a development version.
 ```sh
 pipx install git+https://github.com/remarshal-project/remarshal
 # or
-uv tool install https://github.com/remarshal-project/remarshal
+uv tool install git+https://github.com/remarshal-project/remarshal
 ```
 
 ## Usage
@@ -200,13 +192,14 @@ Remarshal writes the result to standard output.
 ### Wrappers
 
 The options `--wrap` and `--unwrap` are available
-to solve the problem of converting CBOR, JSON, MessagePack, and YAML data to TOML
-when the top-level element of the data is not of a dictionary type
+to solve the problem of converting data to TOML
+from CBOR, JSON, MessagePack, or YAML
+when the top-level element of the data is not a dictionary
 (i.e., not a map in CBOR and MessagePack,
 an object in JSON,
 or an associative array in YAML).
-You cannot represent such data as TOML directly;
-the data must be wrapped in a dictionary first.
+Such data cannot be represented as TOML directly
+and must be wrapped in a dictionary first.
 Passing the option `--wrap some-key` to `remarshal` or one of its short commands
 wraps the input data in a "wrapper" dictionary with one key, `some-key`,
 with the input data as its value.
