@@ -25,9 +25,8 @@ Remarshal exits with an error.
 Use the command-line option `-k`/`--stringify` to relax this restriction.
 It will make Remarshal do the following:
 
-- When converting to JSON,   turn boolean and null keys and date-time keys and values into strings.
-- When converting to TOML,
-  turn boolean, date-time, and null keys and null values into strings.
+- When converting to JSON, turn boolean and null keys and date-time keys and values into strings.
+- When converting to TOML, turn boolean, date-time, and null keys and null values into strings.
 
 This is **usually what you want**.
 It isn't the default as a safeguard against information loss.
@@ -40,67 +39,36 @@ Remarshal does not preserve or convert TOML and YAML comments.
 
 There are limitations on what data can be converted between formats.
 
-- CBOR, MessagePack, and YAML with binary fields cannot be converted
-  to JSON or TOML.
+- CBOR, MessagePack, and YAML with binary fields cannot be converted to JSON or TOML.
   Binary fields can be converted between CBOR, MessagePack, and YAML.
 - The following date-time value conversions are possible:
-  - Local dates are converted between
-    [CBOR RFC 8943](https://www.rfc-editor.org/rfc/rfc8943.html)
-    dates (tag 1004),
-    [TOML Local Dates](https://toml.io/en/v1.0.0#local-date),
-    and
-    [YAML timestamps](https://yaml.org/spec/1.2.2/#tags)
-    without a time or a time zone.
-  - Local date-time is converted between
-    [TOML Local Date-Time](https://toml.io/en/v1.0.0#local-date-time)
-    and
-    [YAML timestamps](https://yaml.org/spec/1.2.2/#tags)
-    without a time zone.
-  - Date-time with a time zone
-    is converted between
-    [CBOR standard date-time strings](https://www.rfc-editor.org/rfc/rfc8949.html#stringdatetimesect)
-    (tag 0),
-    the
-    [MessagePack Timestamp extension type](https://github.com/msgpack/msgpack/blob/master/spec.md#timestamp-extension-type),
-    [TOML Offset Date-Times](https://toml.io/en/v1.0.0#offset-date-time),
-    and
-    [YAML timestamps](https://yaml.org/spec/1.2.2/#tags) with a time zone.
+  - Local dates are converted between [CBOR RFC 8943](https://www.rfc-editor.org/rfc/rfc8943.html) dates (tag 1004), [TOML Local Dates](https://toml.io/en/v1.0.0#local-date), and [YAML timestamps](https://yaml.org/spec/1.2.2/#tags) without a time or a time zone.
+  - Local date-time is converted between [TOML Local Date-Time](https://toml.io/en/v1.0.0#local-date-time) and [YAML timestamps](https://yaml.org/spec/1.2.2/#tags) without a time zone.
+  - Date-time with a time zone is converted between [CBOR standard date-time strings](https://www.rfc-editor.org/rfc/rfc8949.html#stringdatetimesect) (tag 0), the [MessagePack Timestamp extension type](https://github.com/msgpack/msgpack/blob/master/spec.md#timestamp-extension-type), [TOML Offset Date-Times](https://toml.io/en/v1.0.0#offset-date-time), and [YAML timestamps](https://yaml.org/spec/1.2.2/#tags) with a time zone.
 - [TOML Local Time](https://toml.io/en/v1.0.0#local-time)
   cannot be converted to a date-time in another format.
-- All date-time types can be converted to JSON
-  with the `-k`/`--stringify` option,
-  which turns them into strings.
-  Converting a document with a date-time type to JSON fails without `-k`/`--stringify`.
+- All date-time types can be converted to JSON with the `-k`/`--stringify` option, which turns them into strings.
+  Converting a document with a date-time type to JSON fails without this option.
 
 ### Python output
 
 Conversion to Python code is one-way.
 
-Python output is either from
-[`repr`](https://docs.python.org/3/library/functions.html#repr)
-(the default) or formatted by
-[`pprint.pformat`](https://docs.python.org/3/library/pprint.html#pprint.pformat)
-(when you pass the option `--indent`).
+Python output is either from [`repr`](https://docs.python.org/3/library/functions.html#repr) (the default) or formatted by [`pprint.pformat`](https://docs.python.org/3/library/pprint.html#pprint.pformat) (when you pass the option `--indent`).
 The default `repr` format ignores `-s`/`--sort-keys`.
 
-The style of `pprint`
-is probably not what you want your Python code to look like.
-Apply your preferred Python formatter to it.
+The style of `pprint` may not match your project's coding style.
+It is recommended to apply your preferred Python formatter to the output.
 
 Python output does not include the necessary `import` statements.
-You may need to add `import datetime` before the data.
+You may need to add `import datetime` before the data, for example.
 
 ## Installation
 
 You will need Python 3.10 or later.
 Earlier versions of Python 3 will not work.
 
-The recommended way to run Remarshal is to install the latest release
-[from PyPI](https://pypi.org/project/remarshal/)
-with
-[pipx](https://github.com/pypa/pipx)
-or
-[uv](https://github.com/astral-sh/uv).
+The recommended way to run Remarshal is to install the latest release [from PyPI](https://pypi.org/project/remarshal/) with [pipx](https://github.com/pypa/pipx) or [uv](https://github.com/astral-sh/uv).
 
 ```sh
 pipx install remarshal
@@ -175,46 +143,25 @@ options:
                         contain a newline
 ```
 
-Instead of `remarshal` with format arguments,
-you can use a short command
-<code>{cbor,json,msgpack,toml,yaml}2<wbr>{cbor,json,msgpack,py,toml,yaml}</code>.
-The `remarshal` command and the short commands
-exit with status 0 on success,
-1 on operational failure,
-and 2 on failure to parse the command line.
+Instead of `remarshal` with format arguments, you can use a short command like <code>{cbor,json,msgpack,toml,yaml}2<wbr>{cbor,json,msgpack,py,toml,yaml}</code>.
+The `remarshal` command and the short commands exit with status 0 on success, 1 on operational failure, and 2 on failure to parse the command line.
 
-If no input argument `input`/`-i input` is given or its value is `-`,
-Remarshal reads input data from standard input.
-Similarly,
-with no `output`/`-o output` or an output argument that is `-`,
-Remarshal writes the result to standard output.
+If no input argument `input`/`-i input` is given or its value is `-`, Remarshal reads input data from standard input.
+Similarly, with no `output`/`-o output` or an output argument that is `-`, Remarshal writes the result to standard output.
 
 ### Wrappers
 
-The options `--wrap` and `--unwrap` are available
-to solve the problem of converting data to TOML
-from CBOR, JSON, MessagePack, or YAML
-when the top-level element of the data is not a dictionary
-(i.e., not a map in CBOR and MessagePack,
-an object in JSON,
-or an associative array in YAML).
-Such data cannot be represented as TOML directly
-and must be wrapped in a dictionary first.
-Passing the option `--wrap some-key` to `remarshal` or one of its short commands
-wraps the input data in a "wrapper" dictionary with one key, `some-key`,
-with the input data as its value.
-The option `--unwrap some-key` does the opposite:
-it converts to the target format and outputs
-only the value stored under the key `some-key`
-in the top-level dictionary element of the input data;
-the rest of the input is discarded.
-If the top-level element is not a dictionary or does not have the key `some-key`,
-`--unwrap some-key` causes an error.
+The options `--wrap` and `--unwrap` are available to solve the problem of converting data to TOML from CBOR, JSON, MessagePack, or YAML when the top-level element of the data is not a dictionary (i.e., not a map in CBOR and MessagePack, an object in JSON, or an associative array in YAML).
+Such data cannot be represented as TOML directly and must be wrapped in a dictionary first.
 
-The following shell transcript demonstrates the problem
-and how `--wrap` and `--unwrap` solve it:
+Passing the option `--wrap some-key` to `remarshal` or one of its short commands wraps the input data in a "wrapper" dictionary with one key, `some-key`, with the input data as its value.
 
-```
+The option `--unwrap some-key` does the opposite: it converts to the target format and outputs only the value stored under the key `some-key` in the top-level dictionary element of the input data; the rest of the input is discarded.
+If the top-level element is not a dictionary or does not have the key `some-key`, `--unwrap some-key` causes an error.
+
+The following shell transcript demonstrates the problem and how `--wrap` and `--unwrap` solve it:
+
+```sh
 $ echo '[{"a":"b"},{"c":[1,2,3]}]' | remarshal --from json --to toml
 Error: cannot convert non-dictionary data to TOML; use "--wrap" to wrap it in a dictionary
 
@@ -246,7 +193,7 @@ You will need to install Bash completions manually.
 
 ### TOML to YAML
 
-```
+```sh
 $ remarshal example.toml --to yaml
 title: TOML Example
 owner:
@@ -289,10 +236,9 @@ products:
 
 ### JSON to TOML
 
-```
+```sh
 $ curl -f 'https://archive-api.open-meteo.com/v1/era5?latitude=50.43&longitude=30.52&start_date=2014-10-05&end_date=2014-10-05&hourly=temperature_2m' \
-  | remarshal --from json --to toml \
-  ;
+  | remarshal --from json --to toml
 latitude = 50.439365
 longitude = 30.476192
 generationtime_ms = 0.03254413604736328
@@ -360,24 +306,13 @@ temperature_2m = [
 ]
 ```
 
-Remarshal controls the number of items at which a TOML array becomes multiline,
-but it does not control the line width.
-You can use
-[`taplo fmt`](https://taplo.tamasfe.dev/cli/usage/formatting.html)
-for finer TOML formatting.
+Remarshal controls the number of items at which a TOML array becomes multiline, but it does not control the line width.
+You can use [`taplo fmt`](https://taplo.tamasfe.dev/cli/usage/formatting.html) for finer TOML formatting.
 
 ## License
 
 MIT.
-See the file
-[`LICENSE`](LICENSE).
+See the file [`LICENSE`](LICENSE).
 
 `example.toml` from <https://github.com/toml-lang/toml>.
-`example.cbor`,
-`example.json`,
-`example.msgpack`,
-`example.py`,
-`example.yml`,
-`tests/bin.msgpack`,
-and `tests/bin.yml`
-are derived from it.
+`example.cbor`, `example.json`, `example.msgpack`, `example.py`, `example.yml`, `tests/bin.msgpack`, and `tests/bin.yml` are derived from it.
