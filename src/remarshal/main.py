@@ -29,21 +29,16 @@ from typing import (
 
 import cbor2  # type: ignore
 import colorama
-import tomlkit
-import tomlkit.items
-from rich_argparse import RichHelpFormatter
-
-try:
-    import tomllib  # type: ignore
-except ModuleNotFoundError:
-    import tomli as tomllib
-
 import ruamel.yaml
 import ruamel.yaml.parser
 import ruamel.yaml.representer
 import ruamel.yaml.scalarstring
 import ruamel.yaml.scanner
+import tomli as tomllib
+import tomlkit
+import tomlkit.items
 import umsgpack
+from rich_argparse import RichHelpFormatter
 
 if TYPE_CHECKING:
     from rich.style import StyleType

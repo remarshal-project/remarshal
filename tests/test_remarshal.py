@@ -986,6 +986,29 @@ class TestRemarshal:
         with pytest.raises(ValueError):
             convert_and_read("time.toml", "toml", "yaml")
 
+    # TOML 1.1 tests.
+    def test_toml_1_1_inline_table(self, convert_and_read) -> None:
+        output = convert_and_read("toml-1.1-inline-table.toml", "toml", "json")
+        reference = read_file("toml-1.1-inline-table.json")
+        assert output == reference
+
+    def test_toml_1_1_hex_escape(self, convert_and_read) -> None:
+        output = convert_and_read("toml-1.1-hex-escape.toml", "toml", "json")
+        reference = read_file("toml-1.1-hex-escape.json")
+        assert output == reference
+
+    def test_toml_1_1_e_escape(self, convert_and_read) -> None:
+        output = convert_and_read("toml-1.1-e-escape.toml", "toml", "json")
+        reference = read_file("toml-1.1-e-escape.json")
+        assert output == reference
+
+    def test_toml_1_1_optional_seconds(self, convert_and_read) -> None:
+        output = convert_and_read(
+            "toml-1.1-optional-seconds.toml", "toml", "json", stringify=True
+        )
+        reference = read_file("toml-1.1-optional-seconds.json")
+        assert output == reference
+
 
 if __name__ == "__main__":
     pytest.main()
