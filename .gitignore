@@ -1,5 +1,6 @@
 /attic
 /build
+*.*cache*
 /.coverage
 /dist
 *.egg-info
@@ -7,6 +8,6 @@
 *.pyc
 __pycache__
 /.python-version
-*.swp
+*.sw*
 /.tox
 /venv*
