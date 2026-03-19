@@ -42,10 +42,10 @@ There are limitations on what data can be converted between formats.
 - CBOR, MessagePack, and YAML with binary fields cannot be converted to JSON or TOML.
   Binary fields can be converted between CBOR, MessagePack, and YAML.
 - The following date-time value conversions are possible:
-  - Local dates are converted between [CBOR RFC 8943](https://www.rfc-editor.org/rfc/rfc8943.html) dates (tag 1004), [TOML Local Dates](https://toml.io/en/v1.0.0#local-date), and [YAML timestamps](https://yaml.org/spec/1.2.2/#tags) without a time or a time zone.
-  - Local date-time is converted between [TOML Local Date-Time](https://toml.io/en/v1.0.0#local-date-time) and [YAML timestamps](https://yaml.org/spec/1.2.2/#tags) without a time zone.
-  - Date-time with a time zone is converted between [CBOR standard date-time strings](https://www.rfc-editor.org/rfc/rfc8949.html#stringdatetimesect) (tag 0), the [MessagePack Timestamp extension type](https://github.com/msgpack/msgpack/blob/master/spec.md#timestamp-extension-type), [TOML Offset Date-Times](https://toml.io/en/v1.0.0#offset-date-time), and [YAML timestamps](https://yaml.org/spec/1.2.2/#tags) with a time zone.
-- [TOML Local Time](https://toml.io/en/v1.0.0#local-time)
+  - Local dates are converted between [CBOR RFC 8943](https://www.rfc-editor.org/rfc/rfc8943.html) dates (tag 1004), [TOML Local Dates](https://toml.io/en/v1.1.0#local-date), and [YAML timestamps](https://yaml.org/spec/1.2.2/#tags) without a time or a time zone.
+  - Local date-time is converted between [TOML Local Date-Time](https://toml.io/en/v1.1.0#local-date-time) and [YAML timestamps](https://yaml.org/spec/1.2.2/#tags) without a time zone.
+  - Date-time with a time zone is converted between [CBOR standard date-time strings](https://www.rfc-editor.org/rfc/rfc8949.html#stringdatetimesect) (tag 0), the [MessagePack Timestamp extension type](https://github.com/msgpack/msgpack/blob/master/spec.md#timestamp-extension-type), [TOML Offset Date-Times](https://toml.io/en/v1.1.0#offset-date-time), and [YAML timestamps](https://yaml.org/spec/1.2.2/#tags) with a time zone.
+- [TOML Local Time](https://toml.io/en/v1.1.0#local-time)
   cannot be converted to a date-time in another format.
 - All date-time types can be converted to JSON with the `-k`/`--stringify` option, which turns them into strings.
   Converting a document with a date-time type to JSON fails without this option.
