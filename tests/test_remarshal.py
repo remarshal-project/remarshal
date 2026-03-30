@@ -99,6 +99,7 @@ def _convert_and_read(  # noqa: PLR0913
     input_format: str,
     output_format: str,
     *,
+    expand_aliases: bool = False,
     indent: int | None = None,
     multiline_threshold: int = Defaults.MULTILINE_THRESHOLD,
     output_filename: str,
@@ -114,6 +115,7 @@ def _convert_and_read(  # noqa: PLR0913
 ) -> bytes:
     options = remarshal.format_options(
         output_format,
+        expand_aliases=expand_aliases,
         indent=indent,
         multiline_threshold=multiline_threshold,
         sort_keys=sort_keys,
@@ -186,6 +188,11 @@ class TestRemarshal:
     def test_yaml2yaml(self, convert_and_read) -> None:
         output = convert_and_read("example.yaml", "yaml", "yaml")
         reference = read_file("example.yaml")
+        assert output == reference
+
+    def test_yaml2yaml_expand_aliases(self, convert_and_read) -> None:
+        output = convert_and_read("alias.yaml", "yaml", "yaml", expand_aliases=True)
+        reference = read_file("alias-expanded.yaml")
         assert output == reference
 
     def test_json2cbor(self, convert_and_read) -> None:

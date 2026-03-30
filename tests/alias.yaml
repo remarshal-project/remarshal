@@ -1,0 +1,9 @@
+test: &test
+  field: 1
+  other: "value"
+  obj:
+    field: 1
+    other: "value"
+
+test2:
+  <<: *test

@@ -1,0 +1,12 @@
+test:
+  field: 1
+  other: value
+  obj:
+    field: 1
+    other: value
+test2:
+  field: 1
+  other: value
+  obj:
+    field: 1
+    other: value

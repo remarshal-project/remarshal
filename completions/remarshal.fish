@@ -3,6 +3,7 @@ set --local yaml_styles '"\'" "\\"" "|" ">"'
 complete -c remarshal -s h -l help -d "Show help message and exit"
 complete -c remarshal -s v -l version -d "Show program's version number and exit"
 
+complete -c remarshal -l expand-aliases -d "Expand YAML aliases (disable anchor/alias generation)"
 complete -c remarshal -s f -l from -l if -l input-format -x -a "cbor json msgpack toml yaml yaml-1.1 yaml-1.2" -d "Input format"
 complete -c remarshal -s i -l input -r -d "Input file"
 complete -c remarshal -l indent -x -d "JSON and YAML indentation"

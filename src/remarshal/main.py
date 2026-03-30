@@ -104,6 +104,7 @@ class TOMLOptions(FormatOptions):
 
 @dataclass(frozen=True)
 class YAMLOptions(FormatOptions):
+    expand_aliases: bool = False
     indent: int = Defaults.YAML_INDENT
     style: YAMLStyle = Defaults.YAML_STYLE
     style_newline: YAMLStyle | None = None
@@ -231,6 +232,12 @@ def _parse_command_line(argv: Sequence[str]) -> argparse.Namespace:
         "--version",
         action="version",
         version=importlib.metadata.version("remarshal"),
+    )
+
+    parser.add_argument(
+        "--expand-aliases",
+        action="store_true",
+        help="expand YAML aliases (disable anchor/alias generation)",
     )
 
     if not format_from_argv0:
@@ -810,6 +817,7 @@ def _encode_toml(
 def _encode_yaml(
     data: Document,
     *,
+    expand_aliases: bool,
     indent: int | None,
     style: YAMLStyle,
     style_newline: YAMLStyle | None,
@@ -822,6 +830,9 @@ def _encode_yaml(
     yaml.indent = indent
     yaml.version = version
     yaml.width = width
+
+    if expand_aliases:
+        yaml.representer.ignore_aliases = lambda *_: True
 
     def represent_none(self, data):
         return self.represent_scalar("tag:yaml.org,2002:null", "null")
@@ -850,6 +861,7 @@ def _encode_yaml(
 def format_options(
     output_format: str,
     *,
+    expand_aliases: bool = False,
     indent: int | None = None,
     multiline_threshold: int = Defaults.MULTILINE_THRESHOLD,
     sort_keys: bool = False,
@@ -888,6 +900,7 @@ def format_options(
 
         case "yaml" | "yaml-1.1" | "yaml-1.2":
             return YAMLOptions(
+                expand_aliases=expand_aliases,
                 indent=Defaults.YAML_INDENT if indent is None else indent,
                 style=yaml_style,
                 style_newline=yaml_style_newline,
@@ -971,6 +984,7 @@ def encode(
 
             encoded = _encode_yaml(
                 data,
+                expand_aliases=options.expand_aliases,
                 indent=options.indent,
                 style=options.style,
                 style_newline=options.style_newline,
@@ -1055,6 +1069,7 @@ def main() -> None:
     try:
         options = format_options(
             args.output_format,
+            expand_aliases=args.expand_aliases,
             indent=args.indent,
             multiline_threshold=args.multiline_threshold,
             sort_keys=args.sort_keys,
