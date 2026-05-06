@@ -91,6 +91,14 @@ pipx install git+https://github.com/remarshal-project/remarshal
 uv tool install git+https://github.com/remarshal-project/remarshal
 ```
 
+To enable [Starlark transforms](#starlark-transforms), add the `[starlark]` extra:
+
+```sh
+pipx install 'remarshal[starlark]'
+# or
+uv tool install 'remarshal[starlark]'
+```
+
 ## Usage
 
 <!-- USAGE -->
@@ -198,6 +206,59 @@ $ remarshal test.toml --to json
 $ remarshal test.toml --to json --unwrap main
 [{"a":"b"},{"c":[1,2,3]}]
 ```
+
+### Starlark transforms
+
+The optional `[starlark]` install extra lets you transform the data between decoding and encoding using a [Starlark](https://github.com/bazelbuild/starlark) expression or program.
+Starlark is a small, sandboxed Python-like language with no filesystem, network, or subprocess access.
+See [Installation](#installation) for how to enable it.
+
+Pass code to Remarshal with `--starlark` or read it from a file with `--starlark-file`.
+The two options are mutually exclusive.
+The decoded input is bound to the name `data`.
+
+If the argument to `--starlark` parses as a single Starlark expression, its value becomes the new document.
+Otherwise, it is treated as a program that must assign the new document to a top-level name `result`.
+A `--starlark-file` is always treated as a program.
+
+```sh
+$ echo '{"users":[{"name":"Alice","active":true},{"name":"Bob","active":false}]}' \
+  | remarshal -f json -t yaml \
+      --starlark '[user["name"] for user in data["users"] if user["active"]]'
+- Alice
+```
+
+```sh
+$ echo '{"a":1,"b":2,"c":3}' \
+  | remarshal -f json -t json \
+      --starlark 'x = sum(data.values()); result = {"sum": x, "values": data}'
+{"sum":6,"values":{"a":1,"b":2,"c":3}}
+```
+
+#### Type mapping
+
+Starlark has no `bytes` type and no date-time types.
+Remarshal passes those values through opaquely and provides helper functions for inspecting and rebuilding them.
+The other types map as follows.
+
+| Remarshal value | Inside Starlark | Notes |
+| --- | --- | --- |
+| `None`, `bool`, `int`, `float`, `str` | the same | `int` is arbitrary precision |
+| `bytes` | opaque (no methods, not iterable) | use `remarshal.bytes_decode`, `remarshal.bytes_encode`, `remarshal.bytes_len`, `remarshal.b64_encode`, `remarshal.b64_decode` |
+| date, time, date-time | opaque | use `remarshal.datetime_isoformat`, `remarshal.datetime_parse`, `remarshal.date_parse`, `remarshal.time_parse` |
+| dictionary (mapping) | `dict` | insertion order is preserved |
+| list (sequence) | `list` |  |
+
+A `tuple` or a `range` returned by Starlark is converted to a list.
+A `set` returned by Starlark causes an error; convert it explicitly with `sorted(s)` or `list(s)` first.
+
+The standard Starlark `json` module is available with `json.encode(x)`, `json.decode(s)`, `json.encode_indent(x)`, and `json.indent(s)`.
+
+#### Resource limits
+
+By default, Starlark transforms limit CPU at 10 000 000 interpreter steps (`--starlark-max-steps`) and memory at 128 MiB of cumulative allocations (`--starlark-max-allocs`).
+Pass a negative number for either option to disable that limit.
+The output of a Starlark transform is also re-checked against `--max-values`.
 
 ## Shell completions
 
