@@ -1,1 +1,2 @@
 /poetry.lock -diff
+/uv.lock -diff
