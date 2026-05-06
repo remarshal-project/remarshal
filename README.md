@@ -99,6 +99,8 @@ usage: remarshal [-h] [-v] [--expand-aliases]
                  [-f {cbor,json,msgpack,toml,yaml,yaml-1.1,yaml-1.2}]
                  [-i <input>] [--indent <n>] [-k] [--max-values <n>]
                  [--multiline <n>] [-o <output>] [-s]
+                 [--starlark <code> | --starlark-file <path>]
+                 [--starlark-max-allocs <n>] [--starlark-max-steps <n>]
                  [-t {cbor,json,msgpack,python,toml,yaml,yaml-1.1,yaml-1.2}]
                  [--unwrap <key>] [--verbose] [--width <n>] [--wrap <key>]
                  [--yaml-style {,',",|,>}] [--yaml-style-newline {,',",|,>}]
@@ -130,6 +132,17 @@ options:
                         output file
   -s, --sort-keys       sort JSON, Python, and TOML keys instead of preserving
                         key order
+  --starlark <code>     transform the data with a Starlark expression or
+                        program; the input is bound to 'data'; the program
+                        must assign the output to 'result'
+  --starlark-file <path>
+                        read a Starlark program from a file
+  --starlark-max-allocs <n>
+                        maximum cumulative bytes of Starlark allocations
+                        (default 128 * 1048576, negative for unlimited)
+  --starlark-max-steps <n>
+                        maximum number of Starlark interpreter steps (default
+                        10000000, negative for unlimited)
   -t, --to, --of, --output-format 
 {cbor,json,msgpack,python,toml,yaml,yaml-1.1,yaml-1.2}
                         output format

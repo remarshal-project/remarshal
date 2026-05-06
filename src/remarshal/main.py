@@ -1,6 +1,6 @@
 #! /usr/bin/env python3
 # Remarshal, a utility to convert between serialization formats.
-# Copyright (c) 2014-2020, 2024-2025 D. Bohdan
+# Copyright (c) 2014-2020, 2024-2026 D. Bohdan
 # License: MIT
 
 from __future__ import annotations
@@ -349,6 +349,49 @@ def _parse_command_line(argv: Sequence[str]) -> argparse.Namespace:
         "--sort-keys",
         action="store_true",
         help="sort JSON, Python, and TOML keys instead of preserving key order",
+    )
+
+    starlark_group = parser.add_mutually_exclusive_group()
+    starlark_group.add_argument(
+        "--starlark",
+        default=None,
+        metavar="<code>",
+        help=(
+            "transform the data with a Starlark expression or program; "
+            "the input is bound to 'data'; the program must assign the "
+            "output to 'result'"
+        ),
+    )
+    starlark_group.add_argument(
+        "--starlark-file",
+        default=None,
+        metavar="<path>",
+        help="read a Starlark program from a file",
+    )
+
+    allocs_megs = 128
+    meg = 1024 * 1024
+
+    parser.add_argument(
+        "--starlark-max-allocs",
+        default=allocs_megs * meg,
+        metavar="<n>",
+        type=int,
+        help=(
+            "maximum cumulative bytes of Starlark allocations "
+            f"(default {allocs_megs} * {meg}, negative for unlimited)"
+        ),
+    )
+
+    parser.add_argument(
+        "--starlark-max-steps",
+        default=10_000_000,
+        metavar="<n>",
+        type=int,
+        help=(
+            "maximum number of Starlark interpreter steps "
+            "(default %(default)s, negative for unlimited)"
+        ),
     )
 
     if not format_from_argv0:
@@ -1048,6 +1091,9 @@ def remarshal(
 
         if transform:
             parsed = transform(parsed)
+            # Re-check after a user transform: it may have produced more
+            # values than the input did.
+            _validate_value_count(parsed, maximum=max_values)
 
         encoded = encode(
             output_format,
@@ -1061,6 +1107,39 @@ def remarshal(
             input_file.close()
         if output != "-" and output_file is not None:
             output_file.close()
+
+
+def _build_starlark_transform(
+    args: argparse.Namespace,
+) -> Callable[[Document], Document] | None:
+    if args.starlark is None and args.starlark_file is None:
+        return None
+
+    from .starlark_transform import (  # noqa: PLC0415
+        StarlarkNotInstalledError,
+        compile_transform,
+    )
+
+    if args.starlark_file is not None:
+        source = Path(args.starlark_file).read_text(encoding=UTF_8)
+        filename = args.starlark_file
+    else:
+        source = args.starlark
+        filename = "<starlark>"
+
+    def to_limit(n: int) -> int | None:
+        return None if n < 0 else n
+
+    try:
+        return compile_transform(
+            source,
+            filename=filename,
+            max_steps=to_limit(args.starlark_max_steps),
+            max_allocs=to_limit(args.starlark_max_allocs),
+        )
+    except StarlarkNotInstalledError as e:
+        msg = str(e)
+        raise ValueError(msg)
 
 
 def main() -> None:
@@ -1079,6 +1158,8 @@ def main() -> None:
             yaml_style_newline=args.yaml_style_newline,
         )
 
+        transform = _build_starlark_transform(args)
+
         remarshal(
             args.input_format,
             args.output_format,
@@ -1086,6 +1167,7 @@ def main() -> None:
             args.output,
             max_values=args.max_values,
             options=options,
+            transform=transform,
             unwrap=args.unwrap,
             wrap=args.wrap,
         )
