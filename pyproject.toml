@@ -4,7 +4,7 @@ build-backend = "poetry.core.masonry.api"
 
 [project]
 name = "remarshal"
-version = "1.4.0"
+version = "2.0.0"
 description = "Convert between CBOR, JSON, MessagePack, TOML, and YAML"
 authors = [{ name = "D. Bohdan", email = "dbohdan@dbohdan.com" }]
 license = { text = "MIT" }
@@ -31,7 +31,7 @@ classifiers = [
   "Topic :: Utilities",
 ]
 
-requires-python = ">=3.10"
+requires-python = ">=3.12"
 dependencies = [
   "cbor2>=5.9,<6.0",
   "colorama>=0.4.6,<0.5",
@@ -142,12 +142,12 @@ help = "Run Pyright"
 
 [tool.pyright]
 exclude = ["tests/bool-null-key.py"]
-pythonVersion = "3.10"
+pythonVersion = "3.12"
 
 [tool.ruff]
 exclude = ["tests/bool-null-key.py"]
 src = ["src", "tests"]
-target-version = "py310"
+target-version = "py312"
 
 [tool.ruff.lint]
 select = [
@@ -239,13 +239,9 @@ max-statements = 100
 [tool.tox]
 requires = ["tox>=4.22"]
 env_list = [
-  "py310",
-  "py311",
   "py312",
   "py313",
   "py314",
-  "pypy310",
-  "pypy311",
 ]
 
 [tool.tox.env_run_base]

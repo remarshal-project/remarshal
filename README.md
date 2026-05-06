@@ -65,8 +65,8 @@ You may need to add `import datetime` before the data, for example.
 
 ## Installation
 
-You will need Python 3.10 or later.
-Earlier versions of Python 3 will not work.
+You will need Python 3.12 or later.
+Earlier versions of Python are not supported.
 
 The recommended way to run Remarshal is to install the latest release [from PyPI](https://pypi.org/project/remarshal/) with [pipx](https://github.com/pypa/pipx) or [uv](https://github.com/astral-sh/uv).
 
@@ -308,6 +308,15 @@ temperature_2m = [
 
 Remarshal controls the number of items at which a TOML array becomes multiline, but it does not control the line width.
 You can use [`taplo fmt`](https://taplo.tamasfe.dev/cli/usage/formatting.html) for finer TOML formatting.
+
+## Versioning
+
+Remarshal is primarily an application.
+As an application, Remarshal follows [semantic versioning](https://semver.org/) for its command-line interface.
+You can use it as a library at your own risk.
+If you do, pin the minor version (for example, `remarshal>=2.0,<2.1`) so a future minor release does not break the Python API.
+
+Dropping support for an old Python version is not considered a breaking change and doesn't bump the major version.
 
 ## License
 
