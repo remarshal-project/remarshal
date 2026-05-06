@@ -105,7 +105,7 @@ requires-poetry = ">=2.0"
 quiet-level = 3
 
 [tool.poe.env]
-"PYTHON_SOURCES" = "src/ tests/"
+"PYTHON_SOURCES" = "scripts/ src/ tests/"
 
 [tool.poe.tasks.check]
 sequence = ["format", "spell", "lint", "type"]
@@ -139,6 +139,10 @@ help = "Run Pytest (not through tox)"
 [tool.poe.tasks.type]
 cmd = "pyright ${PYTHON_SOURCES}"
 help = "Run Pyright"
+
+[tool.poe.tasks.update-readme]
+script = "scripts.tasks:update_readme"
+help = "Refresh the usage block in the README from `remarshal --help`"
 
 [tool.pyright]
 exclude = ["tests/bool-null-key.py"]
@@ -225,6 +229,7 @@ max-branches = 20
 max-statements = 100
 
 [tool.ruff.lint.per-file-ignores]
+"scripts/*" = ["T201", "S603"]
 "src/remarshal/main.py" = [
   "ARG001",
   "B904",

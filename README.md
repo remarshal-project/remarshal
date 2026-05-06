@@ -93,8 +93,9 @@ uv tool install git+https://github.com/remarshal-project/remarshal
 
 ## Usage
 
+<!-- USAGE -->
 ```none
-usage: remarshal [-h] [-v]
+usage: remarshal [-h] [-v] [--expand-aliases]
                  [-f {cbor,json,msgpack,toml,yaml,yaml-1.1,yaml-1.2}]
                  [-i <input>] [--indent <n>] [-k] [--max-values <n>]
                  [--multiline <n>] [-o <output>] [-s]
@@ -112,7 +113,8 @@ positional arguments:
 options:
   -h, --help            show this help message and exit
   -v, --version         show program's version number and exit
-  -f, --from, --if, --input-format
+  --expand-aliases      expand YAML aliases (disable anchor/alias generation)
+  -f, --from, --if, --input-format 
 {cbor,json,msgpack,toml,yaml,yaml-1.1,yaml-1.2}
                         input format
   -i, --input <input>   input file
@@ -128,7 +130,7 @@ options:
                         output file
   -s, --sort-keys       sort JSON, Python, and TOML keys instead of preserving
                         key order
-  -t, --to, --of, --output-format
+  -t, --to, --of, --output-format 
 {cbor,json,msgpack,python,toml,yaml,yaml-1.1,yaml-1.2}
                         output format
   --unwrap <key>        only output the data stored under the given key
@@ -142,6 +144,7 @@ options:
                         YAML formatting style override for strings that
                         contain a newline
 ```
+<!-- END USAGE -->
 
 Instead of `remarshal` with format arguments, you can use a short command like <code>{cbor,json,msgpack,toml,yaml}2<wbr>{cbor,json,msgpack,py,toml,yaml}</code>.
 The `remarshal` command and the short commands exit with status 0 on success, 1 on operational failure, and 2 on failure to parse the command line.
