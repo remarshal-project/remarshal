@@ -14,7 +14,7 @@ if TYPE_CHECKING:
 class CBORDecoder(Decoder):
     name: ClassVar[str] = "cbor"
 
-    def decode(self, data: bytes, *, format: str | None = None) -> Document:
+    def decode(self, data: bytes) -> Document:
         try:
             doc = cbor2.loads(data)
             return cast("Document", doc)

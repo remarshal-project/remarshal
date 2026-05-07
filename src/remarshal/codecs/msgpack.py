@@ -19,7 +19,7 @@ def _reject_local_datetime(obj: datetime.datetime) -> None:
 class MsgPackDecoder(Decoder):
     name: ClassVar[str] = "msgpack"
 
-    def decode(self, data: bytes, *, format: str | None = None) -> Document:
+    def decode(self, data: bytes) -> Document:
         try:
             doc = umsgpack.unpackb(data)
             return cast("Document", doc)

@@ -12,16 +12,12 @@ OptT = TypeVar("OptT", bound=FormatOptions)
 
 
 class Decoder(ABC):
-    """Parses a serialized format into a Document.
-
-    `format` is the format alias under which the decoder was looked up.
-    Most decoders ignore it; YAMLDecoder uses it to pick a YAML version.
-    """
+    """Parses a serialized format into a Document."""
 
     name: ClassVar[str]
 
     @abstractmethod
-    def decode(self, data: bytes, *, format: str | None = None) -> Document: ...
+    def decode(self, data: bytes) -> Document: ...
 
 
 class Encoder(ABC, Generic[OptT]):
@@ -41,16 +37,20 @@ DECODERS: dict[str, Decoder] = {}
 ENCODERS: dict[str, Encoder[Any]] = {}
 
 
-def register_decoder(decoder: Decoder, *aliases: str) -> None:
-    DECODERS[decoder.name] = decoder
-    for alias in aliases:
-        DECODERS[alias] = decoder
+def register_decoder(decoder: Decoder, *names: str) -> None:
+    """Register `decoder` under each of `names`. Defaults to `decoder.name`."""
+    if not names:
+        names = (decoder.name,)
+    for name in names:
+        DECODERS[name] = decoder
 
 
-def register_encoder(encoder: Encoder[Any], *aliases: str) -> None:
-    ENCODERS[encoder.name] = encoder
-    for alias in aliases:
-        ENCODERS[alias] = encoder
+def register_encoder(encoder: Encoder[Any], *names: str) -> None:
+    """Register `encoder` under each of `names`. Defaults to `encoder.name`."""
+    if not names:
+        names = (encoder.name,)
+    for name in names:
+        ENCODERS[name] = encoder
 
 
 def get_decoder(format: str) -> Decoder:
@@ -70,7 +70,7 @@ def get_encoder(format: str) -> Encoder[Any]:
 
 
 def decode(input_format: str, input_data: bytes) -> Document:
-    return get_decoder(input_format).decode(input_data, format=input_format)
+    return get_decoder(input_format).decode(input_data)
 
 
 def encode(

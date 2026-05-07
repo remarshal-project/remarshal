@@ -28,12 +28,21 @@ def _format_to_version(format: str | None) -> YAMLVersion:
 
 
 class YAMLDecoder(Decoder):
+    """A YAML decoder pinned to a specific YAML version.
+
+    Register one instance per supported version; the bare `YAMLDecoder()`
+    (version=None) lets ruamel.yaml pick its default.
+    """
+
     name: ClassVar[str] = "yaml"
 
-    def decode(self, data: bytes, *, format: str | None = None) -> Document:
+    def __init__(self, version: YAMLVersion = None) -> None:
+        self.version = version
+
+    def decode(self, data: bytes) -> Document:
         try:
             yaml = ruamel.yaml.YAML(pure=True, typ="safe")
-            yaml.version = _format_to_version(format)
+            yaml.version = self.version
 
             doc = yaml.load(data)
             return cast("Document", doc)

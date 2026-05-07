@@ -21,7 +21,7 @@ UTF_8 = "utf-8"
 class TOMLDecoder(Decoder):
     name: ClassVar[str] = "toml"
 
-    def decode(self, data: bytes, *, format: str | None = None) -> Document:
+    def decode(self, data: bytes) -> Document:
         try:
             doc = tomllib.loads(data.decode(UTF_8))
             return cast("Document", doc)

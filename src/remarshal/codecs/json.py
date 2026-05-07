@@ -26,7 +26,7 @@ def _json_default_stringify(obj: Any) -> str:
 class JSONDecoder(Decoder):
     name: ClassVar[str] = "json"
 
-    def decode(self, data: bytes, *, format: str | None = None) -> Document:
+    def decode(self, data: bytes) -> Document:
         try:
             doc = _json.loads(data.decode(UTF_8))
             return cast("Document", doc)

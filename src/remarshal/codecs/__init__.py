@@ -34,14 +34,16 @@ def _register_all() -> None:
     register_decoder(JSONDecoder())
     register_decoder(MsgPackDecoder())
     register_decoder(TOMLDecoder())
-    register_decoder(YAMLDecoder(), "yaml-1.1", "yaml-1.2")
+    register_decoder(YAMLDecoder())
+    register_decoder(YAMLDecoder((1, 1)), "yaml-1.1")
+    register_decoder(YAMLDecoder((1, 2)), "yaml-1.2")
 
     register_encoder(CBOREncoder())
     register_encoder(JSONEncoder())
     register_encoder(MsgPackEncoder())
     register_encoder(PythonEncoder())
     register_encoder(TOMLEncoder())
-    register_encoder(YAMLEncoder(), "yaml-1.1", "yaml-1.2")
+    register_encoder(YAMLEncoder(), "yaml", "yaml-1.1", "yaml-1.2")
 
 
 _register_all()
