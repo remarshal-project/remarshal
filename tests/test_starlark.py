@@ -181,12 +181,12 @@ class TestTypes:
         out = f({"k": b"\xff\xfe"})
         assert out == {"k": b"\xff\xfe"}
 
-    def test_bytes_decode_helper(self) -> None:
-        f = compile_transform("remarshal.bytes_decode(data)")
+    def test_bytes_to_str_helper(self) -> None:
+        f = compile_transform("remarshal.bytes_to_str(data)")
         assert f(b"hello") == "hello"
 
-    def test_bytes_encode_helper(self) -> None:
-        f = compile_transform("remarshal.bytes_encode(data)")
+    def test_str_to_bytes_helper(self) -> None:
+        f = compile_transform("remarshal.str_to_bytes(data)")
         out = f("hello")
         assert out == b"hello"
         assert isinstance(out, bytes)
@@ -195,8 +195,10 @@ class TestTypes:
         f = compile_transform("remarshal.bytes_len(data)")
         assert f(b"\x00\x01\x02") == 3
 
-    def test_b64_round_trip(self) -> None:
-        f = compile_transform("remarshal.b64_decode(remarshal.b64_encode(data))")
+    def test_base64_round_trip(self) -> None:
+        f = compile_transform(
+            "remarshal.base64_to_bytes(remarshal.bytes_to_base64(data))"
+        )
         assert f(b"\x00\x01binary\xff") == b"\x00\x01binary\xff"
 
     def test_bytes_len_rejects_non_bytes(self) -> None:
@@ -221,38 +223,38 @@ class TestTypes:
         t = datetime.time(12, 34, 56)
         assert f(t) == t
 
-    def test_datetime_isoformat_helper(self) -> None:
-        f = compile_transform("remarshal.datetime_isoformat(data)")
+    def test_datetime_to_iso_helper(self) -> None:
+        f = compile_transform("remarshal.datetime_to_iso(data)")
         dt = datetime.datetime(2024, 1, 2, 3, 4, 5, tzinfo=datetime.timezone.utc)
         assert f(dt) == "2024-01-02T03:04:05+00:00"
 
-    def test_date_isoformat_helper(self) -> None:
-        f = compile_transform("remarshal.datetime_isoformat(data)")
+    def test_date_to_iso_helper(self) -> None:
+        f = compile_transform("remarshal.datetime_to_iso(data)")
         assert f(datetime.date(2024, 1, 2)) == "2024-01-02"
 
-    def test_time_isoformat_helper(self) -> None:
-        f = compile_transform("remarshal.datetime_isoformat(data)")
+    def test_time_to_iso_helper(self) -> None:
+        f = compile_transform("remarshal.datetime_to_iso(data)")
         assert f(datetime.time(1, 2, 3)) == "01:02:03"
 
-    def test_datetime_parse_helper(self) -> None:
-        f = compile_transform("remarshal.datetime_parse(data)")
+    def test_iso_to_datetime_helper(self) -> None:
+        f = compile_transform("remarshal.iso_to_datetime(data)")
         out = f("2024-01-02T03:04:05+00:00")
         assert out == datetime.datetime(
             2024, 1, 2, 3, 4, 5, tzinfo=datetime.timezone.utc
         )
 
-    def test_date_parse_helper(self) -> None:
-        f = compile_transform("remarshal.date_parse(data)")
+    def test_iso_to_date_helper(self) -> None:
+        f = compile_transform("remarshal.iso_to_date(data)")
         assert f("2024-01-02") == datetime.date(2024, 1, 2)
 
-    def test_time_parse_helper(self) -> None:
-        f = compile_transform("remarshal.time_parse(data)")
+    def test_iso_to_time_helper(self) -> None:
+        f = compile_transform("remarshal.iso_to_time(data)")
         assert f("12:34:56") == datetime.time(12, 34, 56)
 
     def test_replace_datetime_with_string(self) -> None:
         # User wants to stringify a datetime so it can be JSON-encoded.
         f = compile_transform(
-            "{k: remarshal.datetime_isoformat(v) for k, v in data.items()}"
+            "{k: remarshal.datetime_to_iso(v) for k, v in data.items()}"
         )
         dt = datetime.datetime(2024, 1, 2, 3, 4, 5, tzinfo=datetime.timezone.utc)
         out = f({"created": dt})
@@ -364,7 +366,7 @@ class TestPipeline:
             "toml",
             "json",
             starlark_code=(
-                "{k: remarshal.datetime_isoformat(v) for k, v in data.items()}"
+                "{k: remarshal.datetime_to_iso(v) for k, v in data.items()}"
             ),
         )
         assert json.loads(out) == {"foo": "2012-12-12T12:34:56+00:00"}
@@ -379,13 +381,13 @@ class TestPipeline:
         )
         assert b"alpha" in out or b"YWxwaGE" in out
 
-    def test_msgpack_bytes_decoded_to_string(self, convert_and_read) -> None:
+    def test_msgpack_bytes_to_str(self, convert_and_read) -> None:
         out = convert_and_read(
             "bin.yml",
             "yaml",
             "json",
             starlark_code=(
-                '{  "owner_name":     remarshal.bytes_decode(data["owner"]["name"])}'
+                '{  "owner_name":     remarshal.bytes_to_str(data["owner"]["name"])}'
             ),
         )
         assert json.loads(out) == {"owner_name": "Tom Preston-Werner"}

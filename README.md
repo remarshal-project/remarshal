@@ -8,7 +8,7 @@ Convert between CBOR, JSON, MessagePack, TOML, and YAML.
 Convert all to Python code.
 
 When installed, Remarshal provides the command-line command `remarshal` as well as short commands like `yaml2json`.
-You can use these commands to convert between formats, reformat, and detect errors as well as transform data [using Starlark](#starlark-transforms).
+You can use these commands to convert between formats, reformat, and detect errors as well as to transform data [using Starlark](#starlark-transforms).
 
 ## Known limitations and quirks
 
@@ -239,11 +239,11 @@ The other types map as follows.
 
 | Remarshal value | Inside Starlark | Notes |
 | --- | --- | --- |
-| `None`, `bool`, `int`, `float`, `str` | the same | `int` is arbitrary precision |
-| `bytes` | opaque (no methods, not iterable) | use `remarshal.bytes_decode`, `remarshal.bytes_encode`, `remarshal.bytes_len`, `remarshal.b64_encode`, `remarshal.b64_decode` |
-| date, time, date-time | opaque | use `remarshal.datetime_isoformat`, `remarshal.datetime_parse`, `remarshal.date_parse`, `remarshal.time_parse` |
-| dictionary (mapping) | `dict` | insertion order is preserved |
-| list (sequence) | `list` |  |
+| `None`, `bool`, `int`, `float`, `str` | Same | `int` is arbitrary-precision |
+| `bytes` | Opaque (no methods, not iterable) | Use `remarshal.bytes_to_str`, `remarshal.str_to_bytes`, `remarshal.bytes_len`, `remarshal.bytes_to_base64`, `remarshal.base64_to_bytes` |
+| Date, time, date-time | Opaque | Use `remarshal.datetime_to_iso`, `remarshal.iso_to_datetime`, `remarshal.iso_to_date`, `remarshal.iso_to_time` |
+| Dictionary (mapping) | `dict` | Insertion order is preserved |
+| List (sequence) | `list` | None |
 
 A `tuple` or a `range` returned by Starlark is converted to a list.
 A `set` returned by Starlark causes an error; convert it explicitly with `sorted(s)` or `list(s)` first.

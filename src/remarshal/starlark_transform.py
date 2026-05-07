@@ -109,21 +109,21 @@ def _from_starlark(value: Any, Dict_: Any, List_: Any, Set_: Any, Range_: Any) -
 def _make_remarshal_module(BuiltinFunction_: Any) -> Any:
     """Return an opaque object exposing helper functions as attributes."""
 
-    def b_bytes_decode(b: Any, encoding: str = "utf-8") -> str:
+    def b_bytes_to_str(b: Any, encoding: str = "utf-8") -> str:
         if not isinstance(b, bytes):
-            msg = f"remarshal.bytes_decode: requires bytes, got {type(b).__name__!r}"
+            msg = f"remarshal.bytes_to_str: requires bytes, got {type(b).__name__!r}"
             raise TypeError(msg)
         if not isinstance(encoding, str):
-            msg = "remarshal.bytes_decode: encoding must be a string"
+            msg = "remarshal.bytes_to_str: encoding must be a string"
             raise TypeError(msg)
         return b.decode(encoding)
 
-    def b_bytes_encode(s: Any, encoding: str = "utf-8") -> bytes:
+    def b_str_to_bytes(s: Any, encoding: str = "utf-8") -> bytes:
         if not isinstance(s, str):
-            msg = f"remarshal.bytes_encode: requires a string, got {type(s).__name__!r}"
+            msg = f"remarshal.str_to_bytes: requires a string, got {type(s).__name__!r}"
             raise TypeError(msg)
         if not isinstance(encoding, str):
-            msg = "remarshal.bytes_encode: encoding must be a string"
+            msg = "remarshal.str_to_bytes: encoding must be a string"
             raise TypeError(msg)
         return s.encode(encoding)
 
@@ -133,71 +133,71 @@ def _make_remarshal_module(BuiltinFunction_: Any) -> Any:
             raise TypeError(msg)
         return len(b)
 
-    def b_b64_encode(b: Any) -> str:
+    def b_bytes_to_base64(b: Any) -> str:
         if not isinstance(b, bytes):
-            msg = "remarshal.b64_encode: requires bytes"
+            msg = "remarshal.bytes_to_base64: requires bytes"
             raise TypeError(msg)
         return base64.b64encode(b).decode("ascii")
 
-    def b_b64_decode(s: Any) -> bytes:
+    def b_base64_to_bytes(s: Any) -> bytes:
         if not isinstance(s, str):
-            msg = "remarshal.b64_decode: requires a string"
+            msg = "remarshal.base64_to_bytes: requires a string"
             raise TypeError(msg)
         try:
             return base64.b64decode(s, validate=True)
         except Exception as e:
-            msg = f"remarshal.b64_decode: {e}"
+            msg = f"remarshal.base64_to_bytes: {e}"
             raise ValueError(msg)
 
-    def b_datetime_isoformat(dt: Any) -> str:
+    def b_datetime_to_iso(dt: Any) -> str:
         if not isinstance(dt, (datetime.datetime, datetime.date, datetime.time)):
             msg = (
-                "remarshal.datetime_isoformat: requires a date, time, or "
+                "remarshal.datetime_to_iso: requires a date, time, or "
                 f"datetime, got {type(dt).__name__!r}"
             )
             raise TypeError(msg)
         return dt.isoformat()
 
-    def b_datetime_parse(s: Any) -> datetime.datetime:
+    def b_iso_to_datetime(s: Any) -> datetime.datetime:
         if not isinstance(s, str):
-            msg = "remarshal.datetime_parse: requires a string"
+            msg = "remarshal.iso_to_datetime: requires a string"
             raise TypeError(msg)
         try:
             return datetime.datetime.fromisoformat(s)
         except ValueError as e:
-            msg = f"remarshal.datetime_parse: {e}"
+            msg = f"remarshal.iso_to_datetime: {e}"
             raise ValueError(msg)
 
-    def b_date_parse(s: Any) -> datetime.date:
+    def b_iso_to_date(s: Any) -> datetime.date:
         if not isinstance(s, str):
-            msg = "remarshal.date_parse: requires a string"
+            msg = "remarshal.iso_to_date: requires a string"
             raise TypeError(msg)
         try:
             return datetime.date.fromisoformat(s)
         except ValueError as e:
-            msg = f"remarshal.date_parse: {e}"
+            msg = f"remarshal.iso_to_date: {e}"
             raise ValueError(msg)
 
-    def b_time_parse(s: Any) -> datetime.time:
+    def b_iso_to_time(s: Any) -> datetime.time:
         if not isinstance(s, str):
-            msg = "remarshal.time_parse: requires a string"
+            msg = "remarshal.iso_to_time: requires a string"
             raise TypeError(msg)
         try:
             return datetime.time.fromisoformat(s)
         except ValueError as e:
-            msg = f"remarshal.time_parse: {e}"
+            msg = f"remarshal.iso_to_time: {e}"
             raise ValueError(msg)
 
     pairs = (
-        ("bytes_decode", b_bytes_decode),
-        ("bytes_encode", b_bytes_encode),
+        ("bytes_to_str", b_bytes_to_str),
+        ("str_to_bytes", b_str_to_bytes),
         ("bytes_len", b_bytes_len),
-        ("b64_encode", b_b64_encode),
-        ("b64_decode", b_b64_decode),
-        ("datetime_isoformat", b_datetime_isoformat),
-        ("datetime_parse", b_datetime_parse),
-        ("date_parse", b_date_parse),
-        ("time_parse", b_time_parse),
+        ("bytes_to_base64", b_bytes_to_base64),
+        ("base64_to_bytes", b_base64_to_bytes),
+        ("datetime_to_iso", b_datetime_to_iso),
+        ("iso_to_datetime", b_iso_to_datetime),
+        ("iso_to_date", b_iso_to_date),
+        ("iso_to_time", b_iso_to_time),
     )
 
     fields = {
