@@ -278,6 +278,7 @@ dependencies = [
     { name = "colorama" },
     { name = "rich-argparse" },
     { name = "ruamel-yaml" },
+    { name = "starlark" },
     { name = "tomli" },
     { name = "tomlkit" },
     { name = "u-msgpack-python" },
@@ -291,11 +292,7 @@ dev = [
     { name = "pytest-cov" },
     { name = "ruff" },
     { name = "snoop" },
-    { name = "starlark" },
     { name = "types-python-dateutil" },
-]
-starlark = [
-    { name = "starlark" },
 ]
 
 [package.metadata]
@@ -310,14 +307,13 @@ requires-dist = [
     { name = "ruamel-yaml", specifier = ">=0.19,<0.20" },
     { name = "ruff", marker = "extra == 'dev'", specifier = "==0.11.5" },
     { name = "snoop", marker = "extra == 'dev'", specifier = ">=0.6,<0.7" },
-    { name = "starlark", marker = "extra == 'dev'", specifier = ">=0.1,<1.0" },
-    { name = "starlark", marker = "extra == 'starlark'", specifier = ">=0.1,<0.2" },
+    { name = "starlark", specifier = ">=0.2,<0.3" },
     { name = "tomli", specifier = ">=2.4,<3.0" },
     { name = "tomlkit", specifier = ">=0.14,<0.15" },
     { name = "types-python-dateutil", marker = "extra == 'dev'", specifier = ">=2.8.19.13,<3.0" },
     { name = "u-msgpack-python", specifier = ">=2.8,<3.0" },
 ]
-provides-extras = ["starlark", "dev"]
+provides-extras = ["dev"]
 
 [[package]]
 name = "rich"
@@ -395,11 +391,11 @@ wheels = [
 
 [[package]]
 name = "starlark"
-version = "0.1.1"
+version = "0.2.0"
 source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/a8/cc/5409fee957477d500b12b15a8e4f29dfdf3b3a4a8734d5d025a323b30680/starlark-0.1.1.tar.gz", hash = "sha256:3e7318aa2622db123eeacc234ed4f3d5b0e94c36490d16388616c099fd1ac2d3", size = 213917, upload-time = "2026-05-06T13:28:11.602Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/39/5d/153396eecab3d698fbaece5be2e049607b7eb8eb5bdf8955d58751f3e18f/starlark-0.2.0.tar.gz", hash = "sha256:998e67a80a717344d601acb4e9de392f111b82e78c58e6a7bfeb0534c50f3f54", size = 231933, upload-time = "2026-05-07T16:05:23.579Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/55/68/21a68568a4367738138f8813fdf8b5ddd53efc1ed09df27be19d31ce3d08/starlark-0.1.1-py3-none-any.whl", hash = "sha256:5351a065bbb8c957a598cb05a985dd05f84ece4ed8b23871323fee54b12155f2", size = 86342, upload-time = "2026-05-06T13:28:13.312Z" },
+    { url = "https://files.pythonhosted.org/packages/c6/8d/2bea44bb7f597cee433235cfd7af02c1680e9c2a5e2621c05acea444d526/starlark-0.2.0-py3-none-any.whl", hash = "sha256:9008f2d7e2d340ab8572a6323e59f8d829ba167798f97cea5059a1047ef46871", size = 92484, upload-time = "2026-05-07T16:05:21.683Z" },
 ]
 
 [[package]]

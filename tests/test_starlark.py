@@ -161,7 +161,7 @@ class TestTypes:
 
     def test_set_returned_is_rejected(self) -> None:
         f = compile_transform("set([1, 2, 3])")
-        with pytest.raises(TypeError, match="returned a 'set'"):
+        with pytest.raises(TypeError, match="got a Starlark set"):
             f(None)
 
     def test_set_can_be_converted_in_starlark(self) -> None:
