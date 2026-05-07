@@ -36,25 +36,27 @@ jobs:
           run: |
             set -x
 
+            PATH=$HOME/.local/bin:$PATH
+
+            py_ver_period=3.12
+            py_ver=$(echo "$py_ver_period" | tr -d .)
+
             case "$(uname)" in
               FreeBSD)
-                sudo pkg install -y devel/py-tox
+                sudo pkg install -y devel/py-pipx python"$py_ver"
                 ;;
 
               NetBSD)
-                sudo pkgin -y install 'py*-tox'
-
-                for src in /usr/pkg/bin/tox-3.??; do
-                  :
-                done
-                sudo ln -s "$src" /usr/pkg/bin/tox
+                sudo pkgin -y install py"$py_ver"-pipx
+                sudo ln -s /usr/pkg/bin/pipx"$py_ver_period" /usr/pkg/bin/pipx
                 ;;
 
               OpenBSD)
-                sudo pkg_add -I py3-tox
+                sudo pkg_add -I py3-pipx
                 ;;
             esac
 
+            pipx install tox
             tox
 
   test:
