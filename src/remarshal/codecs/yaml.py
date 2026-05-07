@@ -18,15 +18,6 @@ if TYPE_CHECKING:
 UTF_8 = "utf-8"
 
 
-def _format_to_version(format: str | None) -> YAMLVersion:
-    match format:
-        case "yaml-1.1":
-            return (1, 1)
-        case "yaml-1.2":
-            return (1, 2)
-    return None
-
-
 class YAMLDecoder(Decoder):
     """A YAML decoder pinned to a specific YAML version.
 

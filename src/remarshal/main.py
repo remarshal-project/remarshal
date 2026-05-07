@@ -33,7 +33,6 @@ from remarshal.codec import (
     get_decoder,
     get_encoder,
 )
-from remarshal.codecs.yaml import _format_to_version
 from remarshal.document import (
     Document,
     TooManyValuesError,
@@ -491,12 +490,17 @@ def format_options(
             )
 
         case "yaml" | "yaml-1.1" | "yaml-1.2":
+            yaml_version: YAMLVersion = None
+            if output_format == "yaml-1.1":
+                yaml_version = (1, 1)
+            elif output_format == "yaml-1.2":
+                yaml_version = (1, 2)
             return YAMLOptions(
                 expand_aliases=expand_aliases,
                 indent=Defaults.YAML_INDENT if indent is None else indent,
                 style=yaml_style,
                 style_newline=yaml_style_newline,
-                version=_format_to_version(output_format),
+                version=yaml_version,
                 width=width,
             )
 
