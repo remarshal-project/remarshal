@@ -16,6 +16,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
 import pytest
+import starlark
 
 import remarshal
 from remarshal.main import _parse_command_line
@@ -23,7 +24,6 @@ from remarshal.main import _parse_command_line
 if TYPE_CHECKING:
     from collections.abc import Callable
 
-pytest.importorskip("starlark")
 
 from remarshal.starlark_transform import (  # noqa: E402
     compile_transform,
