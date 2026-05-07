@@ -1,6 +1,6 @@
 [build-system]
-requires = ["uv_build>=0.11.9,<0.12.0"]
-build-backend = "uv_build"
+requires = ["poetry-core>=2.0"]
+build-backend = "poetry.core.masonry.api"
 
 [project]
 name = "remarshal"
@@ -89,6 +89,18 @@ yaml2msgpack = "remarshal.main:main"
 yaml2py = "remarshal.main:main"
 yaml2toml = "remarshal.main:main"
 yaml2yaml = "remarshal.main:main"
+
+[tool.poetry]
+include = [
+  { path = "example.cbor", format = "sdist" },
+  { path = "example.json", format = "sdist" },
+  { path = "example.msgpack", format = "sdist" },
+  { path = "example.py", format = "sdist" },
+  { path = "example.toml", format = "sdist" },
+  { path = "example.yaml", format = "sdist" },
+  { path = "tests/", format = "sdist" },
+]
+requires-poetry = ">=2.0"
 
 [tool.codespell]
 quiet-level = 3
@@ -262,15 +274,4 @@ description = "run tests"
 deps = ["pytest>=8,<9"]
 commands = [
   ["pytest"],
-]
-
-[tool.uv.build-backend]
-source-include = [
-  "example.cbor",
-  "example.json",
-  "example.msgpack",
-  "example.py",
-  "example.toml",
-  "example.yaml",
-  "tests/*",
 ]
