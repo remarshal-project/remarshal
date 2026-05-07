@@ -97,7 +97,7 @@ quiet-level = 3
 "PYTHON_SOURCES" = "scripts/ src/ tests/"
 
 [tool.poe.tasks.check]
-sequence = ["format", "spell", "lint", "type"]
+sequence = ["format", "spell", "lint", "typecheck"]
 help = "Run the formatter, then all static checks"
 ignore_fail = "return_non_zero"
 
@@ -125,7 +125,7 @@ help = "Run codespell"
 cmd = "pytest"
 help = "Run Pytest (not through tox)"
 
-[tool.poe.tasks.type]
+[tool.poe.tasks.typecheck]
 cmd = "pyright ${PYTHON_SOURCES}"
 help = "Run Pyright"
 
