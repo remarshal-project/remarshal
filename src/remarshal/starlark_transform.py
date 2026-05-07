@@ -4,10 +4,6 @@
 
 """Bridge between Remarshal's `Document` model and Starlark in Python.
 
-Loaded only when the user passes `--starlark` or `--starlark-file`. The
-top-level `import` of `starlark` is deferred to `_require_starlark` so a
-helpful message is shown when the optional dependency is missing.
-
 Key facts that shape the bridge:
 
 - Starlark in Python has no `bytes` and no datetime types; both are passed
@@ -29,31 +25,15 @@ import base64
 import datetime
 from typing import Any, Callable
 
-
-class StarlarkNotInstalledError(ImportError):
-    pass
-
-
-_INSTALL_HINT = (
-    "Starlark transforms require the 'starlark' optional dependency. "
-    "Install it with: 'pipx install \"remarshal[starlark]\"' or "
-    "'uv install \"remarshal[starlark]\")'."
-)
-
-
-def _require_starlark() -> Any:
-    try:
-        import starlark
-    except ImportError as e:
-        raise StarlarkNotInstalledError(_INSTALL_HINT) from e
-    return starlark
+import starlark
+from starlark.eval import values as _values
+from starlark.eval.module import Module
+from starlark.syntax import parse, parse_expression
+from starlark.syntax.errors import StarlarkSyntaxException
 
 
 def _starlark_internals() -> tuple[Any, Any, Any, Any, Any, Any]:
     """Return `(Module, Dict, StarlarkList, StarlarkSet, Range, BuiltinFunction)`."""
-    from starlark.eval import values as _values
-    from starlark.eval.module import Module
-
     return (
         Module,
         _values.Dict,
@@ -248,9 +228,6 @@ def _classify_source(source: str, filename: str) -> str:
     a program via `parse` and classified as `program`. If neither
     succeeds, the syntax error is raised.
     """
-    from starlark.syntax import parse, parse_expression
-    from starlark.syntax.errors import StarlarkSyntaxException
-
     try:
         parse_expression(source, file=filename)
     except (StarlarkSyntaxException, ValueError):
@@ -284,8 +261,7 @@ def compile_transform(
     treated as one and its value becomes the new document. Otherwise it is
     a Starlark program that must assign to a top-level name `result`.
     """
-    starlark = _require_starlark()
-    Module, Dict_, List_, Set_, Range_, BuiltinFunction_ = _starlark_internals()
+    Module_, Dict_, List_, Set_, Range_, BuiltinFunction_ = _starlark_internals()
 
     is_expr = _classify_source(source, filename) == "expr"
 
@@ -294,7 +270,7 @@ def compile_transform(
     def transform(doc: Any) -> Any:
         # Build a fresh mutability scope for each call so successive runs
         # of the same compiled callable don't accumulate frozen state.
-        module = Module(filename)
+        module = Module_(filename)
         wrapped = _to_starlark(doc, module.mutability, Dict_, List_)
         # Universal namespace gets `data` and the `remarshal` helpers,
         # in addition to the standard builtins (`len`, `range`, `json`, ...).
@@ -343,6 +319,5 @@ def compile_transform(
 
 
 __all__ = [
-    "StarlarkNotInstalledError",
     "compile_transform",
 ]

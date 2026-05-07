@@ -95,14 +95,6 @@ pipx install git+https://github.com/remarshal-project/remarshal
 uv tool install git+https://github.com/remarshal-project/remarshal
 ```
 
-To enable [Starlark transforms](#starlark-transforms), add the `[starlark]` extra:
-
-```sh
-pipx install 'remarshal[starlark]'
-# or
-uv tool install 'remarshal[starlark]'
-```
-
 ## Usage
 
 <!-- USAGE -->
@@ -213,9 +205,8 @@ $ remarshal test.toml --to json --unwrap main
 
 ### Starlark transforms
 
-The optional `[starlark]` install extra lets you transform the data between decoding and encoding using a [Starlark](https://github.com/bazelbuild/starlark) expression or program.
+You can transform the data between decoding and encoding using a [Starlark](https://github.com/bazelbuild/starlark) expression or program.
 Starlark is a small, sandboxed Python-like language with no filesystem, network, or subprocess access.
-See [Installation](#installation) for how to enable it.
 
 Pass code to Remarshal with `--starlark` or read it from a file with `--starlark-file`.
 The two options are mutually exclusive.

@@ -26,7 +26,6 @@ if TYPE_CHECKING:
 pytest.importorskip("starlark")
 
 from remarshal.starlark_transform import (  # noqa: E402
-    StarlarkNotInstalledError,
     compile_transform,
 )
 
@@ -464,12 +463,3 @@ class TestCLI:
             filename=str(script),
         )
         assert f({"a": 1, "b": 2}) == {"a": 2, "b": 3}
-
-
-# === Missing-extra error path ===
-
-
-def test_install_hint_message_format() -> None:
-    err = StarlarkNotInstalledError("hint")
-    # Sanity check: it's an ImportError so callers can catch it that way.
-    assert isinstance(err, ImportError)

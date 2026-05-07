@@ -52,6 +52,7 @@ from remarshal.options import (
     YAMLStyle,
     YAMLVersion,
 )
+from remarshal.starlark_transform import compile_transform
 
 if TYPE_CHECKING:
     from rich.style import StyleType
@@ -582,11 +583,6 @@ def _build_starlark_transform(
     if args.starlark is None and args.starlark_file is None:
         return None
 
-    from .starlark_transform import (
-        StarlarkNotInstalledError,
-        compile_transform,
-    )
-
     if args.starlark_file is not None:
         source = Path(args.starlark_file).read_text(encoding="utf-8")
         filename = args.starlark_file
@@ -597,16 +593,12 @@ def _build_starlark_transform(
     def to_limit(n: int) -> int | None:
         return None if n < 0 else n
 
-    try:
-        return compile_transform(
-            source,
-            filename=filename,
-            max_steps=to_limit(args.starlark_max_steps),
-            max_allocs=to_limit(args.starlark_max_allocs),
-        )
-    except StarlarkNotInstalledError as e:
-        msg = str(e)
-        raise ValueError(msg)
+    return compile_transform(
+        source,
+        filename=filename,
+        max_steps=to_limit(args.starlark_max_steps),
+        max_allocs=to_limit(args.starlark_max_allocs),
+    )
 
 
 def main() -> None:
