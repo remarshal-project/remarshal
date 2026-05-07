@@ -12,7 +12,8 @@ OptT = TypeVar("OptT", bound=FormatOptions)
 
 
 class Decoder(ABC):
-    """Parses a serialized format into a Document."""
+    """Abstract base class for decoders
+    that parse a serialized format into a `Document`."""
 
     name: ClassVar[str]
 
@@ -21,12 +22,13 @@ class Decoder(ABC):
 
 
 class Encoder(ABC, Generic[OptT]):
-    """Serializes a Document into bytes for a given format.
+    """Serialize a `Document` into bytes for a given format.
 
-    `options_cls` is both the runtime check used by the `encode()`
-    dispatcher and the factory used to build defaults when the caller
-    passes `options=None`. Every `FormatOptions` subclass has defaults
-    for all its fields, so `options_cls()` always succeeds.
+    `options_cls` is used by the `encode()` function as a runtime type check
+    and as a factory to build default options when
+    the caller passes `options=None`.
+    Every `FormatOptions` subclass has defaults for all its fields,
+    so `options_cls()` always succeeds.
     """
 
     name: ClassVar[str]
@@ -41,7 +43,7 @@ ENCODERS: dict[str, Encoder[Any]] = {}
 
 
 def register_decoder(decoder: Decoder, *names: str) -> None:
-    """Register `decoder` under each of `names`. Defaults to `decoder.name`."""
+    """Register `decoder` under each of `names`, defaulting to `decoder.name`."""
     if not names:
         names = (decoder.name,)
     for name in names:
@@ -49,7 +51,7 @@ def register_decoder(decoder: Decoder, *names: str) -> None:
 
 
 def register_encoder(encoder: Encoder[Any], *names: str) -> None:
-    """Register `encoder` under each of `names`. Defaults to `encoder.name`."""
+    """Register `encoder` under each of `names`, defaulting to `encoder.name`."""
     if not names:
         names = (encoder.name,)
     for name in names:

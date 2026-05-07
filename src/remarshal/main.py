@@ -21,7 +21,7 @@ from typing import (
 import colorama
 from rich_argparse import RichHelpFormatter
 
-# Importing the codecs package registers every built-in Encoder/Decoder.
+# Importing the codecs package registers every built-in `Encoder` and `Decoder`.
 from remarshal import codecs as _codecs  # noqa: F401
 from remarshal.codec import (
     DECODERS,

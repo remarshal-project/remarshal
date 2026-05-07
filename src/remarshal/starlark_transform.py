@@ -2,7 +2,7 @@
 # Copyright (c) 2026 D. Bohdan
 # License: MIT
 
-"""Bridge between Remarshal's `Document` model and starlark-python.
+"""Bridge between Remarshal's `Document` model and Starlark in Python.
 
 Loaded only when the user passes `--starlark` or `--starlark-file`. The
 top-level `import` of `starlark` is deferred to `_require_starlark` so a
@@ -10,16 +10,17 @@ helpful message is shown when the optional dependency is missing.
 
 Key facts that shape the bridge:
 
-- starlark-python has no `bytes` and no datetime types; both are passed
+- Starlark in Python has no `bytes` and no datetime types; both are passed
   through opaquely. Helpers in the predeclared `remarshal` module let
   scripts inspect or rebuild them.
-- Native Python `list`/`dict`/`set` are NOT interoperable with the
-  Starlark interpreter. We must wrap inputs in `StarlarkList`/`Dict` and
-  unwrap outputs back to plain Python collections.
-- starlark-python preserves dict insertion order, which matches
+- Native Python `list`, `dict`, and `set` are not interoperable with the
+  Starlark interpreter. We must wrap inputs in
+  `StarlarkList` or `StarlarkDict`
+  and unwrap outputs back to plain Python collections.
+- Starlark in Python preserves dictionary insertion order, which matches
   Remarshal's order-preserving conversion.
 - Starlark code that returns a `set`, a `range`, or a `tuple` is
-  reasonable; we coerce these to a plain `list` on the way out.
+  coerced to a plain `list` on the way out.
 """
 
 from __future__ import annotations
@@ -49,7 +50,7 @@ def _require_starlark() -> Any:
 
 
 def _starlark_internals() -> tuple[Any, Any, Any, Any, Any, Any]:
-    """Return (Module, Dict, StarlarkList, StarlarkSet, Range, BuiltinFunction)."""
+    """Return `(Module, Dict, StarlarkList, StarlarkSet, Range, BuiltinFunction)`."""
     from starlark.eval import values as _values
     from starlark.eval.module import Module
 
@@ -63,7 +64,7 @@ def _starlark_internals() -> tuple[Any, Any, Any, Any, Any, Any]:
     )
 
 
-# === Conversion in: Document -> Starlark wrappers ===
+# === Conversion in: `Document` -> Starlark wrappers ===
 
 
 def _to_starlark(value: Any, mutability: Any, Dict_: Any, List_: Any) -> Any:
@@ -87,7 +88,7 @@ def _to_starlark(value: Any, mutability: Any, Dict_: Any, List_: Any) -> Any:
             raise TypeError(msg)
 
 
-# === Conversion out: Starlark wrappers -> Document ===
+# === Conversion out: Starlark wrappers -> `Document` ===
 
 
 def _from_starlark(value: Any, Dict_: Any, List_: Any, Set_: Any, Range_: Any) -> Any:
@@ -236,15 +237,16 @@ def _make_remarshal_module(BuiltinFunction_: Any) -> Any:
     return _Module(fields)
 
 
-# === Top-level: source -> transform callable ===
+# === Top-level: `source` -> `transform` callable ===
 
 
 def _classify_source(source: str, filename: str) -> str:
-    """Return 'expr' or 'program', or raise ValueError on a syntax error.
+    """Return `expr` or `program`, or raise `ValueError` on a syntax error.
 
     The classification rule: if the source parses as a single Starlark
-    expression, run it via `eval`. Otherwise, validate it as a program
-    via `parse`. If neither succeeds, surface the syntax error.
+    expression, it is classified as `expr`. Otherwise, it is validated as
+    a program via `parse` and classified as `program`. If neither
+    succeeds, the syntax error is raised.
     """
     from starlark.syntax import parse, parse_expression
     from starlark.syntax.errors import StarlarkSyntaxException
@@ -295,7 +297,7 @@ def compile_transform(
         module = Module(filename)
         wrapped = _to_starlark(doc, module.mutability, Dict_, List_)
         # Universal namespace gets `data` and the `remarshal` helpers,
-        # in addition to the standard builtins (len, range, json, ...).
+        # in addition to the standard builtins (`len`, `range`, `json`, ...).
         env = {"data": wrapped, "remarshal": helper_module}
         try:
             if is_expr:

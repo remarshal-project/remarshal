@@ -22,6 +22,7 @@ def traverse(
     instance_callbacks: Sequence[tuple[type, Any]] = (),
     default_callback: Callable[[Any], Any] = identity,
 ) -> Any:
+    """Recursively traverse a `Document` and apply callbacks to its elements."""
     if isinstance(col, dict):
         res = dict_callback(
             [

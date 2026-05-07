@@ -22,7 +22,7 @@ class YAMLDecoder(Decoder):
     """A YAML decoder pinned to a specific YAML version.
 
     Register one instance per supported version; the bare `YAMLDecoder()`
-    (version=None) lets ruamel.yaml pick its default.
+    with `version=None` lets `ruamel.yaml` pick its default.
     """
 
     name: ClassVar[str] = "yaml"
@@ -66,9 +66,7 @@ class YAMLEncoder(Encoder[YAMLOptions]):
 
         def represent_str(self, data):
             str_style = style_newline if "\n" in data else style
-            return self.represent_scalar(
-                "tag:yaml.org,2002:str", data, style=str_style
-            )
+            return self.represent_scalar("tag:yaml.org,2002:str", data, style=str_style)
 
         yaml.representer.add_representer(type(None), represent_none)
         yaml.representer.add_representer(str, represent_str)

@@ -1,7 +1,7 @@
-"""Per-format Encoder and Decoder classes.
+"""`Encoder` and `Decoder` classes for each supported format.
 
-Importing this package registers every built-in codec with the
-`remarshal.codec` registries (`DECODERS` and `ENCODERS`).
+Importing this package registers every built-in codec in the
+`remarshal.codec` registries `DECODERS` and `ENCODERS`.
 """
 
 from __future__ import annotations
