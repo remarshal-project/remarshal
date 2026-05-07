@@ -6,110 +6,56 @@
 from __future__ import annotations
 
 import argparse
-import datetime
 import importlib.metadata
-import json
-import pprint
 import re
 import sys
 import traceback
-from dataclasses import dataclass
-from io import StringIO
 from pathlib import Path
 from typing import (
     TYPE_CHECKING,
-    Any,
     Callable,
-    Literal,
     Mapping,
     Sequence,
-    Union,
-    cast,
 )
 
-import cbor2  # type: ignore
 import colorama
-import ruamel.yaml
-import ruamel.yaml.parser
-import ruamel.yaml.representer
-import ruamel.yaml.scalarstring
-import ruamel.yaml.scanner
-import tomli as tomllib
-import tomlkit
-import tomlkit.items
-import umsgpack
 from rich_argparse import RichHelpFormatter
+
+# Importing the codecs package registers every built-in Encoder/Decoder.
+from remarshal import codecs as _codecs  # noqa: F401
+from remarshal.codec import (
+    DECODERS,
+    ENCODERS,
+    Decoder,
+    Encoder,
+    decode,
+    encode,
+    get_decoder,
+    get_encoder,
+)
+from remarshal.codecs.yaml import _format_to_version
+from remarshal.document import (
+    Document,
+    TooManyValuesError,
+    identity,
+    traverse,
+    validate_value_count,
+)
+from remarshal.options import (
+    CBOROptions,
+    Defaults,
+    FormatOptions,
+    JSONOptions,
+    MsgPackOptions,
+    PythonOptions,
+    TOMLOptions,
+    YAMLOptions,
+    YAMLStyle,
+    YAMLVersion,
+)
 
 if TYPE_CHECKING:
     from rich.style import StyleType
-
-
-class Defaults:
-    MAX_VALUES = 1000000
-    SORT_KEYS = False
-    STRINGIFY = False
-    YAML_STYLE = ""
-
-    INDENT = None
-    JSON_INDENT = 4
-    PYTHON_INDENT = 1
-    YAML_INDENT = 2
-
-    MULTILINE_THRESHOLD = 6
-
-    WIDTH = 80
-
-
-Document = Union[bool, bytes, datetime.datetime, Mapping, None, Sequence, str]
-YAMLStyle = Literal["", "'", '"', "|", ">"]
-YAMLVersion = Union[tuple[int, int], None]
-
-
-@dataclass(frozen=True)
-class FormatOptions:
-    pass
-
-
-@dataclass(frozen=True)
-class CBOROptions(FormatOptions):
-    pass
-
-
-@dataclass(frozen=True)
-class JSONOptions(FormatOptions):
-    indent: int | None = Defaults.JSON_INDENT
-    sort_keys: bool = Defaults.SORT_KEYS
-    stringify: bool = Defaults.STRINGIFY
-
-
-@dataclass(frozen=True)
-class MsgPackOptions(FormatOptions):
-    pass
-
-
-@dataclass(frozen=True)
-class PythonOptions(FormatOptions):
-    indent: int | None = Defaults.PYTHON_INDENT
-    sort_keys: bool = Defaults.SORT_KEYS
-    width: int = Defaults.WIDTH
-
-
-@dataclass(frozen=True)
-class TOMLOptions(FormatOptions):
-    indent: int | None = Defaults.INDENT
-    multiline_threshold: int = Defaults.MULTILINE_THRESHOLD
-    sort_keys: bool = Defaults.SORT_KEYS
-    stringify: bool = Defaults.STRINGIFY
-
-
-@dataclass(frozen=True)
-class YAMLOptions(FormatOptions):
-    expand_aliases: bool = False
-    indent: int = Defaults.YAML_INDENT
-    style: YAMLStyle = Defaults.YAML_STYLE
-    style_newline: YAMLStyle | None = None
-    version: YAMLVersion = (1, 2)
-    width: int = Defaults.WIDTH
 
 
 __all__ = [
@@ -118,8 +64,10 @@ __all__ = [
     "OUTPUT_FORMATS",
     "RICH_ARGPARSE_STYLES",
     # Classes and static types.
+    "Decoder",
     "Defaults",
     "Document",
+    "Encoder",
     "TooManyValuesError",
     "YAMLStyle",
     "YAMLVersion",
@@ -131,7 +79,13 @@ __all__ = [
     "PythonOptions",
     "TOMLOptions",
     "YAMLOptions",
+    # Codec registries.
+    "DECODERS",
+    "ENCODERS",
+    "get_decoder",
+    "get_encoder",
     # Functions.
+    "decode",
     "encode",
     "format_options",
     "identity",
@@ -162,17 +116,6 @@ OUTPUT_FORMATS_ARGV0 = [
     "yaml-1.1",
     "yaml-1.2",
 ]
-OPTIONS_CLASSES = {
-    "cbor": CBOROptions,
-    "json": JSONOptions,
-    "msgpack": MsgPackOptions,
-    "python": PythonOptions,
-    "toml": TOMLOptions,
-    "yaml": YAMLOptions,
-    "yaml-1.1": YAMLOptions,
-    "yaml-1.2": YAMLOptions,
-}
-UTF_8 = "utf-8"
 
 RICH_ARGPARSE_STYLES: dict[str, StyleType] = {
     "argparse.args": "green",
@@ -504,401 +447,7 @@ def _parse_command_line(argv: Sequence[str]) -> argparse.Namespace:
     return args
 
 
-def _yaml_version(format: str) -> YAMLVersion:
-    match format:
-        case "yaml-1.1":
-            return (1, 1)
-
-        case "yaml-1.2":
-            return (1, 2)
-
-    return None
-
-
-# === Parser/serializer wrappers ===
-
-
-def identity(x: Any) -> Any:
-    return x
-
-
-def traverse(
-    col: Any,
-    dict_callback: Callable[[Sequence[tuple[Any, Any]]], Any] = dict,
-    list_callback: Callable[[Sequence[tuple[Any, Any]]], Any] = identity,
-    key_callback: Callable[[Any], Any] = identity,
-    instance_callbacks: Sequence[tuple[type, Any]] = (),
-    default_callback: Callable[[Any], Any] = identity,
-) -> Any:
-    if isinstance(col, dict):
-        res = dict_callback(
-            [
-                (
-                    key_callback(k),
-                    traverse(
-                        v,
-                        dict_callback,
-                        list_callback,
-                        key_callback,
-                        instance_callbacks,
-                        default_callback,
-                    ),
-                )
-                for (k, v) in col.items()
-            ]
-        )
-    elif isinstance(col, list):
-        res = list_callback(
-            [
-                traverse(
-                    x,
-                    dict_callback,
-                    list_callback,
-                    key_callback,
-                    instance_callbacks,
-                    default_callback,
-                )
-                for x in col
-            ]
-        )
-    else:
-        for t, callback in instance_callbacks:
-            if isinstance(col, t):
-                res = callback(col)
-                break
-        else:
-            res = default_callback(col)
-
-    return res
-
-
-def _decode_cbor(input_data: bytes) -> Document:
-    try:
-        doc = cbor2.loads(input_data)
-        return cast("Document", doc)
-    except cbor2.CBORDecodeError as e:
-        msg = f"Cannot parse as CBOR ({e})"
-        raise ValueError(msg)
-
-
-def _decode_json(input_data: bytes) -> Document:
-    try:
-        doc = json.loads(
-            input_data.decode(UTF_8),
-        )
-
-        return cast("Document", doc)
-    except json.JSONDecodeError as e:
-        msg = f"Cannot parse as JSON ({e})"
-        raise ValueError(msg)
-
-
-def _decode_msgpack(input_data: bytes) -> Document:
-    try:
-        doc = umsgpack.unpackb(input_data)
-        return cast("Document", doc)
-    except umsgpack.UnpackException as e:
-        msg = f"Cannot parse as MessagePack ({e})"
-        raise ValueError(msg)
-
-
-def _decode_toml(input_data: bytes) -> Document:
-    try:
-        doc = tomllib.loads(input_data.decode(UTF_8))
-        return cast("Document", doc)
-    except tomllib.TOMLDecodeError as e:
-        msg = f"Cannot parse as TOML ({e})"
-        raise ValueError(msg)
-
-
-def _decode_yaml(input_data: bytes, version: YAMLVersion) -> Document:
-    try:
-        yaml = ruamel.yaml.YAML(pure=True, typ="safe")
-        yaml.version = version
-
-        doc = yaml.load(input_data)
-
-        return cast("Document", doc)
-    except ruamel.yaml.YAMLError as e:
-        problem = getattr(e, "problem", str(e))
-        msg = f"Cannot parse as YAML ({problem})"
-        raise ValueError(msg)
-
-
-def decode(input_format: str, input_data: bytes) -> Document:
-    match input_format:
-        case "cbor":
-            return _decode_cbor(input_data)
-
-        case "json":
-            return _decode_json(input_data)
-
-        case "msgpack":
-            return _decode_msgpack(input_data)
-
-        case "toml":
-            return _decode_toml(input_data)
-
-        case "yaml" | "yaml-1.1" | "yaml-1.2":
-            return _decode_yaml(input_data, version=_yaml_version(input_format))
-
-        case _:
-            msg = f"Unknown input format: {input_format}"
-            raise ValueError(msg)
-
-
-class TooManyValuesError(BaseException):
-    pass
-
-
-def _validate_value_count(doc: Document, *, maximum: int) -> None:
-    if maximum < 0:
-        return
-
-    count = 0
-
-    def count_callback(x: Any) -> Any:
-        nonlocal count, maximum
-
-        count += 1
-        if count > maximum:
-            msg = f"document contains too many values (over {maximum})"
-            raise TooManyValuesError(msg)
-
-        return x
-
-    traverse(doc, instance_callbacks=[(object, count_callback)])
-
-
-def _reject_special_keys(key: Any) -> Any:
-    if isinstance(key, bool):
-        msg = "boolean key"
-        raise TypeError(msg)
-
-    if isinstance(key, datetime.date):
-        msg = "date key"
-        raise TypeError(msg)
-
-    if isinstance(key, datetime.datetime):
-        msg = "date-time key"
-        raise TypeError(msg)
-
-    if isinstance(key, datetime.time):
-        msg = "time key"
-        raise TypeError(msg)
-
-    if key is None:
-        msg = "null key"
-        raise TypeError(msg)
-
-    return key
-
-
-def _stringify_special_keys(key: Any) -> Any:
-    if isinstance(key, bool):
-        return "true" if key else "false"
-    if isinstance(key, (datetime.date, datetime.datetime, datetime.time)):
-        return key.isoformat()
-    if key is None:
-        return "null"
-
-    return str(key)
-
-
-def _encode_cbor(data: Document) -> bytes:
-    try:
-        return bytes(cbor2.dumps(data))
-    except cbor2.CBOREncodeError as e:
-        msg = f"Cannot convert data to CBOR ({e})"
-        raise ValueError(msg)
-
-
-def _json_default_stringify(obj: Any) -> str:
-    if isinstance(obj, (datetime.date, datetime.datetime, datetime.time)):
-        return obj.isoformat()
-    msg = f"{obj!r} is not JSON serializable"
-    raise TypeError(msg)
-
-
-def _encode_json(
-    data: Document,
-    *,
-    indent: int | None,
-    sort_keys: bool,
-    stringify: bool,
-) -> str:
-    separators = (",", ": " if indent else ":")
-
-    if stringify:
-        default_callback = _json_default_stringify
-        key_callback = _stringify_special_keys
-    else:
-        default_callback = None
-        key_callback = _reject_special_keys
-
-    try:
-        return (
-            json.dumps(
-                traverse(
-                    data,
-                    key_callback=key_callback,
-                ),
-                default=default_callback,
-                ensure_ascii=False,
-                indent=indent,
-                separators=separators,
-                sort_keys=sort_keys,
-            )
-            + "\n"
-        )
-    except (TypeError, ValueError) as e:
-        msg = f"Cannot convert data to JSON ({e})"
-        raise ValueError(msg)
-
-
-def _msgpack_reject_local_datetime(obj: datetime.datetime) -> None:
-    if obj.tzinfo is None:
-        msg = "'datetime.datetime' without a time zone is unsupported"
-        raise TypeError(msg)
-
-
-def _encode_msgpack(data: Document) -> bytes:
-    try:
-        traverse(
-            data,
-            instance_callbacks=[(datetime.datetime, _msgpack_reject_local_datetime)],
-        )
-
-        return umsgpack.packb(data)
-    except (TypeError, umsgpack.UnsupportedTypeException) as e:
-        msg = f"Cannot convert data to MessagePack ({e})"
-        raise ValueError(msg)
-
-
-def _encode_python(
-    data: Document,
-    *,
-    indent: int | None,
-    sort_keys: bool,
-    width: int,
-) -> str:
-    code = (
-        repr(data)
-        if indent is None
-        else pprint.pformat(
-            data,
-            indent=indent,
-            sort_dicts=sort_keys,
-            width=width,
-        )
-    )
-
-    return code + "\n"
-
-
-def _encode_toml(
-    data: Mapping[Any, Any],
-    *,
-    multiline_threshold: int,
-    sort_keys: bool,
-    stringify: bool,
-) -> str:
-    key_callback = _stringify_special_keys if stringify else _reject_special_keys
-
-    def reject_null(x: Any) -> Any:
-        if x is None:
-            msg = "null values are not supported"
-            raise TypeError(msg)
-
-        return x
-
-    def stringify_null(x: Any) -> Any:
-        if x is None:
-            return "null"
-
-        return x
-
-    default_callback = stringify_null if stringify else reject_null
-
-    try:
-        toml = tomlkit.item(
-            traverse(
-                data,
-                key_callback=key_callback,
-                default_callback=default_callback,
-            ),
-            _sort_keys=sort_keys,
-        )
-
-        def multilinify(item: tomlkit.items.Item) -> None:
-            match item:
-                case tomlkit.items.Array():
-                    if len(item) >= multiline_threshold:
-                        item.multiline(multiline=True)
-
-                case tomlkit.items.AbstractTable():
-                    for value in item.values():
-                        multilinify(value)
-
-        multilinify(toml)
-
-        return toml.as_string()
-    except AttributeError as e:
-        if str(e) == "'list' object has no attribute 'as_string'":
-            msg = (
-                "Cannot convert non-dictionary data to TOML; "
-                'use "--wrap" to wrap it in a dictionary'
-            )
-            raise ValueError(msg)
-        else:
-            raise e
-    except (TypeError, ValueError) as e:
-        msg = f"Cannot convert data to TOML ({e})"
-        raise ValueError(msg)
-
-
-def _encode_yaml(
-    data: Document,
-    *,
-    expand_aliases: bool,
-    indent: int | None,
-    style: YAMLStyle,
-    style_newline: YAMLStyle | None,
-    version: YAMLVersion,
-    width: int,
-) -> str:
-    yaml = ruamel.yaml.YAML(pure=True)
-    yaml.default_flow_style = False
-    yaml.default_style = style  # type: ignore
-    yaml.indent = indent
-    yaml.version = version
-    yaml.width = width
-
-    if expand_aliases:
-        yaml.representer.ignore_aliases = lambda *_: True
-
-    def represent_none(self, data):
-        return self.represent_scalar("tag:yaml.org,2002:null", "null")
-
-    def represent_str(self, data):
-        str_style = style_newline if "\n" in data else style
-        return self.represent_scalar("tag:yaml.org,2002:str", data, style=str_style)
-
-    yaml.representer.add_representer(type(None), represent_none)
-    yaml.representer.add_representer(str, represent_str)
-
-    try:
-        out = StringIO()
-        yaml.dump(
-            data,
-            out,
-        )
-
-        return out.getvalue()
-    except ruamel.yaml.YAMLError as e:
-        problem = getattr(e, "problem", str(e))
-        msg = f"Cannot convert data to YAML ({problem})"
-        raise ValueError(msg)
+# === Public API ===
 
 
 def format_options(
@@ -947,99 +496,13 @@ def format_options(
                 indent=Defaults.YAML_INDENT if indent is None else indent,
                 style=yaml_style,
                 style_newline=yaml_style_newline,
-                version=_yaml_version(output_format),
+                version=_format_to_version(output_format),
                 width=width,
             )
 
         case _:
             msg = f"Unknown output format: {output_format}"
             raise ValueError(msg)
-
-
-def encode(
-    output_format: str,
-    data: Document,
-    *,
-    options: FormatOptions | None,
-) -> bytes:
-    match output_format:
-        case "cbor":
-            if not isinstance(options, CBOROptions):
-                msg = "expected 'options' argument to have class 'CBOROptions'"
-                raise TypeError(msg)
-
-            encoded = _encode_cbor(data)
-
-        case "json":
-            if not isinstance(options, JSONOptions):
-                msg = "expected 'options' argument to have class 'JSONOptions'"
-                raise TypeError(msg)
-
-            encoded = _encode_json(
-                data,
-                indent=options.indent,
-                sort_keys=options.sort_keys,
-                stringify=options.stringify,
-            ).encode(UTF_8)
-
-        case "msgpack":
-            if not isinstance(options, MsgPackOptions):
-                msg = "expected 'options' argument to have class 'MsgPackOptions'"
-                raise TypeError(msg)
-
-            encoded = _encode_msgpack(data)
-
-        case "python":
-            if not isinstance(options, PythonOptions):
-                msg = "expected 'options' argument to have class 'PythonOptions'"
-                raise TypeError(msg)
-
-            encoded = _encode_python(
-                data,
-                indent=options.indent,
-                sort_keys=options.sort_keys,
-                width=options.width,
-            ).encode(UTF_8)
-
-        case "toml":
-            if not isinstance(options, TOMLOptions):
-                msg = "expected 'options' argument to have class 'TOMLOptions'"
-                raise TypeError(msg)
-
-            if not isinstance(data, Mapping):
-                msg = (
-                    f"Top-level value of type '{type(data).__name__}' cannot "
-                    "be encoded as TOML"
-                )
-                raise TypeError(msg)
-
-            encoded = _encode_toml(
-                data,
-                multiline_threshold=options.multiline_threshold,
-                sort_keys=options.sort_keys,
-                stringify=options.stringify,
-            ).encode(UTF_8)
-
-        case "yaml" | "yaml-1.1" | "yaml-1.2":
-            if not isinstance(options, YAMLOptions):
-                msg = "expected 'options' argument to have class 'YAMLOptions'"
-                raise TypeError(msg)
-
-            encoded = _encode_yaml(
-                data,
-                expand_aliases=options.expand_aliases,
-                indent=options.indent,
-                style=options.style,
-                style_newline=options.style_newline,
-                version=options.version,
-                width=options.width,
-            ).encode(UTF_8)
-
-        case _:
-            msg = f"Unknown output format: {output_format}"
-            raise ValueError(msg)
-
-    return encoded
 
 
 # === Main ===
@@ -1074,7 +537,7 @@ def remarshal(
 
         parsed = decode(input_format, input_data)
 
-        _validate_value_count(parsed, maximum=max_values)
+        validate_value_count(parsed, maximum=max_values)
 
         if unwrap is not None:
             if not isinstance(parsed, Mapping):
@@ -1093,7 +556,7 @@ def remarshal(
             parsed = transform(parsed)
             # Re-check after a user transform: it may have produced more
             # values than the input did.
-            _validate_value_count(parsed, maximum=max_values)
+            validate_value_count(parsed, maximum=max_values)
 
         encoded = encode(
             output_format,
@@ -1121,7 +584,7 @@ def _build_starlark_transform(
     )
 
     if args.starlark_file is not None:
-        source = Path(args.starlark_file).read_text(encoding=UTF_8)
+        source = Path(args.starlark_file).read_text(encoding="utf-8")
         filename = args.starlark_file
     else:
         source = args.starlark

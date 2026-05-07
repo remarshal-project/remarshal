@@ -239,6 +239,14 @@ max-statements = 100
   "S506",
   "SIM115",
 ]
+"src/remarshal/codec.py" = ["B904"]
+"src/remarshal/codecs/*.py" = [
+  "ARG001",
+  "ARG002",
+  "B904",
+  "EM103",
+  "RET506",
+]
 "src/remarshal/starlark_transform.py" = [
   "B904",
   "BLE001",
