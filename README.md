@@ -1,5 +1,9 @@
 # Remarshal
 
+[![PyPI package version badge.](https://img.shields.io/pypi/v/remarshal)](https://pypi.org/project/remarshal/)
+![Python 3.12, 3.13, 3.14 supported.](https://img.shields.io/badge/python-3.12_%7C_3.13_%7C_3.14-blue)
+[![PyPI download statistics badge.](https://img.shields.io/pypi/dm/remarshal)](https://pypistats.org/packages/remarshal)
+
 Convert between CBOR, JSON, MessagePack, TOML, and YAML.
 When installed, Remarshal provides the command-line command `remarshal` as well as short commands like `yaml2json`.
 You can use these commands to convert between formats, reformat, and detect errors.
@@ -124,7 +128,7 @@ options:
   -h, --help            show this help message and exit
   -v, --version         show program's version number and exit
   --expand-aliases      expand YAML aliases (disable anchor/alias generation)
-  -f, --from, --if, --input-format 
+  -f, --from, --if, --input-format
 {cbor,json,msgpack,toml,yaml,yaml-1.1,yaml-1.2}
                         input format
   -i, --input <input>   input file
@@ -151,7 +155,7 @@ options:
   --starlark-max-steps <n>
                         maximum number of Starlark interpreter steps (default
                         10000000, negative for unlimited)
-  -t, --to, --of, --output-format 
+  -t, --to, --of, --output-format
 {cbor,json,msgpack,python,toml,yaml,yaml-1.1,yaml-1.2}
                         output format
   --unwrap <key>        only output the data stored under the given key
