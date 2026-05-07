@@ -27,9 +27,6 @@ class CBOREncoder(Encoder[CBOROptions]):
     name: ClassVar[str] = "cbor"
     options_cls: ClassVar[type[FormatOptions]] = CBOROptions
 
-    def default_options(self) -> CBOROptions:
-        return CBOROptions()
-
     def encode(self, data: Document, options: CBOROptions) -> bytes:
         try:
             return bytes(cbor2.dumps(data))

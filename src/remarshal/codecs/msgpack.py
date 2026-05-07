@@ -32,9 +32,6 @@ class MsgPackEncoder(Encoder[MsgPackOptions]):
     name: ClassVar[str] = "msgpack"
     options_cls: ClassVar[type[FormatOptions]] = MsgPackOptions
 
-    def default_options(self) -> MsgPackOptions:
-        return MsgPackOptions()
-
     def encode(self, data: Document, options: MsgPackOptions) -> bytes:
         try:
             traverse(

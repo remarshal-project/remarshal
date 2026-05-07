@@ -47,9 +47,6 @@ class YAMLEncoder(Encoder[YAMLOptions]):
     name: ClassVar[str] = "yaml"
     options_cls: ClassVar[type[FormatOptions]] = YAMLOptions
 
-    def default_options(self) -> YAMLOptions:
-        return YAMLOptions()
-
     def encode(self, data: Document, options: YAMLOptions) -> bytes:
         yaml = ruamel.yaml.YAML(pure=True)
         yaml.default_flow_style = False

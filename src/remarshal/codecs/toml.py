@@ -34,9 +34,6 @@ class TOMLEncoder(Encoder[TOMLOptions]):
     name: ClassVar[str] = "toml"
     options_cls: ClassVar[type[FormatOptions]] = TOMLOptions
 
-    def default_options(self) -> TOMLOptions:
-        return TOMLOptions()
-
     def encode(self, data: Document, options: TOMLOptions) -> bytes:
         if not isinstance(data, Mapping):
             msg = (

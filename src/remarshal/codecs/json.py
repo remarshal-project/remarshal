@@ -39,9 +39,6 @@ class JSONEncoder(Encoder[JSONOptions]):
     name: ClassVar[str] = "json"
     options_cls: ClassVar[type[FormatOptions]] = JSONOptions
 
-    def default_options(self) -> JSONOptions:
-        return JSONOptions()
-
     def encode(self, data: Document, options: JSONOptions) -> bytes:
         separators = (",", ": " if options.indent else ":")
 

@@ -21,13 +21,16 @@ class Decoder(ABC):
 
 
 class Encoder(ABC, Generic[OptT]):
-    """Serializes a Document into bytes for a given format."""
+    """Serializes a Document into bytes for a given format.
+
+    `options_cls` is both the runtime check used by the `encode()`
+    dispatcher and the factory used to build defaults when the caller
+    passes `options=None`. Every `FormatOptions` subclass has defaults
+    for all its fields, so `options_cls()` always succeeds.
+    """
 
     name: ClassVar[str]
     options_cls: ClassVar[type[FormatOptions]]
-
-    @abstractmethod
-    def default_options(self) -> OptT: ...
 
     @abstractmethod
     def encode(self, data: Document, options: OptT) -> bytes: ...
@@ -82,7 +85,7 @@ def encode(
     encoder = get_encoder(output_format)
 
     if options is None:
-        options = encoder.default_options()
+        options = encoder.options_cls()
     elif not isinstance(options, encoder.options_cls):
         msg = (
             f"expected 'options' argument to have class "

@@ -16,9 +16,6 @@ class PythonEncoder(Encoder[PythonOptions]):
     name: ClassVar[str] = "python"
     options_cls: ClassVar[type[FormatOptions]] = PythonOptions
 
-    def default_options(self) -> PythonOptions:
-        return PythonOptions()
-
     def encode(self, data: Document, options: PythonOptions) -> bytes:
         if options.indent is None:
             code = repr(data)
