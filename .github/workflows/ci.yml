@@ -1,24 +1,83 @@
 name: CI
 on: [push, pull_request]
+
 jobs:
+  bsd-test:
+    runs-on: ${{ matrix.os.host }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - name: freebsd
+            architecture: x86-64
+            version: '15.0'
+            host: ubuntu-latest
+
+          - name: netbsd
+            architecture: x86-64
+            version: '10.1'
+            host: ubuntu-latest
+
+          - name: openbsd
+            architecture: x86-64
+            version: '7.8'
+            host: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Run CI script on ${{ matrix.os.name }}
+        uses: cross-platform-actions/action@v1.0.0
+        with:
+          operating_system: ${{ matrix.os.name }}
+          architecture: ${{ matrix.os.architecture }}
+          version: ${{ matrix.os.version }}
+          shell: bash
+          run: |
+            set -x
+
+            case "$(uname)" in
+              FreeBSD)
+                sudo pkg install -y devel/py-tox
+                ;;
+
+              NetBSD)
+                sudo pkgin -y install 'py*-tox'
+
+                for src in /usr/pkg/bin/tox-3.??; do
+                  :
+                done
+                sudo ln -s "$src" /usr/pkg/bin/tox
+                ;;
+
+              OpenBSD)
+                sudo pkg_add -I py3-tox
+                ;;
+            esac
+
+            tox
+
   test:
     runs-on: ${{ matrix.os }}
     strategy:
+      fail-fast: false
       matrix:
-        python-version: ["3.10", "3.11", "3.12", "3.13", "3.14", "pypy3.10", "pypy3.11"]
         os: ["macos-latest", "ubuntu-latest", "windows-latest"]
+
     steps:
       - name: 'Disable `autocrlf` in Git'
         run: git config --global core.autocrlf false
-      - uses: actions/checkout@v4
-      - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v5
-        with:
-          python-version: ${{ matrix.python-version }}
+
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
+
       - name: Install dependencies
         run: |
-          pip install --upgrade pip
-          pip install poetry tox
-      - name: Test with tox
+          uv tool install tox --with tox-uv
+
+      - name: Test
         run: |
-          tox run
+          tox

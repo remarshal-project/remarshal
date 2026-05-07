@@ -1,19 +1,28 @@
-name: lint-and-type
+name: lint-and-typecheck
 on: [push, pull_request]
 jobs:
   lint-and-type:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
+
       - name: Install dependencies
         run: |
-          pipx install poethepoet poetry
-          poetry install --extras dev
+          uv tool install poethepoet
+          uv sync --all-extras
+
       - name: Format
         run: poe format
+
       - name: Check spelling
         run: poe spell
+
       - name: Lint
         run: poe lint
+
       - name: Typecheck
-        run: poe type
+        run: poe typecheck
