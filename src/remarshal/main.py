@@ -1115,7 +1115,7 @@ def _build_starlark_transform(
     if args.starlark is None and args.starlark_file is None:
         return None
 
-    from .starlark_transform import (  # noqa: PLC0415
+    from .starlark_transform import (
         StarlarkNotInstalledError,
         compile_transform,
     )
