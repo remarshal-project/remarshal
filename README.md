@@ -5,10 +5,10 @@
 [![PyPI download statistics badge.](https://img.shields.io/pypi/dm/remarshal)](https://pypistats.org/packages/remarshal)
 
 Convert between CBOR, JSON, MessagePack, TOML, and YAML.
-When installed, Remarshal provides the command-line command `remarshal` as well as short commands like `yaml2json`.
-You can use these commands to convert between formats, reformat, and detect errors.
+Convert all to Python code.
 
-Remarshal can also convert all supported formats to Python code.
+When installed, Remarshal provides the command-line command `remarshal` as well as short commands like `yaml2json`.
+You can use these commands to convert between formats, reformat, and detect errors as well as transform data [using Starlark](#starlark-transforms).
 
 ## Known limitations and quirks
 
@@ -205,15 +205,16 @@ $ remarshal test.toml --to json --unwrap main
 
 ### Starlark transforms
 
-You can transform the data between decoding and encoding using a [Starlark](https://github.com/bazelbuild/starlark) expression or program.
-Starlark is a small, sandboxed Python-like language with no filesystem, network, or subprocess access.
+You can transform the data between decoding and encoding using a Starlark expression or program.
+[Starlark](https://laurent.le-brun.eu/blog/an-overview-of-starlark) is a small, sandboxed Python-like language with no filesystem, network, or subprocess access.
 
-Pass code to Remarshal with `--starlark` or read it from a file with `--starlark-file`.
+Pass Starlark code to Remarshal with `--starlark` or use `--starlark-file` to read it from a file.
 The two options are mutually exclusive.
 The decoded input is bound to the name `data`.
 
-If the argument to `--starlark` parses as a single Starlark expression, its value becomes the new document.
-Otherwise, it is treated as a program that must assign the new document to a top-level name `result`.
+If the argument to `--starlark` parses as a single Starlark expression, the value of the expression becomes the new document.
+Otherwise, the argument is treated as a program.
+A Starlark program in Remarshal must assign the new document to the top-level name `result`.
 A `--starlark-file` is always treated as a program.
 
 ```sh
