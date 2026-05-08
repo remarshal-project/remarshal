@@ -7,8 +7,8 @@
 Convert between CBOR, JSON, MessagePack, TOML, and YAML.
 Convert all to Python code.
 
-When installed, Remarshal provides the command-line command `remarshal` as well as short commands like `yaml2json`.
-You can use these commands to convert between formats, reformat, and detect errors as well as to transform data [using Starlark](#starlark-transforms).
+When installed, Remarshal provides the command `remarshal` as well as short commands like `yaml2json`.
+These commands can be used to convert between formats, reformat, and detect errors as well as to transform data [with Starlark](#starlark-transformations).
 
 ## Known limitations and quirks
 
@@ -16,7 +16,7 @@ You can use these commands to convert between formats, reformat, and detect erro
 
 Remarshal works with YAML 1.2 by default.
 You can use the format `yaml-1.1` to work with YAML 1.1.
-The format `yaml-1.2` can be used to be explicit about using YAML 1.2.
+The format `yaml-1.2` can be used to select YAML 1.2 explicitly.
 Conversion between YAML 1.1 and 1.2 is supported.
 
 ### Lossless by default; lossy must be enabled
@@ -26,7 +26,7 @@ This means that a document converted from format A to B and then back to A shoul
 When a lossless conversion is impossible,
 Remarshal exits with an error.
 
-Use the command-line option `-k`/`--stringify` to relax this restriction.
+Use the option `-k`/`--stringify` to relax this restriction.
 It will make Remarshal do the following:
 
 - When converting to JSON, turn boolean and null keys and date-time keys and values into strings.
@@ -203,7 +203,7 @@ $ remarshal test.toml --to json --unwrap main
 [{"a":"b"},{"c":[1,2,3]}]
 ```
 
-### Starlark transforms
+### Starlark transformations
 
 You can transform the data between decoding and encoding using a Starlark expression or program.
 [Starlark](https://laurent.le-brun.eu/blog/an-overview-of-starlark) is a small, sandboxed Python-like language with no filesystem, network, or subprocess access.
@@ -243,16 +243,16 @@ The other types map as follows.
 | `bytes` | Opaque (no methods, not iterable) | Use `remarshal.bytes_to_str`, `remarshal.str_to_bytes`, `remarshal.bytes_len`, `remarshal.bytes_to_base64`, `remarshal.base64_to_bytes` |
 | Date, time, date-time | Opaque | Use `remarshal.datetime_to_iso`, `remarshal.iso_to_datetime`, `remarshal.iso_to_date`, `remarshal.iso_to_time` |
 | Dictionary (mapping) | `dict` | Insertion order is preserved |
-| List (sequence) | `list` | None |
+| List (sequence) | `list` | &mdash; |
 
 A `tuple` or a `range` returned by Starlark is converted to a list.
-A `set` returned by Starlark causes an error; convert it explicitly with `sorted(s)` or `list(s)` first.
+A `set` returned by Starlark causes an error; convert it explicitly with `sorted()` or `list()` first.
 
-The standard Starlark `json` module is available with `json.encode(x)`, `json.decode(s)`, `json.encode_indent(x)`, and `json.indent(s)`.
+The standard Starlark `json` module is available with `json.encode()`, `json.decode()`, `json.encode_indent()`, and `json.indent()`.
 
 #### Resource limits
 
-By default, Starlark transforms limit CPU at 10 000 000 interpreter steps (`--starlark-max-steps`) and memory at 128 MiB of cumulative allocations (`--starlark-max-allocs`).
+By default, Starlark transformations limit CPU at 10 000 000 interpreter steps (`--starlark-max-steps`) and memory at 128 MiB of cumulative allocations (`--starlark-max-allocs`).
 Pass a negative number for either option to disable that limit.
 The output of a Starlark transform is also re-checked against `--max-values`.
 
@@ -390,6 +390,7 @@ You can use it as a library at your own risk.
 If you do, pin the minor version (for example, `remarshal>=2.0,<2.1`) so a future minor release does not break the Python API.
 
 Dropping support for an old Python version is not considered a breaking change and doesn't bump the major version.
+Python versions will be dropped some time after they reach their end of support.
 
 ## License
 
