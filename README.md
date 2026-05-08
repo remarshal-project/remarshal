@@ -252,7 +252,7 @@ The standard Starlark `json` module is available with `json.encode()`, `json.dec
 
 #### Resource limits
 
-By default, Starlark transformations limit CPU at 10 000 000 interpreter steps (`--starlark-max-steps`) and memory at 128 MiB of cumulative allocations (`--starlark-max-allocs`).
+By default, Starlark transformations limit CPU at 10&nbsp;000&nbsp;000 interpreter steps (`--starlark-max-steps`) and memory at 128 MiB of cumulative allocations (`--starlark-max-allocs`).
 Pass a negative number for either option to disable that limit.
 The output of a Starlark transform is also re-checked against `--max-values`.
 
