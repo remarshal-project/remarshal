@@ -180,12 +180,6 @@ def _parse_command_line(argv: Sequence[str]) -> argparse.Namespace:
         version=importlib.metadata.version("remarshal"),
     )
 
-    parser.add_argument(
-        "--expand-aliases",
-        action="store_true",
-        help="expand YAML aliases (disable anchor/alias generation)",
-    )
-
     if not format_from_argv0:
         parser.add_argument(
             "-f",
@@ -392,6 +386,21 @@ def _parse_command_line(argv: Sequence[str]) -> argparse.Namespace:
         default=None,
         metavar="<key>",
         help="wrap the data in a map type with the given key",
+    )
+
+    parser.add_argument(
+        "--yaml-expand-aliases",
+        dest="expand_aliases",
+        action="store_true",
+        help="expand YAML aliases (disable anchor/alias generation)",
+    )
+
+    # Hidden alias kept for backward compatibility.
+    parser.add_argument(
+        "--expand-aliases",
+        dest="expand_aliases",
+        action="store_true",
+        help=argparse.SUPPRESS,
     )
 
     parser.add_argument(

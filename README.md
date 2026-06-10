@@ -99,7 +99,7 @@ uv tool install git+https://github.com/remarshal-project/remarshal
 
 <!-- USAGE -->
 ```none
-usage: remarshal [-h] [-v] [--expand-aliases]
+usage: remarshal [-h] [-v]
                  [-f {cbor,json,msgpack,toml,yaml,yaml-1.1,yaml-1.2}]
                  [-i <input>] [--indent <n>] [-k] [--max-values <n>]
                  [--multiline <n>] [-o <output>] [-s]
@@ -107,8 +107,8 @@ usage: remarshal [-h] [-v] [--expand-aliases]
                  [--starlark-max-allocs <n>] [--starlark-max-steps <n>]
                  [-t {cbor,json,msgpack,python,toml,yaml,yaml-1.1,yaml-1.2}]
                  [--unwrap <key>] [--verbose] [--width <n>] [--wrap <key>]
-                 [--yaml-style {,',",|,>}] [--yaml-style-newline {,',",|,>}]
-                 [--yaml-tags]
+                 [--yaml-expand-aliases] [--yaml-style {,',",|,>}]
+                 [--yaml-style-newline {,',",|,>}] [--yaml-tags]
                  [input] [output]
 
 Convert between CBOR, JSON, MessagePack, TOML, and YAML.
@@ -120,7 +120,6 @@ positional arguments:
 options:
   -h, --help            show this help message and exit
   -v, --version         show program's version number and exit
-  --expand-aliases      expand YAML aliases (disable anchor/alias generation)
   -f, --from, --if, --input-format 
 {cbor,json,msgpack,toml,yaml,yaml-1.1,yaml-1.2}
                         input format
@@ -156,6 +155,8 @@ options:
   --width <n>           Python line width and YAML line width for long strings
                         (integer or 'inf')
   --wrap <key>          wrap the data in a map type with the given key
+  --yaml-expand-aliases
+                        expand YAML aliases (disable anchor/alias generation)
   --yaml-style {,',",|,>}
                         YAML formatting style
   --yaml-style-newline {,',",|,>}

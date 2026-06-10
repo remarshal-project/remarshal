@@ -596,6 +596,16 @@ class TestRemarshal:
             _parse_command_line([sys.argv[0], "input.json", "output.txt"])
         assert cm.value.code == 2
 
+    def test_expand_aliases_flags(self) -> None:
+        # The primary flag and its hidden backward-compatible alias must set
+        # the same option.
+        for flag in ("--yaml-expand-aliases", "--expand-aliases"):
+            args = _parse_command_line([sys.argv[0], flag, "input.yaml", "output.yaml"])
+            assert args.expand_aliases is True
+
+        args = _parse_command_line([sys.argv[0], "input.yaml", "output.yaml"])
+        assert args.expand_aliases is False
+
     def test_run_no_args(self) -> None:
         with pytest.raises(SystemExit) as cm:
             run(sys.argv[0])
