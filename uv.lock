@@ -307,7 +307,7 @@ requires-dist = [
     { name = "ruamel-yaml", specifier = ">=0.19,<0.20" },
     { name = "ruff", marker = "extra == 'dev'", specifier = "==0.11.5" },
     { name = "snoop", marker = "extra == 'dev'", specifier = ">=0.6,<0.7" },
-    { name = "starlark", specifier = ">=0.3,<0.4" },
+    { name = "starlark", specifier = ">=0.5,<0.6" },
     { name = "tomli", specifier = ">=2.4,<3.0" },
     { name = "tomlkit", specifier = ">=0.14,<0.15" },
     { name = "types-python-dateutil", marker = "extra == 'dev'", specifier = ">=2.8.19.13,<3.0" },
@@ -391,11 +391,11 @@ wheels = [
 
 [[package]]
 name = "starlark"
-version = "0.3.0"
+version = "0.5.0"
 source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/53/eb/6331a20af01bebc7a9894b755c8aa063add289b26c95b22e3fca0ceab8fc/starlark-0.3.0.tar.gz", hash = "sha256:9e775bd6016545e30e4626c0499b7a3bff718fe2fbbe7221a57aaaa520bce282", size = 236159, upload-time = "2026-05-23T13:34:09.834Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/0c/1c/f7bd41150c9ab4aa4bd02de46a0af88afa8d4da7af73e76aeb209e473ac2/starlark-0.5.0.tar.gz", hash = "sha256:321e1d07dffc8c89eb37945573a59e8e4a965a6f88cb87141010fdf52478eb91", size = 246238, upload-time = "2026-06-10T10:02:09.093Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/c0/7a/e6f49e532eca0e17caa9c7a3df0f2c5b125ac713e1817d22ae576e429714/starlark-0.3.0-py3-none-any.whl", hash = "sha256:30f9ba02410370af714c9533d144cebb00acbb04adf030221f33ad6f8635c04f", size = 93429, upload-time = "2026-05-23T13:34:08.288Z" },
+    { url = "https://files.pythonhosted.org/packages/13/02/a633594ec2bd1b6674fedc117fa9b987e1417d048c5c391397b536f4ad48/starlark-0.5.0-py3-none-any.whl", hash = "sha256:001169e59b07a5c99d3c8799ef11359b02bec2413f7fa7db2d50e9fd84b5b7a3", size = 94984, upload-time = "2026-06-10T10:02:07.237Z" },
 ]
 
 [[package]]
