@@ -36,7 +36,10 @@ from remarshal.codec import (
 from remarshal.document import (
     Document,
     TooManyValuesError,
+    contains_tagged_value,
+    envelopes_to_tags,
     identity,
+    tags_to_envelopes,
     traverse,
     validate_value_count,
 )
@@ -413,6 +416,16 @@ def _parse_command_line(argv: Sequence[str]) -> argparse.Namespace:
     )
 
     parser.add_argument(
+        "--yaml-tags",
+        action="store_true",
+        help=(
+            "translate between YAML tags and single-key mappings with the tag as key "
+            "(for example, '!secret foo' and {'!secret': 'foo'}) "
+            "so tags survive conversion to and from other formats"
+        ),
+    )
+
+    parser.add_argument(
         "--yaml-width",
         dest="width",
         type=output_width,
@@ -524,6 +537,7 @@ def remarshal(
     transform: Callable[[Document], Document] | None = None,
     unwrap: str | None = None,
     wrap: str | None = None,
+    yaml_tags: bool = False,
 ) -> None:
     input_file = None
     output_file = None
@@ -562,6 +576,19 @@ def remarshal(
             # Re-check after a user transform: it may have produced more
             # values than the input did.
             validate_value_count(parsed, maximum=max_values)
+
+        yaml_output = output_format in ("yaml", "yaml-1.1", "yaml-1.2")
+        if yaml_tags:
+            # Move between native YAML tags and their mapping envelopes.
+            parsed = (
+                envelopes_to_tags(parsed) if yaml_output else tags_to_envelopes(parsed)
+            )
+        elif not yaml_output and contains_tagged_value(parsed):
+            msg = (
+                "input contains a YAML tag, which the output format cannot "
+                "represent; use '--yaml-tags' to convert tags to mappings"
+            )
+            raise ValueError(msg)
 
         encoded = encode(
             output_format,
@@ -629,6 +656,7 @@ def main() -> None:
             transform=transform,
             unwrap=args.unwrap,
             wrap=args.wrap,
+            yaml_tags=args.yaml_tags,
         )
     except KeyboardInterrupt:
         pass

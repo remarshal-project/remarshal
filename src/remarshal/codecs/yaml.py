@@ -4,12 +4,15 @@ from io import StringIO
 from typing import TYPE_CHECKING, ClassVar, cast
 
 import ruamel.yaml
+import ruamel.yaml.constructor
+import ruamel.yaml.nodes
 import ruamel.yaml.parser
 import ruamel.yaml.representer
 import ruamel.yaml.scalarstring
 import ruamel.yaml.scanner
 
 from remarshal.codec import Decoder, Encoder
+from remarshal.document import TaggedValue
 from remarshal.options import FormatOptions, YAMLOptions, YAMLVersion
 
 if TYPE_CHECKING:
@@ -34,6 +37,26 @@ class YAMLDecoder(Decoder):
         try:
             yaml = ruamel.yaml.YAML(pure=True, typ="safe")
             yaml.version = self.version
+
+            def construct_tagged(
+                constructor: ruamel.yaml.constructor.SafeConstructor,
+                tag_suffix: str,
+                node: ruamel.yaml.nodes.Node,
+            ) -> TaggedValue:
+                if isinstance(node, ruamel.yaml.nodes.ScalarNode):
+                    value = constructor.construct_scalar(node)
+                elif isinstance(node, ruamel.yaml.nodes.SequenceNode):
+                    value = constructor.construct_sequence(node, deep=True)
+                elif isinstance(node, ruamel.yaml.nodes.MappingNode):
+                    value = constructor.construct_mapping(node, deep=True)
+                else:
+                    value = None
+                return TaggedValue(node.tag, value)
+
+            # Catch every tag without a registered constructor (any custom or
+            # application tag such as `!secret`) and preserve it as a
+            # `TaggedValue`. Standard tags like `!!str` are unaffected.
+            yaml.constructor.add_multi_constructor("", construct_tagged)
 
             doc = yaml.load(data)
             return cast("Document", doc)
@@ -68,8 +91,14 @@ class YAMLEncoder(Encoder[YAMLOptions]):
             str_style = style_newline if "\n" in data else style
             return self.represent_scalar("tag:yaml.org,2002:str", data, style=str_style)
 
+        def represent_tagged(self, data):
+            node = self.represent_data(data.value)
+            node.tag = data.tag
+            return node
+
         yaml.representer.add_representer(type(None), represent_none)
         yaml.representer.add_representer(str, represent_str)
+        yaml.representer.add_representer(TaggedValue, represent_tagged)
 
         try:
             out = StringIO()

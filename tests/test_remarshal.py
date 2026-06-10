@@ -19,6 +19,7 @@ import cbor2  # type: ignore
 import pytest
 
 import remarshal
+from remarshal.document import TaggedValue, envelopes_to_tags, tags_to_envelopes
 from remarshal.main import (
     Defaults,
     FormatOptions,
@@ -1015,6 +1016,146 @@ class TestRemarshal:
         )
         reference = read_file("toml-1.1-optional-seconds.json")
         assert output == reference
+
+
+def _translate(
+    tmp_path: Path,
+    input_data: bytes,
+    input_format: str,
+    output_format: str,
+    *,
+    yaml_tags: bool = True,
+) -> bytes:
+    input_path = tmp_path / "input"
+    output_path = tmp_path / "output"
+    input_path.write_bytes(input_data)
+
+    remarshal.remarshal(
+        input_format,
+        output_format,
+        str(input_path),
+        str(output_path),
+        yaml_tags=yaml_tags,
+    )
+
+    return output_path.read_bytes()
+
+
+class TestTranslateTags:
+    def test_envelope_to_yaml_mapping(self, tmp_path) -> None:
+        output = _translate(
+            tmp_path,
+            b'{"!my-tag": {"foo": "bar", "baz": 123}}',
+            "json",
+            "yaml",
+        )
+        reference = b"!my-tag\nfoo: bar\nbaz: 123\n"
+        assert output == reference
+
+    def test_envelope_to_yaml_scalar(self, tmp_path) -> None:
+        output = _translate(
+            tmp_path,
+            b'{"password": {"!secret": "db_password"}}',
+            "json",
+            "yaml",
+        )
+        reference = b"password: !secret db_password\n"
+        assert output == reference
+
+    def test_yaml_tag_to_json_envelope(self, tmp_path) -> None:
+        output = _translate(
+            tmp_path,
+            b"a: !secret my_name\nb: !my-tag\n  foo: bar\n",
+            "yaml",
+            "json",
+        )
+        reference = b'{"a":{"!secret":"my_name"},"b":{"!my-tag":{"foo":"bar"}}}\n'
+        assert output == reference
+
+    def test_tag_on_sequence_item(self, tmp_path) -> None:
+        output = _translate(
+            tmp_path,
+            b"- !tag1 x\n- plain\n",
+            "yaml",
+            "json",
+        )
+        reference = b'[{"!tag1":"x"},"plain"]\n'
+        assert output == reference
+
+    def test_round_trip_yaml_json_yaml(self, tmp_path) -> None:
+        source = b"name: !secret pw\nlist:\n- !tag1 a\n- b\nmap: !m\n  k: v\n"
+        as_json = _translate(tmp_path, source, "yaml", "json")
+        as_yaml = _translate(tmp_path, as_json, "json", "yaml")
+        assert as_yaml == source
+
+    def test_without_flag_no_translation(self, tmp_path) -> None:
+        # The envelope key is emitted literally, not as a tag.
+        output = _translate(
+            tmp_path,
+            b'{"!my-tag": {"foo": "bar"}}',
+            "json",
+            "yaml",
+            yaml_tags=False,
+        )
+        reference = b"'!my-tag':\n  foo: bar\n"
+        assert output == reference
+
+    def test_yaml_tags_preserved_without_flag(self, tmp_path) -> None:
+        # YAML-to-YAML keeps tags even without the option.
+        output = _translate(
+            tmp_path,
+            b"a: !secret my_name\n",
+            "yaml",
+            "yaml",
+            yaml_tags=False,
+        )
+        reference = b"a: !secret my_name\n"
+        assert output == reference
+
+    def test_tag_to_tagless_without_flag_errors(self, tmp_path) -> None:
+        with pytest.raises(ValueError, match="--yaml-tags"):
+            _translate(
+                tmp_path,
+                b"a: !secret my_name\n",
+                "yaml",
+                "json",
+                yaml_tags=False,
+            )
+
+    def test_standard_tags_unaffected(self, tmp_path) -> None:
+        output = _translate(
+            tmp_path,
+            b"a: !!str 7\nb: 7\n",
+            "yaml",
+            "json",
+        )
+        reference = b'{"a":"7","b":7}\n'
+        assert output == reference
+
+
+class TestTagConversion:
+    def test_tags_to_envelopes(self) -> None:
+        doc = {"a": TaggedValue("!secret", "x"), "b": [TaggedValue("!t", 1)]}
+        assert tags_to_envelopes(doc) == {"a": {"!secret": "x"}, "b": [{"!t": 1}]}
+
+    def test_envelopes_to_tags(self) -> None:
+        doc = {"a": {"!secret": "x"}, "b": [{"!t": 1}]}
+        assert envelopes_to_tags(doc) == {
+            "a": TaggedValue("!secret", "x"),
+            "b": [TaggedValue("!t", 1)],
+        }
+
+    def test_envelopes_to_tags_ignores_multi_key(self) -> None:
+        doc = {"!my-tag": 1, "other": 2}
+        assert envelopes_to_tags(doc) == doc
+
+    def test_envelopes_to_tags_ignores_non_bang_key(self) -> None:
+        doc = {"plain": 1}
+        assert envelopes_to_tags(doc) == doc
+
+    def test_round_trip_is_identity(self) -> None:
+        doc = {"a": TaggedValue("!secret", {"b": TaggedValue("!inner", [1, 2])})}
+        assert envelopes_to_tags(tags_to_envelopes(doc)) == doc
 
 
 if __name__ == "__main__":

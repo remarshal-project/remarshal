@@ -13,6 +13,7 @@ complete -c remarshal -l multiline -x -d "Minimum items for multiline TOML array
 complete -c remarshal -s o -l output -r -d "Output file"
 complete -c remarshal -s s -l sort-keys -d "Sort JSON, Python, and TOML keys"
 complete -c remarshal -s t -l to -l of -l output-format -x -a "cbor json msgpack python toml yaml yaml-1.1 yaml-1.2" -d "Output format"
+complete -c remarshal -l yaml-tags -d "Translate between YAML tags and single-key mappings"
 complete -c remarshal -l unwrap -x -d "Only output data under given key"
 complete -c remarshal -l verbose -d "Print debug information on error"
 complete -c remarshal -l width -x -d "Python and YAML line width"

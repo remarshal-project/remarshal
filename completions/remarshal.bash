@@ -9,7 +9,7 @@ _remarshal() {
     input_formats=$formats
     output_formats="$formats python"
 
-    opts='-h --help -v --version --expand-aliases -f --from --if --input-format -i --input --indent -k --stringify --max-values --multiline -o --output -s --sort-keys --starlark --starlark-file --starlark-max-allocs --starlark-max-steps -t --to --of --output-format --unwrap --verbose --width --wrap --yaml-style --yaml-style-newline'
+    opts='-h --help -v --version --expand-aliases -f --from --if --input-format -i --input --indent -k --stringify --max-values --multiline -o --output -s --sort-keys --starlark --starlark-file --starlark-max-allocs --starlark-max-steps -t --to --of --output-format --unwrap --verbose --width --wrap --yaml-style --yaml-style-newline --yaml-tags'
 
     case "${prev}" in
     --from | --if | --input-format | -f)

@@ -108,6 +108,7 @@ usage: remarshal [-h] [-v] [--expand-aliases]
                  [-t {cbor,json,msgpack,python,toml,yaml,yaml-1.1,yaml-1.2}]
                  [--unwrap <key>] [--verbose] [--width <n>] [--wrap <key>]
                  [--yaml-style {,',",|,>}] [--yaml-style-newline {,',",|,>}]
+                 [--yaml-tags]
                  [input] [output]
 
 Convert between CBOR, JSON, MessagePack, TOML, and YAML.
@@ -120,7 +121,7 @@ options:
   -h, --help            show this help message and exit
   -v, --version         show program's version number and exit
   --expand-aliases      expand YAML aliases (disable anchor/alias generation)
-  -f, --from, --if, --input-format
+  -f, --from, --if, --input-format 
 {cbor,json,msgpack,toml,yaml,yaml-1.1,yaml-1.2}
                         input format
   -i, --input <input>   input file
@@ -147,7 +148,7 @@ options:
   --starlark-max-steps <n>
                         maximum number of Starlark interpreter steps (default
                         10000000, negative for unlimited)
-  -t, --to, --of, --output-format
+  -t, --to, --of, --output-format 
 {cbor,json,msgpack,python,toml,yaml,yaml-1.1,yaml-1.2}
                         output format
   --unwrap <key>        only output the data stored under the given key
@@ -160,6 +161,10 @@ options:
   --yaml-style-newline {,',",|,>}
                         YAML formatting style override for strings that
                         contain a newline
+  --yaml-tags           translate between YAML tags and single-key mappings
+                        with the tag as key (for example, '!secret foo' and
+                        {'!secret': 'foo'}) so tags survive conversion to and
+                        from other formats
 ```
 <!-- END USAGE -->
 
@@ -171,7 +176,7 @@ Similarly, with no `output`/`-o output` or an output argument that is `-`, Remar
 
 ### Wrappers
 
-The options `--wrap` and `--unwrap` are available to solve the problem of converting data to TOML from CBOR, JSON, MessagePack, or YAML when the top-level element of the data is not a dictionary (i.e., not a map in CBOR and MessagePack, an object in JSON, or an associative array in YAML).
+The options `--wrap` and `--unwrap` are available to solve the problem of converting data to TOML from CBOR, JSON, MessagePack, or YAML when the top-level element of the data is not a dictionary (i.e., not a map in CBOR and MessagePack, an object in JSON, or a mapping in YAML).
 Such data cannot be represented as TOML directly and must be wrapped in a dictionary first.
 
 Passing the option `--wrap some-key` to `remarshal` or one of its short commands wraps the input data in a "wrapper" dictionary with one key, `some-key`, with the input data as its value.
@@ -202,6 +207,42 @@ $ remarshal test.toml --to json
 $ remarshal test.toml --to json --unwrap main
 [{"a":"b"},{"c":[1,2,3]}]
 ```
+
+### YAML tags
+
+YAML lets you annotate a value with a [tag](https://yaml.org/spec/1.2.2/#3212-tags) such as `!secret`, which tools like [Home Assistant](https://www.home-assistant.io/docs/configuration/secrets/) give a special meaning.
+No other format Remarshal supports has a native concept of tags.
+By default, a tag in YAML input causes an error when you try to convert it to another format.
+
+The option `--yaml-tags` exists to work around this.
+It represents a YAML tag as a single-key mapping with the tag as the key.
+For example, the YAML string value `!secret db_password` becomes the JSON object `{"!secret": "db_password"}` and vice versa.
+For Remarshal to treat a mapping as a tag, it must have exactly one key that must start with `!`.
+
+You can use this to generate tagged YAML from data in another format:
+
+```sh
+$ echo '{"!my-tag": {"foo": "bar", "baz": 123}}' \
+  | remarshal --from json --to yaml --yaml-tags
+!my-tag
+foo: bar
+baz: 123
+
+$ echo '{"password": {"!secret": "db_password"}}' \
+  | remarshal --from json --to yaml --yaml-tags
+password: !secret db_password
+```
+
+It also works in the other direction.
+Tags survive a round trip through a format with no tags:
+
+```sh
+$ printf 'name: !secret pw\nport: 8123\n' \
+  | remarshal --from yaml --to json --yaml-tags
+{"name":{"!secret":"pw"},"port":8123}
+```
+
+Without the option `--yaml-tags`, Remarshal still preserves tags when converting from YAML to YAML.
 
 ### Starlark transformations
 
