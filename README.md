@@ -429,7 +429,7 @@ You can use [`taplo fmt`](https://taplo.tamasfe.dev/cli/usage/formatting.html) f
 Remarshal is primarily an application.
 As an application, Remarshal follows [semantic versioning](https://semver.org/) for its command-line interface.
 You can use it as a library at your own risk.
-If you do, pin the minor version (for example, `remarshal>=2.0,<2.1`) so a future minor release does not break the Python API.
+If you do, pin the minor version (for example, `remarshal>=2.1,<2.2`) so a future minor release does not break the Python API.
 
 Dropping support for an old Python version is not considered a breaking change and doesn't bump the major version.
 Python versions will be dropped some time after they reach their end of support.
