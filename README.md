@@ -281,7 +281,8 @@ The other types map as follows.
 
 | Remarshal value | Inside Starlark | Notes |
 | --- | --- | --- |
-| `None`, `bool`, `int`, `float`, `str` | Same | `int` is arbitrary-precision |
+| `int` | Same | [Starlark in Python](https://github.com/dbohdan/starlark-python) caps `int` at 2<sup>19</sup> bits (64 KiB or ≈158k decimal digits). |
+| `None`, `bool`, `float`, `str` | Same | &mdash; |
 | `bytes` | Opaque (no methods, not iterable) | Use `remarshal.bytes_to_str`, `remarshal.str_to_bytes`, `remarshal.bytes_len`, `remarshal.bytes_to_base64`, `remarshal.base64_to_bytes` |
 | Date, time, date-time | Opaque | Use `remarshal.datetime_to_iso`, `remarshal.iso_to_datetime`, `remarshal.iso_to_date`, `remarshal.iso_to_time` |
 | Dictionary (mapping) | `dict` | Insertion order is preserved |
