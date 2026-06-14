@@ -697,7 +697,7 @@ def _build_starlark_transform(
         source = Path(args.starlark_file).read_text(encoding="utf-8")
         filename = args.starlark_file
     else:
-        source = args.starlark
+        source = str(args.starlark)
         filename = "<starlark>"
 
     def to_limit(n: int) -> int | None:
