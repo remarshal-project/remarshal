@@ -244,6 +244,9 @@ def _parse_command_line(argv: Sequence[str]) -> argparse.Namespace:
         prog="remarshal",
     )
 
+    if sys.version_info >= (3, 14):
+        parser.color = False
+
     parser.add_argument(
         "-v",
         "--version",
