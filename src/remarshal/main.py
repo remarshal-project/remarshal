@@ -12,14 +12,14 @@ import sys
 import traceback
 from pathlib import Path
 from typing import (
-    TYPE_CHECKING,
     Callable,
+    Iterable,
     Mapping,
     Sequence,
 )
 
 import colorama
-from rich_argparse import RichHelpFormatter
+from termcolor import colored
 
 # Importing the codecs package registers every built-in `Encoder` and `Decoder`.
 from remarshal import codecs as _codecs  # noqa: F401
@@ -57,15 +57,10 @@ from remarshal.options import (
 )
 from remarshal.starlark_transform import compile_transform
 
-if TYPE_CHECKING:
-    from rich.style import StyleType
-
-
 __all__ = [
     # Constants.
     "INPUT_FORMATS",
     "OUTPUT_FORMATS",
-    "RICH_ARGPARSE_STYLES",
     # Classes and static types.
     "Decoder",
     "Defaults",
@@ -120,19 +115,98 @@ OUTPUT_FORMATS_ARGV0 = [
     "yaml-1.2",
 ]
 
-RICH_ARGPARSE_STYLES: dict[str, StyleType] = {
-    "argparse.args": "green",
-    "argparse.groups": "default",
-    "argparse.help": "default",
-    "argparse.metavar": "green",
-    "argparse.prog": "default",
-    "argparse.syntax": "bold",
-    "argparse.text": "default",
-    "argparse.default": "default",
-}
-
-
 # === CLI ===
+
+
+class ColorHelpFormatter(argparse.HelpFormatter):
+    """An `argparse` help formatter
+    that prints option strings and metavars in color (green).
+
+    Color is applied on top of the plain layout produced by the base formatter.
+    This means column alignment and usage line wrapping stay correct.
+    The termcolor library handles cross-platform support
+    and disables color when the output is not a terminal or `NO_COLOR` is set.
+    """
+
+    @staticmethod
+    def _optional_color(text: str, *, color: bool = True) -> str:
+        return colored(text, "green") if color else text
+
+    def _format_action_invocation(
+        self, action: argparse.Action, *, color: bool = False
+    ) -> str:
+        # Reproduce the condensed Python 3.13+ style ("-s, --long ARGS")
+        # on every supported version so the output does not change across them.
+        c = self._optional_color
+
+        if not action.option_strings:
+            (metavar,) = self._metavar_formatter(
+                action, self._get_default_metavar_for_positional(action)
+            )(1)
+
+            return c(metavar, color=color)
+
+        opts = ", ".join(c(option, color=color) for option in action.option_strings)
+
+        if action.nargs == 0:
+            return opts
+
+        default = self._get_default_metavar_for_optional(action)
+        args_string = self._format_args(action, default)
+
+        return opts + " " + c(args_string, color=color)
+
+    def _format_action(self, action: argparse.Action) -> str:
+        text = super()._format_action(action)
+
+        # Swap the plain invocation for a colored one of the same visible width
+        # so the help-text column stays aligned.
+        invocation = self._format_action_invocation(action)
+
+        if invocation:
+            colored_invocation = self._format_action_invocation(action, color=True)
+            text = text.replace(invocation, colored_invocation, 1)
+
+        return text
+
+    def _format_usage(
+        self,
+        usage: str | None,
+        actions: Iterable[argparse.Action],
+        groups: Iterable[argparse._MutuallyExclusiveGroup],
+        prefix: str | None,
+    ) -> str:
+        text = super()._format_usage(usage, actions, groups, prefix)
+
+        # Color metavars (`<n>`, `{a,b}`)
+        # and then option strings (`-o`, `--option`).
+        # The lookarounds keep the option pattern
+        # from matching choice values such as `yaml-1.1`
+        # inside an already-colored metavar.
+        text = re.sub(r"<[^>]+>|\{[^}]*\}", lambda m: self._optional_color(m[0]), text)
+        text = re.sub(
+            r"(?<![\w-])--?[A-Za-z][\w-]*",
+            lambda m: self._optional_color(m[0]),
+            text,
+        )
+
+        for action in actions:
+            if action.option_strings:
+                continue
+
+            (metavar,) = self._metavar_formatter(
+                action, self._get_default_metavar_for_positional(action)
+            )(1)
+
+            # The `<` and `>` boundaries stop a bare positional metavar like `input`
+            # from matching again inside an already-colored `<input>`.
+            text = re.sub(
+                rf"(?<![\w<-]){re.escape(metavar)}(?![\w>-])",
+                lambda m: self._optional_color(m[0]),
+                text,
+            )
+
+        return text
 
 
 def _argv0_to_format(argv0: str) -> tuple[str, str]:
@@ -164,12 +238,9 @@ def _parse_command_line(argv: Sequence[str]) -> argparse.Namespace:
     argv0_from, argv0_to = _argv0_to_format(me)
     format_from_argv0 = argv0_to != ""
 
-    RichHelpFormatter.group_name_formatter = lambda x: x
-    RichHelpFormatter.styles = RICH_ARGPARSE_STYLES
-
     parser = argparse.ArgumentParser(
         description="Convert between CBOR, JSON, MessagePack, TOML, and YAML.",
-        formatter_class=RichHelpFormatter,
+        formatter_class=ColorHelpFormatter,
         prog="remarshal",
     )
 

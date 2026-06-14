@@ -171,27 +171,6 @@ wheels = [
 ]
 
 [[package]]
-name = "markdown-it-py"
-version = "4.1.0"
-source = { registry = "https://pypi.org/simple" }
-dependencies = [
-    { name = "mdurl" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/5c/5c/f3aedc83549aae71cd52b9e9687fe896e3dc6e966ba20eba04718605d198/markdown_it_py-4.1.0.tar.gz", hash = "sha256:760e3f87b2787c044c5138a5ba107b7c2be26c03b13cc7f8fe42756b65b1df6c", size = 81613, upload-time = "2026-05-06T16:32:13.649Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/a8/88/802c82060c54bc7dde21eb0033e337838b8181a1323254aa9ec41cbfc3d1/markdown_it_py-4.1.0-py3-none-any.whl", hash = "sha256:d4939a62a2dd0cd9cb80a191a711ba1d39bac8ed5ef9e9966895b0171c01c46d", size = 90955, upload-time = "2026-05-06T16:32:12.184Z" },
-]
-
-[[package]]
-name = "mdurl"
-version = "0.1.2"
-source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/d6/54/cfe61301667036ec958cb99bd3efefba235e65cdeb9c84d24a8293ba1d90/mdurl-0.1.2.tar.gz", hash = "sha256:bb413d29f5eea38f31dd4754dd7377d4465116fb207585f97bf925588687c1ba", size = 8729, upload-time = "2022-08-14T12:40:10.846Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/b3/38/89ba8ad64ae25be8de66a6d463314cf1eb366222074cfda9ee839c56a4b4/mdurl-0.1.2-py3-none-any.whl", hash = "sha256:84008a41e51615a49fc9966191ff91509e3c40b939176e643fd50a5c2196b8f8", size = 9979, upload-time = "2022-08-14T12:40:09.779Z" },
-]
-
-[[package]]
 name = "nodeenv"
 version = "1.10.0"
 source = { registry = "https://pypi.org/simple" }
@@ -277,9 +256,9 @@ source = { editable = "." }
 dependencies = [
     { name = "cbor2" },
     { name = "colorama" },
-    { name = "rich-argparse" },
     { name = "ruamel-yaml" },
     { name = "starlark" },
+    { name = "termcolor" },
     { name = "tomli" },
     { name = "tomlkit" },
     { name = "u-msgpack-python" },
@@ -304,42 +283,17 @@ requires-dist = [
     { name = "pyright", marker = "extra == 'dev'", specifier = "==1.1.399" },
     { name = "pytest", marker = "extra == 'dev'", specifier = ">=9.0.3,<10" },
     { name = "pytest-cov", marker = "extra == 'dev'", specifier = ">=7.1,<8" },
-    { name = "rich-argparse", specifier = ">=1.7.2,<2.0" },
     { name = "ruamel-yaml", specifier = ">=0.19,<0.20" },
     { name = "ruff", marker = "extra == 'dev'", specifier = "==0.11.5" },
     { name = "snoop", marker = "extra == 'dev'", specifier = ">=0.6,<0.7" },
     { name = "starlark", specifier = ">=0.5,<0.6" },
+    { name = "termcolor", specifier = ">=3.0,<4.0" },
     { name = "tomli", specifier = ">=2.4,<3.0" },
     { name = "tomlkit", specifier = ">=0.14,<0.15" },
     { name = "types-python-dateutil", marker = "extra == 'dev'", specifier = ">=2.8.19.13,<3.0" },
     { name = "u-msgpack-python", specifier = ">=2.8,<3.0" },
 ]
 provides-extras = ["dev"]
-
-[[package]]
-name = "rich"
-version = "15.0.0"
-source = { registry = "https://pypi.org/simple" }
-dependencies = [
-    { name = "markdown-it-py" },
-    { name = "pygments" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/c0/8f/0722ca900cc807c13a6a0c696dacf35430f72e0ec571c4275d2371fca3e9/rich-15.0.0.tar.gz", hash = "sha256:edd07a4824c6b40189fb7ac9bc4c52536e9780fbbfbddf6f1e2502c31b068c36", size = 230680, upload-time = "2026-04-12T08:24:00.75Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/82/3b/64d4899d73f91ba49a8c18a8ff3f0ea8f1c1d75481760df8c68ef5235bf5/rich-15.0.0-py3-none-any.whl", hash = "sha256:33bd4ef74232fb73fe9279a257718407f169c09b78a87ad3d296f548e27de0bb", size = 310654, upload-time = "2026-04-12T08:24:02.83Z" },
-]
-
-[[package]]
-name = "rich-argparse"
-version = "1.8.0"
-source = { registry = "https://pypi.org/simple" }
-dependencies = [
-    { name = "rich" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/6a/e5/1064c43203a357d668cd42435f7a15fe6af51512d85b2104fecb937aa861/rich_argparse-1.8.0.tar.gz", hash = "sha256:679df3d832fa94ad6e4bdb07ded088cd7ea2dddc58ae9b2b46346a40b06cbc0c", size = 38940, upload-time = "2026-05-01T15:18:43.604Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/0b/35/1cceccc5fcb50fa2ed53e2aa278cd032f3902682a73e763fb1ac3be8e6fa/rich_argparse-1.8.0-py3-none-any.whl", hash = "sha256:d2a3ce7854654e2253c578763ab0a32f05016f23a55fadba7b9a91b6c0e92142", size = 25616, upload-time = "2026-05-01T15:18:42.395Z" },
-]
 
 [[package]]
 name = "ruamel-yaml"
@@ -397,6 +351,15 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/0c/1c/f7bd41150c9ab4aa4bd02de46a0af88afa8d4da7af73e76aeb209e473ac2/starlark-0.5.0.tar.gz", hash = "sha256:321e1d07dffc8c89eb37945573a59e8e4a965a6f88cb87141010fdf52478eb91", size = 246238, upload-time = "2026-06-10T10:02:09.093Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/13/02/a633594ec2bd1b6674fedc117fa9b987e1417d048c5c391397b536f4ad48/starlark-0.5.0-py3-none-any.whl", hash = "sha256:001169e59b07a5c99d3c8799ef11359b02bec2413f7fa7db2d50e9fd84b5b7a3", size = 94984, upload-time = "2026-06-10T10:02:07.237Z" },
+]
+
+[[package]]
+name = "termcolor"
+version = "3.3.0"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/46/79/cf31d7a93a8fdc6aa0fbb665be84426a8c5a557d9240b6239e9e11e35fc5/termcolor-3.3.0.tar.gz", hash = "sha256:348871ca648ec6a9a983a13ab626c0acce02f515b9e1983332b17af7979521c5", size = 14434, upload-time = "2025-12-29T12:55:21.882Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/33/d1/8bb87d21e9aeb323cc03034f5eaf2c8f69841e40e4853c2627edf8111ed3/termcolor-3.3.0-py3-none-any.whl", hash = "sha256:cf642efadaf0a8ebbbf4bc7a31cec2f9b5f21a9f726f4ccbb08192c9c26f43a5", size = 7734, upload-time = "2025-12-29T12:55:20.718Z" },
 ]
 
 [[package]]
