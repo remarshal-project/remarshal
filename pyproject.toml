@@ -45,10 +45,10 @@ dependencies = [
 [project.optional-dependencies]
 dev = [
   "codespell[toml]>=2.2.5,<3.0",
-  "pyright==1.1.399",
+  "pyright==1.1.410",
   "pytest>=9.0.3,<10",
   "pytest-cov>=7.1,<8",
-  "ruff==0.11.5",
+  "ruff==0.15.17",
   "snoop>=0.6,<0.7",
   "types-python-dateutil>=2.8.19.13,<3.0",
 ]
