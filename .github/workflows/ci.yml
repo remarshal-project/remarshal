@@ -4,6 +4,9 @@ on: [push, pull_request]
 jobs:
   bsd-test:
     runs-on: ${{ matrix.os.host }}
+    defaults:
+      run:
+        shell: 'cpa.sh {0}'
     strategy:
       fail-fast: false
       matrix:
@@ -27,37 +30,38 @@ jobs:
         uses: actions/checkout@v6
 
       - name: Run CI script on ${{ matrix.os.name }}
-        uses: cross-platform-actions/action@v1.0.0
+        uses: cross-platform-actions/action@v1.3.0
         with:
           operating_system: ${{ matrix.os.name }}
           architecture: ${{ matrix.os.architecture }}
           version: ${{ matrix.os.version }}
-          shell: bash
-          run: |
-            set -x
 
-            PATH=$HOME/.local/bin:$PATH
+      - name: Test
+        run: |
+          set -x
 
-            py_ver_period=3.12
-            py_ver=$(echo "$py_ver_period" | tr -d .)
+          PATH=$HOME/.local/bin:$PATH
 
-            case "$(uname)" in
-              FreeBSD)
-                sudo pkg install -y devel/py-pipx python"$py_ver"
-                ;;
+          py_ver_period=3.12
+          py_ver=$(echo "$py_ver_period" | tr -d .)
 
-              NetBSD)
-                sudo pkgin -y install py"$py_ver"-pipx
-                sudo ln -s /usr/pkg/bin/pipx"$py_ver_period" /usr/pkg/bin/pipx
-                ;;
+          case "$(uname)" in
+            FreeBSD)
+              sudo pkg install -y devel/py-pipx python"$py_ver"
+              ;;
 
-              OpenBSD)
-                sudo pkg_add -I py3-pipx
-                ;;
-            esac
+            NetBSD)
+              sudo pkgin -y install py"$py_ver"-pipx
+              sudo ln -s /usr/pkg/bin/pipx"$py_ver_period" /usr/pkg/bin/pipx
+              ;;
 
-            pipx install tox
-            tox
+            OpenBSD)
+              sudo pkg_add -I py3-pipx
+              ;;
+          esac
+
+          pipx install tox
+          tox
 
   test:
     runs-on: ${{ matrix.os }}
