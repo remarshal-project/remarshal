@@ -112,12 +112,14 @@ def reject_special_keys(key: Any) -> Any:
         msg = "boolean key"
         raise TypeError(msg)
 
-    if isinstance(key, datetime.date):
-        msg = "date key"
-        raise TypeError(msg)
-
+    # datetime.datetime is a subclass of datetime.date, so check the more
+    # specific type first to produce the correct error message.
     if isinstance(key, datetime.datetime):
         msg = "date-time key"
+        raise TypeError(msg)
+
+    if isinstance(key, datetime.date):
+        msg = "date key"
         raise TypeError(msg)
 
     if isinstance(key, datetime.time):

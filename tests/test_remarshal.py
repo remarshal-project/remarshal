@@ -19,7 +19,12 @@ import cbor2  # type: ignore
 import pytest
 
 import remarshal
-from remarshal.document import TaggedValue, envelopes_to_tags, tags_to_envelopes
+from remarshal.document import (
+    TaggedValue,
+    envelopes_to_tags,
+    reject_special_keys,
+    tags_to_envelopes,
+)
 from remarshal.main import (
     Defaults,
     FormatOptions,
@@ -1166,6 +1171,35 @@ class TestTagConversion:
     def test_round_trip_is_identity(self) -> None:
         doc = {"a": TaggedValue("!secret", {"b": TaggedValue("!inner", [1, 2])})}
         assert envelopes_to_tags(tags_to_envelopes(doc)) == doc
+
+
+class TestRejectSpecialKeys:
+    def test_datetime_key_raises_datetime_error(self) -> None:
+        # datetime.datetime is a subclass of datetime.date; the more specific
+        # check must come first so the error message is accurate.
+        dt = datetime.datetime(2024, 1, 1, 12, 0, 0, tzinfo=datetime.timezone.utc)
+        with pytest.raises(TypeError, match="date-time key"):
+            reject_special_keys(dt)
+
+    def test_date_key_raises_date_error(self) -> None:
+        with pytest.raises(TypeError, match="date key"):
+            reject_special_keys(datetime.date(2024, 1, 1))
+
+    def test_time_key_raises_time_error(self) -> None:
+        with pytest.raises(TypeError, match="time key"):
+            reject_special_keys(datetime.time(12, 0, 0))
+
+    def test_bool_key_raises_boolean_error(self) -> None:
+        key = True
+        with pytest.raises(TypeError, match="boolean key"):
+            reject_special_keys(key)
+
+    def test_none_key_raises_null_error(self) -> None:
+        with pytest.raises(TypeError, match="null key"):
+            reject_special_keys(None)
+
+    def test_string_key_passes_through(self) -> None:
+        assert reject_special_keys("hello") == "hello"
 
 
 if __name__ == "__main__":
