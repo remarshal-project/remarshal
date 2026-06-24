@@ -275,6 +275,7 @@ env_list = [
   "py313",
   "py314",
 ]
+skip_missing_interpreters = true
 
 [tool.tox.env_run_base]
 description = "run tests"
