@@ -355,6 +355,7 @@ def _parse_command_line(argv: Sequence[str]) -> argparse.Namespace:
     parser.add_argument(
         "-p",
         "--preserve-key-order",
+        action="store_true",
         help=argparse.SUPPRESS,
     )
 

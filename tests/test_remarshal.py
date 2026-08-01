@@ -611,6 +611,15 @@ class TestRemarshal:
         args = _parse_command_line([sys.argv[0], "input.yaml", "output.yaml"])
         assert args.expand_aliases is False
 
+    def test_preserve_key_order_flag_does_not_consume_next_arg(self) -> None:
+        # -p/--preserve-key-order is a hidden no-op kept for backward
+        # compatibility; it must not swallow the following positional arg.
+        for flag in ("-p", "--preserve-key-order"):
+            args = _parse_command_line([sys.argv[0], flag, "input.json", "output.toml"])
+            assert args.preserve_key_order is True
+            assert args.input == "input.json"
+            assert args.output == "output.toml"
+
     def test_run_no_args(self) -> None:
         with pytest.raises(SystemExit) as cm:
             run(sys.argv[0])
