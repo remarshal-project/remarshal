@@ -649,7 +649,11 @@ def remarshal(
                     "cannot be unwrapped"
                 )
                 raise TypeError(msg)
-            parsed = parsed[unwrap]
+            try:
+                parsed = parsed[unwrap]
+            except KeyError:
+                msg = f"Key '{unwrap}' not found in input data"
+                raise ValueError(msg) from None
         if wrap is not None:
             temp = {}
             temp[wrap] = parsed
