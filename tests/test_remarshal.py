@@ -438,6 +438,10 @@ class TestRemarshal:
         reference = read_file("array.json")
         assert output == reference
 
+    def test_unwrap_missing_key(self, convert_and_read) -> None:
+        with pytest.raises(ValueError, match="not found"):
+            convert_and_read("array.toml", "toml", "json", unwrap="nope")
+
     def test_malformed_json(self, convert_and_read) -> None:
         with pytest.raises(ValueError):
             convert_and_read("garbage", "json", "yaml")
